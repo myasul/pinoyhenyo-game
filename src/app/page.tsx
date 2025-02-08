@@ -1,7 +1,7 @@
 'use client'
+import axios from 'axios';
 
 import { Button } from '@/components/Button';
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
