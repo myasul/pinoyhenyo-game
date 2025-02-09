@@ -26,18 +26,27 @@ export enum DuoGameRole {
     Guesser = 'GUESSER'
 }
 
+enum GameType {
+    Classic = 'CLASSIC',
+    Duo = 'DUO',
+    Battle = 'BATTLE',
+    Unknown = 'UNKNOWN'
+}
+
 type Player = {
     name: string
-    role?: DuoGameRole
+    role: DuoGameRole
 }
 
 type Room = {
     players: { [playerId: string]: Player }
+    gameType: GameType
 }
 
 const rooms: Record<string, Room> = {}
 const defaultRoomValues = {
-    players: {}
+    players: {},
+    gameType: GameType.Unknown
 }
 
 io.on('connection', (socket) => {
@@ -62,27 +71,41 @@ io.on('connection', (socket) => {
 
         if (Object.keys(room.players).length === 0) {
             delete rooms[gameId]
+            return
         }
-    })
-
-    socket.on(SocketEvent.JoinRoom, (data: { gameId: string, playerName: string }) => {
-        const { gameId, playerName } = data
-
-        socket.join(gameId)
-        socket.data.gameId = gameId
-
-        if (!rooms[gameId]) {
-            rooms[gameId] = { ...defaultRoomValues }
-        }
-
-        const room = rooms[gameId]
-
-        room.players[socket.id] = { name: playerName }
 
         io.to(gameId).emit(SocketEvent.PlayerListUpdated, { players: room.players })
-
-        console.log(`[${SocketEvent.JoinRoom}] rooms: `, rooms)
     })
+
+    socket.on(
+        SocketEvent.JoinRoom,
+        (data: { gameId: string, gameType: GameType, playerName: string, role: DuoGameRole }) => {
+            const { gameId, gameType, playerName, role } = data
+
+            socket.join(gameId)
+            socket.data.gameId = gameId
+
+            if (!rooms[gameId]) {
+                rooms[gameId] = { ...defaultRoomValues, gameType }
+            }
+
+            // Only support Duo mode for now
+            if (gameType !== GameType.Duo) return
+
+            const room = rooms[gameId]
+
+            room.players[socket.id] = {
+                name: playerName,
+                role: Object.keys(room.players).length === 0
+                    ? DuoGameRole.Guesser
+                    : DuoGameRole.ClueGiver
+            }
+
+            io.to(gameId).emit(SocketEvent.PlayerListUpdated, { players: room.players })
+
+            console.log(`[${SocketEvent.JoinRoom}] rooms: `, rooms)
+        }
+    )
 })
 
 const PORT = process.env.PORT || 3001

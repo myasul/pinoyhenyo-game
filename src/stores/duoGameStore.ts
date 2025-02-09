@@ -2,7 +2,8 @@ import { create } from 'zustand'
 
 export enum DuoGameRole {
     ClueGiver = 'CLUE_GIVER',
-    Guesser = 'GUESSER'
+    Guesser = 'GUESSER',
+    Unknown = 'UNKNOWN'
 }
 
 export type DuoGameState = {
