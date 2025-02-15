@@ -34,6 +34,7 @@ enum GameType {
 }
 
 type Player = {
+    id: string
     name: string
     role: DuoGameRole
 }
@@ -79,8 +80,8 @@ io.on('connection', (socket) => {
 
     socket.on(
         SocketEvent.JoinRoom,
-        (data: { gameId: string, gameType: GameType, playerName: string, role: DuoGameRole }) => {
-            const { gameId, gameType, playerName, role } = data
+        (data: { gameId: string, gameType: GameType, player: Player }) => {
+            const { gameId, gameType, player } = data
 
             socket.join(gameId)
             socket.data.gameId = gameId
@@ -89,13 +90,19 @@ io.on('connection', (socket) => {
                 rooms[gameId] = { ...defaultRoomValues, gameType }
             }
 
+            console.log(
+                `[${SocketEvent.JoinRoom}] Player joined room: `,
+                JSON.stringify({ gameId, gameType, player }, null, 2)
+            )
+
             // Only support Duo mode for now
             if (gameType !== GameType.Duo) return
 
             const room = rooms[gameId]
 
             room.players[socket.id] = {
-                name: playerName,
+                id: player.id,
+                name: player.name,
                 role: Object.keys(room.players).length === 0
                     ? DuoGameRole.Guesser
                     : DuoGameRole.ClueGiver
@@ -103,7 +110,7 @@ io.on('connection', (socket) => {
 
             io.to(gameId).emit(SocketEvent.PlayerListUpdated, { players: room.players })
 
-            console.log(`[${SocketEvent.JoinRoom}] rooms: `, rooms)
+            console.log(`[${SocketEvent.JoinRoom}] rooms: `, JSON.stringify(rooms, null, 2))
         }
     )
 })

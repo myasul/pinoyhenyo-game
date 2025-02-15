@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import io, { Socket } from "socket.io-client"
 
 export enum SocketEvent {
@@ -13,4 +14,22 @@ export const getSocket = () => {
     if (!socketInstance) socketInstance = io(socketUrl)
 
     return socketInstance
+}
+
+export const useSocket = () => {
+    const [connnectedSocket, setConnectedSocket] = useState<typeof Socket | null>(null)
+
+    useEffect(() => {
+        const socket = getSocket()
+
+        socket.addEventListener('connect', () => {
+            setConnectedSocket(socket)
+        })
+
+        return () => {
+            if (connnectedSocket) connnectedSocket.disconnect()
+        }
+    }, [])
+
+    return connnectedSocket
 }
