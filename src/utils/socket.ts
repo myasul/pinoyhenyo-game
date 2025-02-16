@@ -3,7 +3,9 @@ import io, { Socket } from "socket.io-client"
 
 export enum SocketEvent {
     JoinRoom = 'joinRoom',
-    PlayerListUpdated = 'playerListUpdated'
+    PlayerListUpdated = 'playerListUpdated',
+    StartGame = 'startGame',
+    GameStarted = 'gameStarted'
 }
 
 let socketInstance: typeof io.Socket | null = null
@@ -21,6 +23,8 @@ export const useSocket = () => {
 
     useEffect(() => {
         const socket = getSocket()
+
+        if (socket.id) setConnectedSocket(socket)
 
         socket.addEventListener('connect', () => {
             setConnectedSocket(socket)

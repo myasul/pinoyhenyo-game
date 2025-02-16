@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { DuoGameRole, useDuoGameStore } from '@/stores/duoGameStore';
+import { DuoGameRole, Player, useDuoGameStore } from '@/stores/duoGameStore';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator'
 import { getSocket, SocketEvent, useSocket } from '@/utils/socket';
 import { Button } from '@/components/Button';
@@ -15,12 +15,6 @@ enum GameType {
     Battle = 'BATTLE'
 }
 
-type Player = {
-    id: string
-    name: string
-    role: DuoGameRole
-}
-
 type Players = { [playerId: string]: Player }
 
 const DuoGameRoleText = {
@@ -31,7 +25,8 @@ const DuoGameRoleText = {
 
 export default function LobbyPage() {
     const { gameId } = useParams<LobbyPageParams>()
-    const { setGameId } = useDuoGameStore()
+    const { setGameId, setHostId, hostId, setCurrentWord, setPlayers: setFinalPlayers } = useDuoGameStore()
+    const router = useRouter()
 
     const [players, setPlayers] = useState<Players>({})
     const [myPlayer, setMyPlayer] = useState<Player>()
@@ -55,35 +50,49 @@ export default function LobbyPage() {
             role: DuoGameRole.Unknown
         }
 
-        setMyPlayer(player)
-
         socket.emit(SocketEvent.JoinRoom, { gameId, gameType: GameType.Duo, player })
+    }, [gameId, setGameId, socket])
+
+    useEffect(() => {
+        if (!socket) return
 
         socket.on(
             SocketEvent.PlayerListUpdated,
-            (data: { players: Players }) => {
-                if (!myPlayer) {
-                    console.error('My player not found')
-                    return
-                }
+            ({ players }: { players: Players }) => {
+                const updatedPlayerWithRole = players[socket.id]
 
-                const updatedPlayerWithRole = players[myPlayer.id]
+                if (Object.keys(players).length === 1) setHostId(updatedPlayerWithRole.id)
+                if (!myPlayer) setMyPlayer(updatedPlayerWithRole)
 
-                if (!updatedPlayerWithRole) { 
-                    console.error('Current player is not included in the player list')
-                    return
-                }
-
-                setMyPlayer(data.players[player.id])
-                setPlayers(data.players)
+                setPlayers(players)
             }
         )
 
-        return (() => { socket.off(SocketEvent.PlayerListUpdated) })
-    }, [gameId, setGameId, socket])
+        socket.on(SocketEvent.GameStarted, ({ wordToGuess, finalPlayers }: { wordToGuess: string, finalPlayers: Player[] }) => {
+            if (!myPlayer) return
+
+            setCurrentWord(wordToGuess)
+            setFinalPlayers(finalPlayers)
+
+            if (myPlayer.role === DuoGameRole.ClueGiver) {
+                router.push(`/duo/${gameId}/clue-giver`)
+            }
+
+            if (myPlayer.role === DuoGameRole.Guesser) {
+                router.push(`/duo/${gameId}/guesser`)
+            }
+        })
+
+        return (() => {
+            socket.off(SocketEvent.PlayerListUpdated)
+            socket.off(SocketEvent.GameStarted)
+        })
+    }, [socket, myPlayer, gameId, router, setHostId, setMyPlayer, setPlayers, setCurrentWord,])
 
     const handleStartGame = () => {
-        
+        if (!(myPlayer && socket)) return
+
+        socket.emit(SocketEvent.StartGame, { gameId, finalPlayers: Object.values(players) })
     }
 
     return (
@@ -92,16 +101,23 @@ export default function LobbyPage() {
             <h2 className='mt-4'>Players: </h2>
             <ul className='list-disc ml-6'>
                 {Object.values(players).map((player, index) => (
-                    <li key={index}>{player.name} - {DuoGameRoleText[player.role]}</li>
+                    <li key={index}>
+                        {player.name} - {DuoGameRoleText[player.role]}
+                        {player.id === myPlayer?.id && (<b> (me)</b>)}
+                    </li>
                 ))}
             </ul>
-            <Button
-                variant='primary'
-                label='Start Game'
-                disabled={Object.values(players).length !== 2}
-                className='mt-4'
-                onClick={handleStartGame}
-            />
+            {
+                hostId === myPlayer?.id && (
+                    <Button
+                        variant='primary'
+                        label='Start Game'
+                        disabled={!(Object.values(players).length === 2 && myPlayer)}
+                        className='mt-4'
+                        onClick={handleStartGame}
+                    />
+                )
+            }
         </div>
     );
 }

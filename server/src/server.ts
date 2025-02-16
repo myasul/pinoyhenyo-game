@@ -17,8 +17,9 @@ const io = new Server(server, {
 enum SocketEvent {
     JoinRoom = 'joinRoom',
     PlayerListUpdated = 'playerListUpdated',
-    Disconnect = 'disconnect'
-
+    Disconnect = 'disconnect',
+    StartGame = 'startGame',
+    GameStarted = 'gameStarted'
 }
 
 export enum DuoGameRole {
@@ -48,6 +49,22 @@ const rooms: Record<string, Room> = {}
 const defaultRoomValues = {
     players: {},
     gameType: GameType.Unknown
+}
+
+const getDuoGameRole = (players: { [playerId: string]: Player }) => {
+    const playerCount = Object.keys(players).length
+
+    if (playerCount === 0) return DuoGameRole.Guesser
+
+    if (playerCount === 1) {
+        const player = Object.values(players)[0]
+
+        return player.role === DuoGameRole.Guesser
+            ? DuoGameRole.ClueGiver
+            : DuoGameRole.Guesser
+    }
+
+    return DuoGameRole.ClueGiver
 }
 
 io.on('connection', (socket) => {
@@ -103,9 +120,7 @@ io.on('connection', (socket) => {
             room.players[socket.id] = {
                 id: player.id,
                 name: player.name,
-                role: Object.keys(room.players).length === 0
-                    ? DuoGameRole.Guesser
-                    : DuoGameRole.ClueGiver
+                role: getDuoGameRole(room.players)
             }
 
             io.to(gameId).emit(SocketEvent.PlayerListUpdated, { players: room.players })
@@ -113,6 +128,28 @@ io.on('connection', (socket) => {
             console.log(`[${SocketEvent.JoinRoom}] rooms: `, JSON.stringify(rooms, null, 2))
         }
     )
+
+    socket.on(SocketEvent.StartGame, (data: { gameId: string, finalPlayers: Player[] }) => {
+        const { gameId, finalPlayers } = data
+
+        const room = rooms[gameId]
+
+        if (!room) {
+            console.error(`Room (ID: ${gameId}) not found.`)
+            return
+        }
+
+        // TODO: Implement logic to determine word to guess
+        const wordToGuess = 'apple'
+
+        console.log(`[${SocketEvent.StartGame}] Starting game for room (ID: ${gameId})`)
+
+        const gameStartedData = { wordToGuess, finalPlayers }
+
+        console.log(`[${SocketEvent.StartGame}] gameStartedData: `, JSON.stringify(gameStartedData, null, 2))
+
+        io.to(gameId).emit(SocketEvent.GameStarted, gameStartedData)
+    })
 })
 
 const PORT = process.env.PORT || 3001
