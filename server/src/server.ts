@@ -2,6 +2,7 @@ import express from 'express'
 import http from 'http'
 import { Server } from 'socket.io'
 import cors from 'cors'
+import * as emoji from 'node-emoji'
 
 const app = express()
 
@@ -56,7 +57,7 @@ const defaultRoomValues = {
 
 const GameDefaults = {
     wordToGuess: 'Watermelon',
-    timeLimit: 120
+    timeLimit: 5
 }
 
 const getDuoGameRole = (players: { [playerId: string]: Player }) => {
@@ -161,7 +162,8 @@ io.on('connection', (socket) => {
         const gameStartedData = {
             finalPlayers,
             wordToGuess: GameDefaults.wordToGuess,
-            timeRemaining: GameDefaults.timeLimit
+            timeRemaining: GameDefaults.timeLimit,
+            emoji: emoji.random().emoji
         }
 
         io.to(gameId).emit(SocketEvent.GameStarted, gameStartedData)

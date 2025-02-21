@@ -12,7 +12,7 @@ type ClueGiverPageParams = { gameId: string }
 
 export default function ClueGiverPage() {
     const { gameId } = useParams<ClueGiverPageParams>()
-    const { setGameId, players, timeRemaining, setTimeRemaining, setState, currentWord } = useDuoGameStore()
+    const { setGameId, players, timeRemaining, setTimeRemaining, setState, wordToGuess } = useDuoGameStore()
     const socket = useSocket()
 
     const [myPlayer, setMyPlayer] = useState<Player>()
@@ -34,7 +34,10 @@ export default function ClueGiverPage() {
         socket.on(SocketEvent.UpdateTimeLimit, setTimeRemaining)
         socket.on(SocketEvent.TimeLimitReached, () => { setState(GameState.Lost) })
 
-        return () => { }
+        return () => {
+            socket.off(SocketEvent.UpdateTimeLimit)
+            socket.off(SocketEvent.TimeLimitReached)
+        }
     }, [socket])
 
     if (!myPlayer) return null
@@ -43,7 +46,7 @@ export default function ClueGiverPage() {
         <div className="p-6 justify-center flex flex-col items-center gap-5">
             <h1 className="text-2xl font-bold">Clue Giver ({myPlayer.name})</h1>
             <h2 className="text-xl font-bold">{formatTime(timeRemaining)}</h2>
-            <h2 className="text-xl font-bold">{currentWord}</h2>
+            <h2 className="text-xl font-bold">{wordToGuess}</h2>
             <Button variant="primary" label="CORRECT!" />
         </div>
     )

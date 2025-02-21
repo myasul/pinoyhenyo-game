@@ -18,9 +18,24 @@ const DuoGameRoleText = {
     [DuoGameRole.Unknown]: 'Unknown',
 }
 
+type GameStartedCallbackProps = {
+    wordToGuess: string
+    finalPlayers: Player[]
+    timeRemaining: number
+    emoji: string
+}
+
 export default function LobbyPage() {
     const { gameId } = useParams<LobbyPageParams>()
-    const { setGameId, setHostId, hostId, setCurrentWord, setPlayers: setFinalPlayers, setTimeRemaining } = useDuoGameStore()
+    const {
+        hostId,
+        setGameId,
+        setHostId,
+        setWordToGuess,
+        setPlayers: setFinalPlayers,
+        setTimeRemaining,
+        setEmoji
+    } = useDuoGameStore()
     const router = useRouter()
 
     const [players, setPlayers] = useState<Players>({})
@@ -34,14 +49,13 @@ export default function LobbyPage() {
         socket.emit(SocketEvent.StartGame, { gameId, finalPlayers: Object.values(players) })
     }
 
-    const handleGameStarted = useCallback((
-        { wordToGuess, finalPlayers, timeRemaining }: { wordToGuess: string, finalPlayers: Player[], timeRemaining: number }
-    ) => {
+    const handleGameStarted = useCallback(({ wordToGuess, finalPlayers, timeRemaining, emoji }: GameStartedCallbackProps) => {
         if (!myPlayer) return
 
-        setCurrentWord(wordToGuess)
+        setWordToGuess(wordToGuess)
         setFinalPlayers(finalPlayers)
         setTimeRemaining(timeRemaining)
+        setEmoji(emoji)
 
         if (myPlayer.role === DuoGameRole.ClueGiver) {
             router.push(`/duo/${gameId}/clue-giver`)
@@ -50,7 +64,7 @@ export default function LobbyPage() {
         if (myPlayer.role === DuoGameRole.Guesser) {
             router.push(`/duo/${gameId}/guesser`)
         }
-    }, [setCurrentWord, setFinalPlayers, myPlayer, router, gameId])
+    }, [setWordToGuess, setFinalPlayers, myPlayer, router, gameId])
 
 
     const handlePlayerListUpdated = useCallback(({ players }: { players: Players }) => {

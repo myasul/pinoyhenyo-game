@@ -14,6 +14,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.2",
+    "node-emoji": "^2.2.0",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
