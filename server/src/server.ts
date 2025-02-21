@@ -19,7 +19,9 @@ enum SocketEvent {
     PlayerListUpdated = 'playerListUpdated',
     Disconnect = 'disconnect',
     StartGame = 'startGame',
-    GameStarted = 'gameStarted'
+    GameStarted = 'gameStarted',
+    UpdateTimeLimit = 'updateTimeLimit',
+    TimeLimitReached = 'timeLimitReached'
 }
 
 export enum DuoGameRole {
@@ -43,12 +45,18 @@ type Player = {
 type Room = {
     players: { [playerId: string]: Player }
     gameType: GameType
+    timeRemaining: number
 }
 
 const rooms: Record<string, Room> = {}
 const defaultRoomValues = {
     players: {},
     gameType: GameType.Unknown
+}
+
+const GameDefaults = {
+    wordToGuess: 'Watermelon',
+    timeLimit: 120
 }
 
 const getDuoGameRole = (players: { [playerId: string]: Player }) => {
@@ -104,7 +112,7 @@ io.on('connection', (socket) => {
             socket.data.gameId = gameId
 
             if (!rooms[gameId]) {
-                rooms[gameId] = { ...defaultRoomValues, gameType }
+                rooms[gameId] = { ...defaultRoomValues, gameType, timeRemaining: GameDefaults.timeLimit }
             }
 
             console.log(
@@ -139,14 +147,22 @@ io.on('connection', (socket) => {
             return
         }
 
-        // TODO: Implement logic to determine word to guess
-        const wordToGuess = 'apple'
+        const timeLimitIntervalId = setInterval(() => {
+            room.timeRemaining--
 
-        console.log(`[${SocketEvent.StartGame}] Starting game for room (ID: ${gameId})`)
+            io.to(gameId).emit(SocketEvent.UpdateTimeLimit, room.timeRemaining)
 
-        const gameStartedData = { wordToGuess, finalPlayers }
+            if (room.timeRemaining === 0) {
+                clearInterval(timeLimitIntervalId)
+                io.to(gameId).emit(SocketEvent.TimeLimitReached)
+            }
+        }, 1000)
 
-        console.log(`[${SocketEvent.StartGame}] gameStartedData: `, JSON.stringify(gameStartedData, null, 2))
+        const gameStartedData = {
+            finalPlayers,
+            wordToGuess: GameDefaults.wordToGuess,
+            timeRemaining: GameDefaults.timeLimit
+        }
 
         io.to(gameId).emit(SocketEvent.GameStarted, gameStartedData)
     })

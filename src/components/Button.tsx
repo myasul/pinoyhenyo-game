@@ -4,7 +4,7 @@ type ButtonProps = {
     variant?: 'primary' | 'secondary'
     overrideTWStyle?: string
     disabled?: boolean
-    className: string
+    className?: string
 }
 
 export const Button: React.FC<ButtonProps> = ({ className, label, onClick, variant, overrideTWStyle, disabled = false }) => {

@@ -1,13 +1,6 @@
 import { useEffect, useState } from "react"
 import io, { Socket } from "socket.io-client"
 
-export enum SocketEvent {
-    JoinRoom = 'joinRoom',
-    PlayerListUpdated = 'playerListUpdated',
-    StartGame = 'startGame',
-    GameStarted = 'gameStarted'
-}
-
 let socketInstance: typeof io.Socket | null = null
 
 export const getSocket = () => {
