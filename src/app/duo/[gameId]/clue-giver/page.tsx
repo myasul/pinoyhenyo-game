@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/Button"
 import { Player, useDuoGameStore } from "@/stores/duoGameStore"
-import { GameState, SocketEvent } from "@/utils/constants"
+import { GameStatus, SocketEvent } from "@/utils/constants"
 import { useSocket } from "@/utils/socket"
 import { formatTime } from "@/utils/utils"
 import { useParams } from "next/navigation"
@@ -32,7 +32,7 @@ export default function ClueGiverPage() {
         if (!socket) return
 
         socket.on(SocketEvent.UpdateTimeLimit, setTimeRemaining)
-        socket.on(SocketEvent.TimeLimitReached, () => { setState(GameState.Lost) })
+        socket.on(SocketEvent.TimeLimitReached, () => { setState(GameStatus.Lose) })
 
         return () => {
             socket.off(SocketEvent.UpdateTimeLimit)

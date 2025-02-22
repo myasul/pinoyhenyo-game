@@ -1,7 +1,7 @@
-export enum GameState{
+export enum GameStatus {
     Started = 'STARTED',
-    Won = 'WON',
-    Lost = 'LOST',
+    Win = 'WIN',
+    Lose = 'LOSE',
     Waiting = 'WAITING',
     Unknown = 'UNKNOWN'
 }
@@ -18,7 +18,7 @@ export enum GameType {
     Battle = 'BATTLE'
 }
 
-export enum SocketEvent {
+export enum OutdatedSocketEvent {
     JoinRoom = 'joinRoom',
     PlayerListUpdated = 'playerListUpdated',
     Disconnect = 'disconnect',
@@ -26,4 +26,22 @@ export enum SocketEvent {
     GameStarted = 'gameStarted',
     UpdateTimeLimit = 'updateTimeLimit',
     TimeLimitReached = 'timeLimitReached'
+}
+
+export enum SocketEvent {
+    // Client initiated
+    RequestJoinGame = 'request:joinGame',
+    RequestStartGame = 'request:startGame',
+    RequestUpdateTimeLimit = 'request:updateTimeLimit',
+    RequestWordGuessSuccessful = 'request:wordGuessSuccessful',
+
+    // Server initiated
+    NotifyPlayersUpdated = 'notify:playersUpdated',
+    NotifyGameStarted = 'notify:gameStarted',
+    NotifyRemainingTimeUpdated = 'notify:remainingTimeUpdated',
+    NotifyWordGuessUnsusccessful = 'notify:wordGuessUnsuccessful',
+    NotifyWordGuessSuccessful = 'notify:wordGuessSuccessful',
+
+    // Default Socket Events
+    Disconnect = 'disconnect',
 }

@@ -15,14 +15,22 @@ const io = new Server(server, {
     }
 })
 
-enum SocketEvent {
-    JoinRoom = 'joinRoom',
-    PlayerListUpdated = 'playerListUpdated',
+export enum SocketEvent {
+    // Client initiated
+    RequestJoinGame = 'request:joinGame',
+    RequestStartGame = 'request:startGame',
+    RequestUpdateTimeLimit = 'request:updateTimeLimit',
+    RequestWordGuessSuccessful = 'request:wordGuessSuccessful',
+
+    // Server initiated
+    NotifyPlayersUpdated = 'notify:playersUpdated',
+    NotifyGameStarted = 'notify:gameStarted',
+    NotifyRemainingTimeUpdated = 'notify:remainingTimeUpdated',
+    NotifyWordGuessUnsusccessful = 'notify:wordGuessUnsuccessful',
+    NotifyWordGuessSuccessful = 'notify:wordGuessSuccessful',
+
+    // Default Socket Events
     Disconnect = 'disconnect',
-    StartGame = 'startGame',
-    GameStarted = 'gameStarted',
-    UpdateTimeLimit = 'updateTimeLimit',
-    TimeLimitReached = 'timeLimitReached'
 }
 
 export enum DuoGameRole {
@@ -101,11 +109,11 @@ io.on('connection', (socket) => {
             return
         }
 
-        io.to(gameId).emit(SocketEvent.PlayerListUpdated, { players: room.players })
+        io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { players: room.players })
     })
 
     socket.on(
-        SocketEvent.JoinRoom,
+        SocketEvent.RequestJoinGame,
         (data: { gameId: string, gameType: GameType, player: Player }) => {
             const { gameId, gameType, player } = data
 
@@ -117,7 +125,7 @@ io.on('connection', (socket) => {
             }
 
             console.log(
-                `[${SocketEvent.JoinRoom}] Player joined room: `,
+                `[${SocketEvent.RequestJoinGame}] Player joined room: `,
                 JSON.stringify({ gameId, gameType, player }, null, 2)
             )
 
@@ -132,13 +140,13 @@ io.on('connection', (socket) => {
                 role: getDuoGameRole(room.players)
             }
 
-            io.to(gameId).emit(SocketEvent.PlayerListUpdated, { players: room.players })
+            io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { players: room.players })
 
-            console.log(`[${SocketEvent.JoinRoom}] rooms: `, JSON.stringify(rooms, null, 2))
+            console.log(`[${SocketEvent.RequestJoinGame}] rooms: `, JSON.stringify(rooms, null, 2))
         }
     )
 
-    socket.on(SocketEvent.StartGame, (data: { gameId: string, finalPlayers: Player[] }) => {
+    socket.on(SocketEvent.RequestStartGame, (data: { gameId: string, finalPlayers: Player[] }) => {
         const { gameId, finalPlayers } = data
 
         const room = rooms[gameId]
@@ -151,11 +159,11 @@ io.on('connection', (socket) => {
         const timeLimitIntervalId = setInterval(() => {
             room.timeRemaining--
 
-            io.to(gameId).emit(SocketEvent.UpdateTimeLimit, room.timeRemaining)
+            io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, room.timeRemaining)
 
             if (room.timeRemaining === 0) {
                 clearInterval(timeLimitIntervalId)
-                io.to(gameId).emit(SocketEvent.TimeLimitReached)
+                io.to(gameId).emit(SocketEvent.NotifyWordGuessUnsusccessful)
             }
         }, 1000)
 
@@ -166,7 +174,7 @@ io.on('connection', (socket) => {
             emoji: emoji.random().emoji
         }
 
-        io.to(gameId).emit(SocketEvent.GameStarted, gameStartedData)
+        io.to(gameId).emit(SocketEvent.NotifyGameStarted, gameStartedData)
     })
 })
 

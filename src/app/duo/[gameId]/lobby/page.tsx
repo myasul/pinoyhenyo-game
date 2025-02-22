@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, usePathname } from 'next/navigation';
 import { Player, useDuoGameStore } from '@/stores/duoGameStore';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator'
 import { useSocket } from '@/utils/socket';
@@ -37,6 +37,7 @@ export default function LobbyPage() {
         setEmoji
     } = useDuoGameStore()
     const router = useRouter()
+    const pathname = usePathname()
 
     const [players, setPlayers] = useState<Players>({})
     const [myPlayer, setMyPlayer] = useState<Player>()
@@ -46,7 +47,7 @@ export default function LobbyPage() {
     const handleStartGame = () => {
         if (!(myPlayer && socket)) return
 
-        socket.emit(SocketEvent.StartGame, { gameId, finalPlayers: Object.values(players) })
+        socket.emit(SocketEvent.RequestStartGame, { gameId, finalPlayers: Object.values(players) })
     }
 
     const handleGameStarted = useCallback(({ wordToGuess, finalPlayers, timeRemaining, emoji }: GameStartedCallbackProps) => {
@@ -82,6 +83,8 @@ export default function LobbyPage() {
     useEffect(() => {
         if (!(gameId && socket)) return
 
+        console.log('pathname', pathname)
+
         setGameId(gameId)
 
         const randomName = uniqueNamesGenerator({
@@ -96,18 +99,18 @@ export default function LobbyPage() {
             role: DuoGameRole.Unknown
         }
 
-        socket.emit(SocketEvent.JoinRoom, { gameId, gameType: GameType.Duo, player })
+        socket.emit(SocketEvent.RequestJoinGame, { gameId, gameType: GameType.Duo, player })
     }, [gameId, setGameId, socket])
 
     useEffect(() => {
         if (!socket) return
 
-        socket.on(SocketEvent.PlayerListUpdated, handlePlayerListUpdated)
-        socket.on(SocketEvent.GameStarted, handleGameStarted)
+        socket.on(SocketEvent.NotifyPlayersUpdated, handlePlayerListUpdated)
+        socket.on(SocketEvent.NotifyGameStarted, handleGameStarted)
 
         return (() => {
-            socket.off(SocketEvent.PlayerListUpdated)
-            socket.off(SocketEvent.GameStarted)
+            socket.off(SocketEvent.NotifyPlayersUpdated)
+            socket.off(SocketEvent.NotifyGameStarted)
         })
     }, [socket, myPlayer, handleGameStarted])
 

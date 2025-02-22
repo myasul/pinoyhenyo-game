@@ -12,8 +12,6 @@ export default function HomePage() {
       const response = await axios.post('/api/create-room')
       const { gameId } = response.data
 
-      console.log('[handleDuoModeClick] gameId: ', gameId)
-
       router.push(`/duo/${gameId}/lobby`)
     } catch (error) {
       console.error('Error creating room: ', error)

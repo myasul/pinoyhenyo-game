@@ -2,15 +2,17 @@
 
 import { Button } from "@/components/Button"
 import { Player, useDuoGameStore } from "@/stores/duoGameStore"
-import { GameState, SocketEvent } from "@/utils/constants"
+
+import { GameStatus, SocketEvent } from "@/utils/constants"
 import { useSocket } from "@/utils/socket"
 import { formatTime } from "@/utils/utils"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
 type GuesserPageParams = { gameId: string }
 
 export default function GuesserPage() {
+    const router = useRouter()
     const { gameId } = useParams<GuesserPageParams>()
     const {
         players,
@@ -24,12 +26,19 @@ export default function GuesserPage() {
 
     const [myPlayer, setMyPlayer] = useState<Player>()
 
+    // TODO: Create a hook to encapsulate setting game id and player
+    // Maybe useDuoGame?
     useEffect(() => {
         if (!(gameId && socket)) return
 
         const thisPlayer = players.find(player => player.id === socket.id)
 
-        if (!thisPlayer) return
+        if (!thisPlayer) {
+            console.error('Player not found')
+            router.push('/')
+
+            return
+        }
 
         setMyPlayer(thisPlayer)
         setGameId(gameId)
@@ -39,7 +48,7 @@ export default function GuesserPage() {
         if (!socket) return
 
         socket.on(SocketEvent.UpdateTimeLimit, setTimeRemaining)
-        socket.on(SocketEvent.TimeLimitReached, () => { setState(GameState.Lost) })
+        socket.on(SocketEvent.TimeLimitReached, () => { setState(GameStatus.Lose) })
 
         return () => {
             socket.off(SocketEvent.UpdateTimeLimit)

@@ -1,4 +1,4 @@
-import { DuoGameRole, GameState } from '@/utils/constants'
+import { DuoGameRole, GameStatus } from '@/utils/constants'
 import { create } from 'zustand'
 
 export type Player = {
@@ -15,14 +15,14 @@ export type DuoGameState = {
     emoji: string | null
     players: Player[]
     timeRemaining: number
-    state: GameState
+    status: GameStatus
     setGameId: (id: string) => void
     setRole: (role: DuoGameRole) => void
     setWordToGuess: (wordToGuess: string) => void
     setHostId: (hostId: string) => void
     setPlayers: (players: Player[]) => void
     setTimeRemaining: (timeRemaining: number) => void
-    setState: (state: GameState) => void
+    setStatus: (status: GameStatus) => void
     setEmoji: (emoji: string) => void
 }
 
@@ -34,8 +34,8 @@ export const useDuoGameStore = create<DuoGameState>((set) => ({
     emoji: null,
     players: [],
     timeRemaining: 0,
-    state: GameState.Unknown,
-    setState: (state: GameState) => set({ state }),
+    status: GameStatus.Unknown,
+    setStatus: (status: GameStatus) => set({ status }),
     setTimeRemaining: (timeRemaining) => set({ timeRemaining }),
     setGameId: (id) => set({ gameId: id }),
     setRole: (role) => set({ role }),
