@@ -1,8 +1,7 @@
 'use client'
 
-import { useDuoGameState } from "@/hooks/useDuoGameState"
 import { GameStatus } from "@/utils/constants"
-import { useParams, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 
 const GameResultText: Partial<Record<GameStatus, string>> = {
     [GameStatus.Win]: 'YOU ARE HENYO!',

@@ -2,12 +2,10 @@
 
 import { Button } from "@/components/Button"
 import { useDuoGameState } from "@/hooks/useDuoGameState"
-import { Player, useDuoGameStore } from "@/stores/duoGameStore"
 import { GameStatus, SocketEvent } from "@/utils/constants"
 import { useSocket } from "@/utils/socket"
 import { formatTime } from "@/utils/utils"
-import { useParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 
 export default function ClueGiverPage() {
     const { myPlayer, setRemainingTime, remainingTime, wordToGuess, handlers } = useDuoGameState()
