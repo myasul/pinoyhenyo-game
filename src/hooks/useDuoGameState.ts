@@ -4,7 +4,7 @@ import { Player, useDuoGameStore } from "@/stores/duoGameStore"
 import { DuoGameRole, GameStatus, SocketEvent } from "@/utils/constants"
 import { useSocket } from "@/utils/socket"
 import { useParams, usePathname, useRouter } from "next/navigation"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect } from "react"
 
 type DuoLobbyPageParams = { gameId: string }
 
@@ -52,15 +52,13 @@ export const useDuoGameState = () => {
         const isLobbyPage = pathname.includes(DuoGamePage.Lobby)
         const hasGameStarted = pathname.includes(DuoGamePage.ClueGiver) || pathname.includes(DuoGamePage.Guesser)
 
-        if (isLobbyPage) store.setStatus(GameStatus.Waiting)
-
         if (hasGameStarted && !store.myPlayer) {
             console.error('Player not found')
             router.push('/')
 
             return
         }
-    }, [gameId, socket, pathname, router, store.setStatus, store.myPlayer, store.status])
+    }, [gameId, socket, pathname, router, store.myPlayer])
 
     const handleRequestStartGame = useCallback(() => {
         if (!socket) return
@@ -75,7 +73,6 @@ export const useDuoGameState = () => {
         store.setPlayers(finalPlayers)
         store.setRemainingTime(remainingTime)
         store.setEmoji(emoji)
-        store.setStatus(GameStatus.Started)
 
         if (store.myPlayer.role === DuoGameRole.ClueGiver) {
             router.push(`/duo/${gameId}/clue-giver`)
