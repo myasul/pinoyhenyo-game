@@ -1,16 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { useRouter, useParams, usePathname } from 'next/navigation';
-import { Player, useDuoGameStore } from '@/stores/duoGameStore';
+import {  useEffect } from 'react';
+import { Player } from '@/stores/duoGameStore';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator'
 import { useSocket } from '@/utils/socket';
 import { Button } from '@/components/Button';
 import { DuoGameRole, GameType, SocketEvent } from '@/utils/constants';
-
-type LobbyPageParams = { gameId: string }
-
-type Players = { [playerId: string]: Player }
+import { useDuoGameState } from '@/hooks/useDuoGameState';
 
 const DuoGameRoleText = {
     [DuoGameRole.ClueGiver]: 'Clue Giver',
@@ -18,74 +14,13 @@ const DuoGameRoleText = {
     [DuoGameRole.Unknown]: 'Unknown',
 }
 
-type GameStartedCallbackProps = {
-    wordToGuess: string
-    finalPlayers: Player[]
-    timeRemaining: number
-    emoji: string
-}
-
 export default function LobbyPage() {
-    const { gameId } = useParams<LobbyPageParams>()
-    const {
-        hostId,
-        setGameId,
-        setHostId,
-        setWordToGuess,
-        setPlayers: setFinalPlayers,
-        setTimeRemaining,
-        setEmoji
-    } = useDuoGameStore()
-    const router = useRouter()
-    const pathname = usePathname()
-
-    const [players, setPlayers] = useState<Players>({})
-    const [myPlayer, setMyPlayer] = useState<Player>()
-
+    const { gameId, players, myPlayer, hostId, handlers } = useDuoGameState()
     const socket = useSocket()
-
-    const handleStartGame = () => {
-        if (!(myPlayer && socket)) return
-
-        socket.emit(SocketEvent.RequestStartGame, { gameId, finalPlayers: Object.values(players) })
-    }
-
-    const handleGameStarted = useCallback(({ wordToGuess, finalPlayers, timeRemaining, emoji }: GameStartedCallbackProps) => {
-        if (!myPlayer) return
-
-        setWordToGuess(wordToGuess)
-        setFinalPlayers(finalPlayers)
-        setTimeRemaining(timeRemaining)
-        setEmoji(emoji)
-
-        if (myPlayer.role === DuoGameRole.ClueGiver) {
-            router.push(`/duo/${gameId}/clue-giver`)
-        }
-
-        if (myPlayer.role === DuoGameRole.Guesser) {
-            router.push(`/duo/${gameId}/guesser`)
-        }
-    }, [setWordToGuess, setFinalPlayers, myPlayer, router, gameId])
-
-
-    const handlePlayerListUpdated = useCallback(({ players }: { players: Players }) => {
-        if (!socket) return
-
-        const updatedPlayerWithRole = players[socket.id]
-
-        if (Object.keys(players).length === 1) setHostId(updatedPlayerWithRole.id)
-        if (!myPlayer) setMyPlayer(updatedPlayerWithRole)
-
-        setPlayers(players)
-    }, [myPlayer, setMyPlayer, setPlayers, setHostId, socket])
 
 
     useEffect(() => {
-        if (!(gameId && socket)) return
-
-        console.log('pathname', pathname)
-
-        setGameId(gameId)
+        if (!socket) return
 
         const randomName = uniqueNamesGenerator({
             dictionaries: [adjectives, animals],
@@ -100,19 +35,19 @@ export default function LobbyPage() {
         }
 
         socket.emit(SocketEvent.RequestJoinGame, { gameId, gameType: GameType.Duo, player })
-    }, [gameId, setGameId, socket])
+    }, [gameId, socket])
 
     useEffect(() => {
         if (!socket) return
 
-        socket.on(SocketEvent.NotifyPlayersUpdated, handlePlayerListUpdated)
-        socket.on(SocketEvent.NotifyGameStarted, handleGameStarted)
+        socket.on(SocketEvent.NotifyPlayersUpdated, handlers[SocketEvent.NotifyPlayersUpdated])
+        socket.on(SocketEvent.NotifyGameStarted, handlers[SocketEvent.NotifyGameStarted])
 
         return (() => {
             socket.off(SocketEvent.NotifyPlayersUpdated)
             socket.off(SocketEvent.NotifyGameStarted)
         })
-    }, [socket, myPlayer, handleGameStarted])
+    }, [socket, myPlayer, handlers])
 
     return (
         <div className="p-6">
@@ -133,7 +68,7 @@ export default function LobbyPage() {
                         label='Start Game'
                         disabled={!(Object.values(players).length === 2 && myPlayer)}
                         className='mt-4'
-                        onClick={handleStartGame}
+                        onClick={handlers[SocketEvent.RequestStartGame]}
                     />
                 )
             }

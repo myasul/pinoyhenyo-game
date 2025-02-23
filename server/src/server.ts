@@ -54,7 +54,7 @@ type Player = {
 type Room = {
     players: { [playerId: string]: Player }
     gameType: GameType
-    timeRemaining: number
+    remainingTime: number
 }
 
 const rooms: Record<string, Room> = {}
@@ -121,7 +121,7 @@ io.on('connection', (socket) => {
             socket.data.gameId = gameId
 
             if (!rooms[gameId]) {
-                rooms[gameId] = { ...defaultRoomValues, gameType, timeRemaining: GameDefaults.timeLimit }
+                rooms[gameId] = { ...defaultRoomValues, gameType, remainingTime: GameDefaults.timeLimit }
             }
 
             console.log(
@@ -157,11 +157,11 @@ io.on('connection', (socket) => {
         }
 
         const timeLimitIntervalId = setInterval(() => {
-            room.timeRemaining--
+            room.remainingTime--
 
-            io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, room.timeRemaining)
+            io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, room.remainingTime)
 
-            if (room.timeRemaining === 0) {
+            if (room.remainingTime === 0) {
                 clearInterval(timeLimitIntervalId)
                 io.to(gameId).emit(SocketEvent.NotifyWordGuessUnsusccessful)
             }
@@ -170,7 +170,7 @@ io.on('connection', (socket) => {
         const gameStartedData = {
             finalPlayers,
             wordToGuess: GameDefaults.wordToGuess,
-            timeRemaining: GameDefaults.timeLimit,
+            remainingTime: GameDefaults.timeLimit,
             emoji: emoji.random().emoji
         }
 
