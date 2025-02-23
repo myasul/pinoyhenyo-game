@@ -26,7 +26,7 @@ export enum SocketEvent {
     NotifyPlayersUpdated = 'notify:playersUpdated',
     NotifyGameStarted = 'notify:gameStarted',
     NotifyRemainingTimeUpdated = 'notify:remainingTimeUpdated',
-    NotifyWordGuessUnsusccessful = 'notify:wordGuessUnsuccessful',
+    NotifyWordGuessUnsuccessful = 'notify:wordGuessUnsuccessful',
     NotifyWordGuessSuccessful = 'notify:wordGuessSuccessful',
 
     // Default Socket Events
@@ -55,6 +55,7 @@ type Room = {
     players: { [playerId: string]: Player }
     gameType: GameType
     remainingTime: number
+    timeIntervalId?: NodeJS.Timeout
 }
 
 const rooms: Record<string, Room> = {}
@@ -65,7 +66,7 @@ const defaultRoomValues = {
 
 const GameDefaults = {
     wordToGuess: 'Watermelon',
-    timeLimit: 5
+    timeLimit: 20
 }
 
 const getDuoGameRole = (players: { [playerId: string]: Player }) => {
@@ -157,15 +158,17 @@ io.on('connection', (socket) => {
         }
 
         const timeLimitIntervalId = setInterval(() => {
-            room.remainingTime--
+            room.remainingTime -= 1
 
             io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, room.remainingTime)
 
             if (room.remainingTime === 0) {
                 clearInterval(timeLimitIntervalId)
-                io.to(gameId).emit(SocketEvent.NotifyWordGuessUnsusccessful)
+                io.to(gameId).emit(SocketEvent.NotifyWordGuessUnsuccessful)
             }
         }, 1000)
+
+        room.timeIntervalId = timeLimitIntervalId
 
         const gameStartedData = {
             finalPlayers,
@@ -175,6 +178,19 @@ io.on('connection', (socket) => {
         }
 
         io.to(gameId).emit(SocketEvent.NotifyGameStarted, gameStartedData)
+    })
+
+    socket.on(SocketEvent.RequestWordGuessSuccessful, ({ gameId }: { gameId: string }) => {
+        const room = rooms[gameId]
+
+        if (!room) {
+            console.error(`Room (ID: ${gameId}) not found.`)
+            return
+        }
+
+        clearInterval(room.timeIntervalId)
+
+        io.to(gameId).emit(SocketEvent.NotifyWordGuessSuccessful)
     })
 })
 

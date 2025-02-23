@@ -3,23 +3,36 @@
 import { Button } from "@/components/Button"
 import { useDuoGameState } from "@/hooks/useDuoGameState"
 
-import { SocketEvent } from "@/utils/constants"
+import { GameStatus, SocketEvent } from "@/utils/constants"
 import { useSocket } from "@/utils/socket"
 import { formatTime } from "@/utils/utils"
 import { useEffect } from "react"
 
 export default function GuesserPage() {
-    const { setRemainingTime, myPlayer, emoji, remainingTime } = useDuoGameState()
+    const { setRemainingTime, myPlayer, emoji, remainingTime, handlers } = useDuoGameState()
     const socket = useSocket()
 
     useEffect(() => {
         if (!socket) return
 
         socket.on(SocketEvent.NotifyRemainingTimeUpdated, setRemainingTime)
-        // socket.on(SocketEvent.TimeLimitReached, () => { setState(GameStatus.Lose) })
+
+        socket.on(SocketEvent.NotifyWordGuessUnsuccessful, () => {
+            const handler = handlers[SocketEvent.NotifyWordGuessUnsuccessful]
+
+            handler(GameStatus.Lose)
+        })
+
+        socket.on(SocketEvent.NotifyWordGuessSuccessful, () => {
+            const handler = handlers[SocketEvent.NotifyWordGuessSuccessful]
+
+            handler(GameStatus.Win)
+        })
 
         return () => {
             socket.off(SocketEvent.NotifyRemainingTimeUpdated)
+            socket.off(SocketEvent.NotifyWordGuessUnsuccessful)
+            socket.off(SocketEvent.NotifyWordGuessSuccessful)
         }
     }, [socket])
 

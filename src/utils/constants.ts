@@ -39,7 +39,7 @@ export enum SocketEvent {
     NotifyPlayersUpdated = 'notify:playersUpdated',
     NotifyGameStarted = 'notify:gameStarted',
     NotifyRemainingTimeUpdated = 'notify:remainingTimeUpdated',
-    NotifyWordGuessUnsusccessful = 'notify:wordGuessUnsuccessful',
+    NotifyWordGuessUnsuccessful = 'notify:wordGuessUnsuccessful',
     NotifyWordGuessSuccessful = 'notify:wordGuessSuccessful',
 
     // Default Socket Events

@@ -1,3 +1,5 @@
+'use client'
+
 import { Player, useDuoGameStore } from "@/stores/duoGameStore"
 import { DuoGameRole, GameStatus, SocketEvent } from "@/utils/constants"
 import { useSocket } from "@/utils/socket"
@@ -20,6 +22,17 @@ type GameStartedCallbackProps = {
     emoji: string
 }
 
+type Handler<T extends any[] = any[]> = (...args: T) => void;
+
+type Handlers = {
+    [SocketEvent.RequestStartGame]: Handler<[string, any[]]>;
+    [SocketEvent.NotifyGameStarted]: Handler<[GameStartedCallbackProps]>;
+    [SocketEvent.NotifyPlayersUpdated]: Handler<[{ players: { [playerId: string]: Player } }]>;
+    [SocketEvent.NotifyWordGuessUnsuccessful]: Handler<[GameStatus]>;
+    [SocketEvent.NotifyWordGuessSuccessful]: Handler<[GameStatus]>;
+    [SocketEvent.RequestWordGuessSuccessful]: Handler<[]>;
+};
+
 export const useDuoGameState = () => {
     const { gameId } = useParams<DuoLobbyPageParams>()
     const pathname = usePathname()
@@ -36,9 +49,12 @@ export const useDuoGameState = () => {
 
         if (!socket) return
 
-        if (pathname.includes(DuoGamePage.Lobby)) store.setStatus(GameStatus.Waiting)
+        const isLobbyPage = pathname.includes(DuoGamePage.Lobby)
+        const hasGameStarted = pathname.includes(DuoGamePage.ClueGiver) || pathname.includes(DuoGamePage.Guesser)
 
-        if (store.status === GameStatus.Started && !store.myPlayer) {
+        if (isLobbyPage) store.setStatus(GameStatus.Waiting)
+
+        if (hasGameStarted && !store.myPlayer) {
             console.error('Player not found')
             router.push('/')
 
@@ -81,11 +97,27 @@ export const useDuoGameState = () => {
         store.setPlayers(Object.values(players))
     }, [store, socket])
 
+    const handleNotifyWordGuess = useCallback((gameStatus: GameStatus) => {
+        if (!socket) return
 
-    const handlers = {
+        router.push(`/duo/${gameId}/results?status=${gameStatus}`)
+    }, [gameId, router, store, socket])
+
+    const handleRequestWordGuessSuccessful = useCallback(() => {
+        if (!socket) return
+
+        socket.emit(SocketEvent.RequestWordGuessSuccessful, { gameId })
+
+        router.push(`/duo/${gameId}/results?status=${GameStatus.Win}`)
+    }, [gameId, router, store, socket])
+
+    const handlers: Handlers = {
         [SocketEvent.RequestStartGame]: handleRequestStartGame,
         [SocketEvent.NotifyGameStarted]: handleNotifyGameStarted,
-        [SocketEvent.NotifyPlayersUpdated]: handleNotifyPlayersUpdated
+        [SocketEvent.NotifyPlayersUpdated]: handleNotifyPlayersUpdated,
+        [SocketEvent.NotifyWordGuessUnsuccessful]: handleNotifyWordGuess,
+        [SocketEvent.RequestWordGuessSuccessful]: handleRequestWordGuessSuccessful,
+        [SocketEvent.NotifyWordGuessSuccessful]: handleNotifyWordGuess
     }
 
     return { gameId, ...store, handlers }
