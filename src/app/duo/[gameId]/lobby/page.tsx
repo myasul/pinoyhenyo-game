@@ -34,7 +34,7 @@ export default function LobbyPage() {
             role: DuoGameRole.Unknown
         }
 
-        socket.emit(SocketEvent.RequestJoinGame, { gameId, gameType: GameType.Duo, player })
+        socket.emit(SocketEvent.RequestJoinGame, { gameId, type: GameType.Duo, player })
     }, [gameId, socket])
 
     useEffect(() => {

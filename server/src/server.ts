@@ -51,22 +51,28 @@ type Player = {
     role: DuoGameRole
 }
 
-type Room = {
+type GameSettings = {
+    guessingTimeLimit: number
+    passLimit: number
+}
+
+type Game = {
     players: { [playerId: string]: Player }
-    gameType: GameType
+    type: GameType
+    settings: GameSettings
     remainingTime: number
     timeIntervalId?: NodeJS.Timeout
 }
 
-const rooms: Record<string, Room> = {}
-const defaultRoomValues = {
+const gameMap: Record<string, Game> = {}
+const defaultGameValues = {
     players: {},
-    gameType: GameType.Unknown
-}
-
-const GameDefaults = {
-    wordToGuess: 'Watermelon',
-    timeLimit: 20
+    type: GameType.Unknown,
+    settings: {
+        guessingTimeLimit: 20,
+        passLimit: 3
+    },
+    remainingTime: 0
 }
 
 const getDuoGameRole = (players: { [playerId: string]: Player }) => {
@@ -92,103 +98,107 @@ io.on('connection', (socket) => {
         const gameId = socket.data.gameId
 
         if (!gameId) {
+            // TODO: Redirect to home page
             console.error('Game ID not available')
             return
         }
 
-        const room = rooms[gameId]
+        const game = gameMap[gameId]
 
-        if (!room) {
-            console.error(`Room (ID: ${gameId}) not found.`)
+        if (!game) {
+            console.error(`Game (ID: ${gameId}) not found.`)
             return
         }
 
-        delete room.players[socket.id]
+        delete game.players[socket.id]
 
-        if (Object.keys(room.players).length === 0) {
-            delete rooms[gameId]
+        if (Object.keys(game.players).length === 0) {
+            delete gameMap[gameId]
             return
         }
 
-        io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { players: room.players })
+        io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { players: game.players })
     })
 
     socket.on(
         SocketEvent.RequestJoinGame,
-        (data: { gameId: string, gameType: GameType, player: Player }) => {
-            const { gameId, gameType, player } = data
+        (data: { gameId: string, type: GameType, player: Player }) => {
+            const { gameId, type, player } = data
 
             socket.join(gameId)
             socket.data.gameId = gameId
 
-            if (!rooms[gameId]) {
-                rooms[gameId] = { ...defaultRoomValues, gameType, remainingTime: GameDefaults.timeLimit }
+            if (!gameMap[gameId]) {
+                gameMap[gameId] = { ...defaultGameValues, type }
             }
 
             console.log(
-                `[${SocketEvent.RequestJoinGame}] Player joined room: `,
-                JSON.stringify({ gameId, gameType, player }, null, 2)
+                `[${SocketEvent.RequestJoinGame}] Player joined game: `,
+                JSON.stringify({ gameId, type, player }, null, 2)
             )
 
             // Only support Duo mode for now
-            if (gameType !== GameType.Duo) return
+            if (type !== GameType.Duo) return
 
-            const room = rooms[gameId]
+            const game = gameMap[gameId]
 
-            room.players[socket.id] = {
+            game.players[socket.id] = {
                 id: player.id,
                 name: player.name,
-                role: getDuoGameRole(room.players)
+                role: getDuoGameRole(game.players)
             }
 
-            io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { players: room.players })
+            io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { players: game.players })
 
-            console.log(`[${SocketEvent.RequestJoinGame}] rooms: `, JSON.stringify(rooms, null, 2))
+            console.log(`[${SocketEvent.RequestJoinGame}] gameMap: `, JSON.stringify(gameMap, null, 2))
         }
     )
 
     socket.on(SocketEvent.RequestStartGame, (data: { gameId: string, finalPlayers: Player[] }) => {
         const { gameId, finalPlayers } = data
 
-        const room = rooms[gameId]
+        const game = gameMap[gameId]
 
-        if (!room) {
-            console.error(`Room (ID: ${gameId}) not found.`)
+        if (!game) {
+            console.error(`Game (ID: ${gameId}) not found.`)
             return
         }
 
         const timeLimitIntervalId = setInterval(() => {
-            room.remainingTime -= 1
+            game.remainingTime -= 1
 
-            io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, room.remainingTime)
+            io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, game.remainingTime)
 
-            if (room.remainingTime === 0) {
+            console.log(`[${SocketEvent.RequestStartGame}] (${gameId}) Remaining time: ${game.remainingTime}`)
+
+            if (game.remainingTime === 0) {
                 clearInterval(timeLimitIntervalId)
                 io.to(gameId).emit(SocketEvent.NotifyWordGuessUnsuccessful)
             }
         }, 1000)
 
-        room.timeIntervalId = timeLimitIntervalId
+        game.timeIntervalId = timeLimitIntervalId
+        game.remainingTime = game.settings.guessingTimeLimit
 
         const gameStartedData = {
             finalPlayers,
-            wordToGuess: GameDefaults.wordToGuess,
-            remainingTime: GameDefaults.timeLimit,
+            wordToGuess: "Watermelon",
+            remainingTime: game.remainingTime,
             emoji: emoji.random().emoji
         }
 
-        io.to(gameId).emit(SocketEvent.NotifyGameStarted, gameStartedData)
+        io.to(gameId).emit(SocketEvent.NotifyGameStarted, { ...gameStartedData })
     })
 
     socket.on(SocketEvent.RequestWordGuessSuccessful, ({ gameId }: { gameId: string }) => {
-        const room = rooms[gameId]
+        const game = gameMap[gameId]
 
-        if (!room) {
-            console.error(`Room (ID: ${gameId}) not found.`)
+        if (!game) {
+            console.error(`Game (ID: ${gameId}) not found.`)
             return
         }
 
-        clearInterval(room.timeIntervalId)
+        clearInterval(game.timeIntervalId)
 
         io.to(gameId).emit(SocketEvent.NotifyWordGuessSuccessful)
     })
