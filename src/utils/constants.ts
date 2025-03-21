@@ -34,6 +34,7 @@ export enum SocketEvent {
     RequestStartGame = 'request:startGame',
     RequestUpdateTimeLimit = 'request:updateTimeLimit',
     RequestWordGuessSuccessful = 'request:wordGuessSuccessful',
+    RequestSwitchRole = 'request:switchRole',
 
     // Server initiated
     NotifyPlayersUpdated = 'notify:playersUpdated',
@@ -41,6 +42,7 @@ export enum SocketEvent {
     NotifyRemainingTimeUpdated = 'notify:remainingTimeUpdated',
     NotifyWordGuessUnsuccessful = 'notify:wordGuessUnsuccessful',
     NotifyWordGuessSuccessful = 'notify:wordGuessSuccessful',
+    NotifyRoleSwitched = 'notify:roleSwitched',
 
     // Default Socket Events
     Disconnect = 'disconnect',

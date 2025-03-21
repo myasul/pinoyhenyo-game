@@ -21,6 +21,7 @@ export enum SocketEvent {
     RequestStartGame = 'request:startGame',
     RequestUpdateTimeLimit = 'request:updateTimeLimit',
     RequestWordGuessSuccessful = 'request:wordGuessSuccessful',
+    RequestSwitchRole = 'request:switchRole',
 
     // Server initiated
     NotifyPlayersUpdated = 'notify:playersUpdated',
@@ -28,6 +29,7 @@ export enum SocketEvent {
     NotifyRemainingTimeUpdated = 'notify:remainingTimeUpdated',
     NotifyWordGuessUnsuccessful = 'notify:wordGuessUnsuccessful',
     NotifyWordGuessSuccessful = 'notify:wordGuessSuccessful',
+    NotifyRoleSwitched = 'notify:roleSwitched',
 
     // Default Socket Events
     Disconnect = 'disconnect',
@@ -148,13 +150,14 @@ io.on('connection', (socket) => {
                 role: getDuoGameRole(game.players)
             }
 
-            io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { players: game.players })
+            io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: game.players })
 
             console.log(`[${SocketEvent.RequestJoinGame}] gameMap: `, JSON.stringify(gameMap, null, 2))
         }
     )
 
     socket.on(SocketEvent.RequestStartGame, (data: { gameId: string, finalPlayers: Player[] }) => {
+        console.log('[SocketEvent.RequestStartGame]')
         const { gameId, finalPlayers } = data
 
         const game = gameMap[gameId]
@@ -163,6 +166,8 @@ io.on('connection', (socket) => {
             console.error(`Game (ID: ${gameId}) not found.`)
             return
         }
+
+        if (game.timeIntervalId) clearInterval(game.timeIntervalId)
 
         const timeLimitIntervalId = setInterval(() => {
             game.remainingTime -= 1
@@ -201,6 +206,23 @@ io.on('connection', (socket) => {
         clearInterval(game.timeIntervalId)
 
         io.to(gameId).emit(SocketEvent.NotifyWordGuessSuccessful)
+    })
+
+    socket.on(SocketEvent.RequestSwitchRole, ({ gameId }: { gameId: string }) => {
+        const game = gameMap[gameId]
+
+        if (!game) {
+            console.error(`Game (ID: ${gameId}) not found.`)
+            return
+        }
+
+        for (const player of Object.values(game.players)) {
+            player.role = player.role === DuoGameRole.Guesser
+                ? DuoGameRole.ClueGiver
+                : DuoGameRole.Guesser
+        }
+
+        socket.emit(SocketEvent.NotifyRoleSwitched, { updatedPlayers: game.players })
     })
 })
 

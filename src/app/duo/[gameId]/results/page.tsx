@@ -23,9 +23,11 @@ export default function ResultsPage() {
         if (!socket) return
 
         socket.on(SocketEvent.NotifyGameStarted, handlers[SocketEvent.NotifyGameStarted])
+        socket.on(SocketEvent.NotifyRoleSwitched, handlers[SocketEvent.NotifyRoleSwitched])
 
         return (() => {
             socket.off(SocketEvent.NotifyGameStarted)
+            socket.off(SocketEvent.NotifyRoleSwitched)
         })
     }, [socket, handlers])
 
@@ -33,7 +35,16 @@ export default function ResultsPage() {
         <div className="p-6 justify-center flex flex-col items-center gap-5">
             <h1 className="text-2xl font-bold">{GameResultText[status as GameStatus]}</h1>
             <div className="grid gap-4 mt-10">
-                <Button label='Play Again' onClick={handlers[SocketEvent.RequestStartGame]} variant='primary' />
+                <Button
+                    label='Play Again'
+                    onClick={handlers[SocketEvent.RequestStartGame]}
+                    variant='primary'
+                />
+                <Button
+                    label='Switch Roles'
+                    overrideTWStyle='bg-purple-200 text-purple-800 hover:bg-purple:300'
+                    onClick={handlers[SocketEvent.RequestSwitchRole]}
+                />
             </div>
         </div>
     )
