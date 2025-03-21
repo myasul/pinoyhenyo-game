@@ -25,7 +25,7 @@ type GameStartedCallbackProps = {
 type Handler<T extends any[] = any[]> = (...args: T) => void;
 
 type Handlers = {
-    [SocketEvent.RequestStartGame]: Handler<[string, any[]]>;
+    [SocketEvent.RequestStartGame]: Handler<[]>;
     [SocketEvent.NotifyGameStarted]: Handler<[GameStartedCallbackProps]>;
     [SocketEvent.NotifyPlayersUpdated]: Handler<[{ players: { [playerId: string]: Player } }]>;
     [SocketEvent.NotifyWordGuessUnsuccessful]: Handler<[GameStatus]>;
