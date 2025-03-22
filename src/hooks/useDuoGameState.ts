@@ -31,11 +31,13 @@ type Handlers = {
     [SocketEvent.RequestStartGame]: Handler<[]>;
     [SocketEvent.RequestWordGuessSuccessful]: Handler<[]>;
     [SocketEvent.RequestSwitchRole]: Handler<[]>;
+    [SocketEvent.RequestBackToLobby]: Handler<[]>;
     [SocketEvent.NotifyGameStarted]: Handler<[GameStartedCallbackProps]>;
     [SocketEvent.NotifyPlayersUpdated]: Handler<[{ updatedPlayers: PlayerMap }]>;
     [SocketEvent.NotifyWordGuessUnsuccessful]: Handler<[GameStatus]>;
     [SocketEvent.NotifyWordGuessSuccessful]: Handler<[GameStatus]>;
     [SocketEvent.NotifyRoleSwitched]: Handler<[{ updatedPlayers: PlayerMap }]>;
+    [SocketEvent.NotifyBackToLobby]: Handler<[]>;
 };
 
 export const useDuoGameState = () => {
@@ -125,15 +127,29 @@ export const useDuoGameState = () => {
         socket.emit(SocketEvent.RequestStartGame, { gameId, finalPlayers: Object.values(updatedPlayers) })
     }, [socket, gameId, store])
 
+    const handleRequestBackToLobby = useCallback(() => {
+        if (!socket) return
+
+        socket.emit(SocketEvent.RequestBackToLobby, { gameId })
+    }, [socket, router, gameId])
+
+    const handleNotifyBackToLobby = useCallback(() => {
+        if (!socket) return
+
+        router.push(`/duo/${gameId}/lobby`)
+    }, [socket, router, gameId])
+
     const handlers: Handlers = {
         [SocketEvent.RequestStartGame]: handleRequestStartGame,
         [SocketEvent.RequestSwitchRole]: handleRequestSwitchRole,
         [SocketEvent.RequestWordGuessSuccessful]: handleRequestWordGuessSuccessful,
+        [SocketEvent.RequestBackToLobby]: handleRequestBackToLobby,
         [SocketEvent.NotifyGameStarted]: handleNotifyGameStarted,
         [SocketEvent.NotifyPlayersUpdated]: handleNotifyPlayersUpdated,
         [SocketEvent.NotifyWordGuessUnsuccessful]: handleNotifyWordGuess,
         [SocketEvent.NotifyWordGuessSuccessful]: handleNotifyWordGuess,
         [SocketEvent.NotifyRoleSwitched]: handleNotifyRoleSwitched,
+        [SocketEvent.NotifyBackToLobby]: handleNotifyBackToLobby
     }
 
     return { gameId, ...store, handlers }

@@ -22,6 +22,7 @@ export enum SocketEvent {
     RequestUpdateTimeLimit = 'request:updateTimeLimit',
     RequestWordGuessSuccessful = 'request:wordGuessSuccessful',
     RequestSwitchRole = 'request:switchRole',
+    RequestBackToLobby = 'request:backToLobby',
 
     // Server initiated
     NotifyPlayersUpdated = 'notify:playersUpdated',
@@ -30,6 +31,7 @@ export enum SocketEvent {
     NotifyWordGuessUnsuccessful = 'notify:wordGuessUnsuccessful',
     NotifyWordGuessSuccessful = 'notify:wordGuessSuccessful',
     NotifyRoleSwitched = 'notify:roleSwitched',
+    NotifyBackToLobby = 'notify:backToLobby',
 
     // Default Socket Events
     Disconnect = 'disconnect',
@@ -222,7 +224,18 @@ io.on('connection', (socket) => {
                 : DuoGameRole.Guesser
         }
 
-        socket.emit(SocketEvent.NotifyRoleSwitched, { updatedPlayers: game.players })
+        io.to(gameId).emit(SocketEvent.NotifyRoleSwitched, { updatedPlayers: game.players })
+    })
+
+    socket.on(SocketEvent.RequestBackToLobby, ({ gameId }: { gameId: string }) => {
+        const game = gameMap[gameId]
+
+        if (!game) {
+            console.error(`Game (ID: ${gameId}) not found.`)
+            return
+        }
+
+        io.to(gameId).emit(SocketEvent.NotifyBackToLobby)
     })
 })
 

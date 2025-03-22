@@ -24,10 +24,12 @@ export default function ResultsPage() {
 
         socket.on(SocketEvent.NotifyGameStarted, handlers[SocketEvent.NotifyGameStarted])
         socket.on(SocketEvent.NotifyRoleSwitched, handlers[SocketEvent.NotifyRoleSwitched])
+        socket.on(SocketEvent.NotifyBackToLobby, handlers[SocketEvent.NotifyBackToLobby])
 
         return (() => {
             socket.off(SocketEvent.NotifyGameStarted)
             socket.off(SocketEvent.NotifyRoleSwitched)
+            socket.off(SocketEvent.NotifyBackToLobby)
         })
     }, [socket, handlers])
 
@@ -44,6 +46,11 @@ export default function ResultsPage() {
                     label='Switch Roles'
                     overrideTWStyle='bg-purple-200 text-purple-800 hover:bg-purple:300'
                     onClick={handlers[SocketEvent.RequestSwitchRole]}
+                />
+                <Button
+                    label='Back to Lobby'
+                    overrideTWStyle='bg-blue-200 text-blue-800 hover:bg-blue:300'
+                    onClick={handlers[SocketEvent.RequestBackToLobby]}
                 />
             </div>
         </div>
