@@ -1,6 +1,6 @@
 'use client';
 
-import {  useEffect } from 'react';
+import { useEffect } from 'react';
 import { Player } from '@/stores/duoGameStore';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator'
 import { useSocket } from '@/utils/socket';
@@ -21,6 +21,10 @@ export default function LobbyPage() {
 
     useEffect(() => {
         if (!socket) return
+
+        const isExistingPlayer = Object.values(players).some(player => player.id === socket.id)
+
+        if (isExistingPlayer) return
 
         const randomName = uniqueNamesGenerator({
             dictionaries: [adjectives, animals],
