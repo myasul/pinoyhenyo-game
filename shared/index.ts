@@ -1,33 +1,3 @@
-export enum GameStatus {
-    Started = 'STARTED',
-    Win = 'WIN',
-    Lose = 'LOSE',
-    Waiting = 'WAITING',
-    Unknown = 'UNKNOWN'
-}
-
-export enum DuoGameRole {
-    ClueGiver = 'CLUE_GIVER',
-    Guesser = 'GUESSER',
-    Unknown = 'UNKNOWN'
-}
-
-export enum GameType {
-    Classic = 'CLASSIC',
-    Duo = 'DUO',
-    Battle = 'BATTLE'
-}
-
-export enum OutdatedSocketEvent {
-    JoinRoom = 'joinRoom',
-    PlayerListUpdated = 'playerListUpdated',
-    Disconnect = 'disconnect',
-    StartGame = 'startGame',
-    GameStarted = 'gameStarted',
-    UpdateTimeLimit = 'updateTimeLimit',
-    TimeLimitReached = 'timeLimitReached'
-}
-
 export enum SocketEvent {
     // Client initiated
     RequestJoinGame = 'request:joinGame',
@@ -48,4 +18,17 @@ export enum SocketEvent {
 
     // Default Socket Events
     Disconnect = 'disconnect',
+}
+
+export enum DuoGameRole {
+    ClueGiver = 'CLUE_GIVER',
+    Guesser = 'GUESSER',
+    Unknown = 'UNKNOWN'
+}
+
+export enum GameType {
+    Classic = 'CLASSIC',
+    Duo = 'DUO',
+    Battle = 'BATTLE',
+    Unknown = 'UNKNOWN'
 }

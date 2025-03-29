@@ -2,14 +2,15 @@
 
 import { Button } from "@/components/Button"
 import { useDuoGameState } from "@/hooks/useDuoGameState"
-import { GameStatus, SocketEvent } from "@/utils/constants"
+import { GameStatus } from "@/utils/constants"
 import { useSocket } from "@/utils/socket"
 import { useSearchParams } from "next/navigation"
 import { useEffect } from "react"
+import { SocketEvent } from "shared"
 
 const GameResultText: Partial<Record<GameStatus, string>> = {
-    [GameStatus.Win]: 'YOU ARE HENYO!',
     [GameStatus.Lose]: 'TIME\'S UP!',
+    [GameStatus.Win]: 'YOU ARE HENYO!',
 }
 
 export default function ResultsPage() {

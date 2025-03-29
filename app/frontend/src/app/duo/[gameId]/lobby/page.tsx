@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
-import { Player } from '@/stores/duoGameStore';
-import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator'
-import { useSocket } from '@/utils/socket';
 import { Button } from '@/components/Button';
-import { DuoGameRole, GameType, SocketEvent } from '@/utils/constants';
 import { useDuoGameState } from '@/hooks/useDuoGameState';
+import { Player } from '@/stores/duoGameStore';
+import { useSocket } from '@/utils/socket';
+import { useEffect } from 'react';
+import { DuoGameRole, GameType, SocketEvent } from 'shared';
+import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator'
 
 const DuoGameRoleText = {
     [DuoGameRole.ClueGiver]: 'Clue Giver',

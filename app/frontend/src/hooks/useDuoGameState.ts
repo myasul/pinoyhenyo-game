@@ -1,11 +1,12 @@
 'use client'
 
 import { Player, useDuoGameStore } from "@/stores/duoGameStore"
-import { DuoGameRole, GameStatus, SocketEvent } from "@/utils/constants"
-import { useSocket } from "@/utils/socket"
+import { useSocket } from "../utils/socket"
 import { useParams, usePathname, useRouter } from "next/navigation"
 import { useCallback, useEffect } from "react"
 import { Socket } from "socket.io-client"
+import { DuoGameRole, SocketEvent } from "shared"
+import { GameStatus } from "@/utils/constants"
 
 type DuoLobbyPageParams = { gameId: string }
 

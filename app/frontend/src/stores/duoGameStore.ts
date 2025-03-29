@@ -1,4 +1,4 @@
-import { DuoGameRole, GameStatus } from '@/utils/constants'
+import { DuoGameRole } from 'shared'
 import { create } from 'zustand'
 
 export type Player = {
