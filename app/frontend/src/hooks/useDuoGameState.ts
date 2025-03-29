@@ -1,7 +1,7 @@
 'use client'
 
 import { Player, useDuoGameStore } from "@/stores/duoGameStore"
-import { useSocket } from "../utils/socket"
+import { useSocket } from "./useSocket"
 import { useParams, usePathname, useRouter } from "next/navigation"
 import { useCallback, useEffect } from "react"
 import { Socket } from "socket.io-client"

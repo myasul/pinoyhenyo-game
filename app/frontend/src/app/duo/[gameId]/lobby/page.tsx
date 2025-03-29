@@ -3,7 +3,7 @@
 import { Button } from '@/components/Button';
 import { useDuoGameState } from '@/hooks/useDuoGameState';
 import { Player } from '@/stores/duoGameStore';
-import { useSocket } from '@/utils/socket';
+import { useSocket } from '@/hooks/useSocket';
 import { useEffect } from 'react';
 import { DuoGameRole, GameType, SocketEvent } from 'shared';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator'

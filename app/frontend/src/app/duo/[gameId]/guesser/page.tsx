@@ -3,7 +3,7 @@
 import { Button } from "@/components/Button"
 import { useDuoGameState } from "@/hooks/useDuoGameState"
 import { GameStatus } from "@/utils/constants"
-import { useSocket } from "@/utils/socket"
+import { useSocket } from "@/hooks/useSocket"
 import { formatTime } from "@/utils/utils"
 import { useEffect } from "react"
 import { SocketEvent } from "shared"
