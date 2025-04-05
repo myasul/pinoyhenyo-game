@@ -16,6 +16,7 @@ export default function GuesserPage() {
         if (!socket) return
 
         socket.on(SocketEvent.NotifyRemainingTimeUpdated, setRemainingTime)
+        socket.on(SocketEvent.NotifyGuessWordChanged, handlers[SocketEvent.NotifyGuessWordChanged])
 
         socket.on(SocketEvent.NotifyWordGuessUnsuccessful, () => {
             const handler = handlers[SocketEvent.NotifyWordGuessUnsuccessful]
@@ -29,10 +30,12 @@ export default function GuesserPage() {
             handler(GameStatus.Win)
         })
 
+
         return () => {
             socket.off(SocketEvent.NotifyRemainingTimeUpdated)
             socket.off(SocketEvent.NotifyWordGuessUnsuccessful)
             socket.off(SocketEvent.NotifyWordGuessSuccessful)
+            socket.off(SocketEvent.NotifyGuessWordChanged)
         }
     }, [socket])
 
@@ -43,7 +46,11 @@ export default function GuesserPage() {
             <h1 className="text-2xl font-bold">Guesser ({myPlayer.name})</h1>
             <h1 className="text-2xl font-bold">{emoji}</h1>
             <h1 className="text-2xl font-bold">{formatTime(remainingTime)}</h1>
-            <Button className="bg-red-200 text-red-800 hover:bg-red:300" label="PASS!" />
+            <Button
+                className="bg-red-200 text-red-800 hover:bg-red:300"
+                label="PASS!"
+                onClick={handlers[SocketEvent.RequestChangeGuessWord]}
+            />
         </div>
     )
 }

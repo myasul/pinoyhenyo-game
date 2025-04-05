@@ -6,6 +6,7 @@ export enum SocketEvent {
     RequestWordGuessSuccessful = 'request:wordGuessSuccessful',
     RequestSwitchRole = 'request:switchRole',
     RequestBackToLobby = 'request:backToLobby',
+    RequestChangeGuessWord = 'request:changeGuessWord',
 
     // Server initiated
     NotifyPlayersUpdated = 'notify:playersUpdated',
@@ -15,6 +16,7 @@ export enum SocketEvent {
     NotifyWordGuessSuccessful = 'notify:wordGuessSuccessful',
     NotifyRoleSwitched = 'notify:roleSwitched',
     NotifyBackToLobby = 'notify:backToLobby',
+    NotifyGuessWordChanged = 'notify:guessWordChanged',
 
     // Default Socket Events
     Disconnect = 'disconnect',

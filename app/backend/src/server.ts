@@ -1,9 +1,13 @@
+import 'dotenv/config'
+
 import express from 'express'
 import http from 'http'
 import { Server } from 'socket.io'
 import cors from 'cors'
 import * as emoji from 'node-emoji'
 import { DuoGameRole, GameType, SocketEvent } from 'shared'
+import { supabase } from './lib/supabase'
+import { getRandomGuessWord, GuessWord } from './model/guess_word'
 
 const app = express()
 
@@ -31,6 +35,8 @@ type Game = {
     players: { [playerId: string]: Player }
     type: GameType
     settings: GameSettings
+    guessWord?: string
+    emoji?: string
     remainingTime: number
     timeIntervalId?: NodeJS.Timeout
 }
@@ -125,7 +131,7 @@ io.on('connection', (socket) => {
         }
     )
 
-    socket.on(SocketEvent.RequestStartGame, (data: { gameId: string, finalPlayers: Player[] }) => {
+    socket.on(SocketEvent.RequestStartGame, async (data: { gameId: string, finalPlayers: Player[] }) => {
         console.log('[SocketEvent.RequestStartGame]')
         const { gameId, finalPlayers } = data
 
@@ -143,8 +149,6 @@ io.on('connection', (socket) => {
 
             io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, game.remainingTime)
 
-            console.log(`[${SocketEvent.RequestStartGame}] (${gameId}) Remaining time: ${game.remainingTime}`)
-
             if (game.remainingTime === 0) {
                 clearInterval(timeLimitIntervalId)
                 io.to(gameId).emit(SocketEvent.NotifyWordGuessUnsuccessful)
@@ -153,12 +157,14 @@ io.on('connection', (socket) => {
 
         game.timeIntervalId = timeLimitIntervalId
         game.remainingTime = game.settings.guessingTimeLimit
+        game.guessWord = await getRandomGuessWord()
+        game.emoji = emoji.random().emoji
 
         const gameStartedData = {
             finalPlayers,
-            wordToGuess: "Watermelon",
+            guessWord: game.guessWord,
             remainingTime: game.remainingTime,
-            emoji: emoji.random().emoji
+            emoji: game.emoji
         }
 
         io.to(gameId).emit(SocketEvent.NotifyGameStarted, { ...gameStartedData })
@@ -203,6 +209,22 @@ io.on('connection', (socket) => {
         }
 
         io.to(gameId).emit(SocketEvent.NotifyBackToLobby)
+    })
+
+    socket.on(SocketEvent.RequestChangeGuessWord, async ({ gameId }: { gameId: string }) => {
+        const game = gameMap[gameId]
+
+        if (!game) {
+            console.error(`Game (ID: ${gameId}) not found.`)
+            return
+        }
+
+        const randomGuessWord = await getRandomGuessWord()
+
+        game.guessWord = randomGuessWord
+        game.emoji = emoji.random().emoji
+
+        io.to(gameId).emit(SocketEvent.NotifyGuessWordChanged, { guessWord: game.guessWord, emoji: game.emoji })
     })
 })
 

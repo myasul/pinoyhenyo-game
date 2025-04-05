@@ -10,13 +10,13 @@ export type Player = {
 export type DuoGameState = {
     hostId: string | null
     role: DuoGameRole | null
-    wordToGuess: string | null
+    guessWord: string | null
     emoji: string | null
     myPlayer: Player | null
     players: Player[]
     remainingTime: number
     setRole: (role: DuoGameRole) => void
-    setWordToGuess: (wordToGuess: string) => void
+    setGuessWord: (guessWord: string) => void
     setHostId: (hostId: string) => void
     setPlayers: (players: Player[]) => void
     setRemainingTime: (remainingTime: number) => void
@@ -27,14 +27,14 @@ export type DuoGameState = {
 export const useDuoGameStore = create<DuoGameState>((set) => ({
     hostId: null,
     role: null,
-    wordToGuess: null,
+    guessWord: null,
     emoji: null,
     players: [],
     remainingTime: 0,
     myPlayer: null,
     setRemainingTime: (remainingTime) => set({ remainingTime }),
     setRole: (role) => set({ role }),
-    setWordToGuess: (wordToGuess) => set({ wordToGuess }),
+    setGuessWord: (guessWord) => set({ guessWord }),
     setHostId: (hostId) => set({ hostId }),
     setPlayers: (players) => set({ players }),
     setEmoji: (emoji) => set({ emoji }),

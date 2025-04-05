@@ -4,7 +4,6 @@ import { Player, useDuoGameStore } from "@/stores/duoGameStore"
 import { useSocket } from "./useSocket"
 import { useParams, usePathname, useRouter } from "next/navigation"
 import { useCallback, useEffect } from "react"
-import { Socket } from "socket.io-client"
 import { DuoGameRole, SocketEvent } from "shared"
 import { GameStatus } from "@/utils/constants"
 
@@ -20,7 +19,7 @@ enum DuoGamePage {
 }
 
 type GameStartedCallbackProps = {
-    wordToGuess: string
+    guessWord: string
     finalPlayers: Player[]
     remainingTime: number
     emoji: string
@@ -33,12 +32,14 @@ type Handlers = {
     [SocketEvent.RequestWordGuessSuccessful]: Handler<[]>;
     [SocketEvent.RequestSwitchRole]: Handler<[]>;
     [SocketEvent.RequestBackToLobby]: Handler<[]>;
+    [SocketEvent.RequestChangeGuessWord]: Handler<[]>;
     [SocketEvent.NotifyGameStarted]: Handler<[GameStartedCallbackProps]>;
     [SocketEvent.NotifyPlayersUpdated]: Handler<[{ updatedPlayers: PlayerMap }]>;
     [SocketEvent.NotifyWordGuessUnsuccessful]: Handler<[GameStatus]>;
     [SocketEvent.NotifyWordGuessSuccessful]: Handler<[GameStatus]>;
     [SocketEvent.NotifyRoleSwitched]: Handler<[{ updatedPlayers: PlayerMap }]>;
     [SocketEvent.NotifyBackToLobby]: Handler<[]>;
+    [SocketEvent.NotifyGuessWordChanged]: Handler<[{guessWord: string, emoji: string}]>;
 };
 
 export const useDuoGameState = () => {
@@ -88,10 +89,23 @@ export const useDuoGameState = () => {
         socket.emit(SocketEvent.RequestSwitchRole, { gameId })
     }, [socket])
 
-    const handleNotifyGameStarted = useCallback(({ wordToGuess, finalPlayers, remainingTime, emoji }: GameStartedCallbackProps) => {
+    const handleRequestBackToLobby = useCallback(() => {
+        if (!socket) return
+
+        socket.emit(SocketEvent.RequestBackToLobby, { gameId })
+    }, [socket, router, gameId])
+
+
+    const handleRequestChangeGuessWord = useCallback(() => {
+        if (!socket) return
+
+        socket.emit(SocketEvent.RequestChangeGuessWord, { gameId })
+    }, [socket, router, gameId])
+
+    const handleNotifyGameStarted = useCallback(({ guessWord, finalPlayers, remainingTime, emoji }: GameStartedCallbackProps) => {
         if (!store.myPlayer) return
 
-        store.setWordToGuess(wordToGuess)
+        store.setGuessWord(guessWord)
         store.setPlayers(finalPlayers)
         store.setRemainingTime(remainingTime)
         store.setEmoji(emoji)
@@ -128,16 +142,18 @@ export const useDuoGameState = () => {
         socket.emit(SocketEvent.RequestStartGame, { gameId, finalPlayers: Object.values(updatedPlayers) })
     }, [socket, gameId, store])
 
-    const handleRequestBackToLobby = useCallback(() => {
-        if (!socket) return
-
-        socket.emit(SocketEvent.RequestBackToLobby, { gameId })
-    }, [socket, router, gameId])
-
     const handleNotifyBackToLobby = useCallback(() => {
         if (!socket) return
 
         router.push(`/duo/${gameId}/lobby`)
+    }, [socket, router, gameId])
+
+
+    const handleNotifyGuessWordChanged = useCallback(({ guessWord, emoji }: { guessWord: string, emoji: string }) => {        
+        if (!socket) return
+
+        store.setGuessWord(guessWord)
+        store.setEmoji(emoji)
     }, [socket, router, gameId])
 
     const handlers: Handlers = {
@@ -145,12 +161,14 @@ export const useDuoGameState = () => {
         [SocketEvent.RequestSwitchRole]: handleRequestSwitchRole,
         [SocketEvent.RequestWordGuessSuccessful]: handleRequestWordGuessSuccessful,
         [SocketEvent.RequestBackToLobby]: handleRequestBackToLobby,
+        [SocketEvent.RequestChangeGuessWord]: handleRequestChangeGuessWord,
         [SocketEvent.NotifyGameStarted]: handleNotifyGameStarted,
         [SocketEvent.NotifyPlayersUpdated]: handleNotifyPlayersUpdated,
         [SocketEvent.NotifyWordGuessUnsuccessful]: handleNotifyWordGuess,
         [SocketEvent.NotifyWordGuessSuccessful]: handleNotifyWordGuess,
         [SocketEvent.NotifyRoleSwitched]: handleNotifyRoleSwitched,
-        [SocketEvent.NotifyBackToLobby]: handleNotifyBackToLobby
+        [SocketEvent.NotifyBackToLobby]: handleNotifyBackToLobby,
+        [SocketEvent.NotifyGuessWordChanged]: handleNotifyGuessWordChanged,
     }
 
     return { gameId, ...store, handlers }
