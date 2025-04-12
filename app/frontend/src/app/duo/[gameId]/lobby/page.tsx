@@ -39,7 +39,7 @@ export default function LobbyPage() {
         }
 
         socket.emit(SocketEvent.RequestJoinGame, { gameId, type: GameType.Duo, player })
-    }, [gameId, socket])
+    }, [gameId, players, socket])
 
     useEffect(() => {
         if (!socket) return

@@ -94,7 +94,7 @@ io.on('connection', (socket) => {
             return
         }
 
-        io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { players: game.players })
+        io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: game.players })
     })
 
     socket.on(

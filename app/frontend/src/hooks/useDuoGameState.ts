@@ -25,7 +25,7 @@ type GameStartedCallbackProps = {
     emoji: string
 }
 
-type Handler<T extends any[] = any[]> = (...args: T) => void;
+type Handler<T extends unknown[] = unknown[]> = (...args: T) => void;
 
 type Handlers = {
     [SocketEvent.RequestStartGame]: Handler<[]>;
@@ -39,7 +39,7 @@ type Handlers = {
     [SocketEvent.NotifyWordGuessSuccessful]: Handler<[GameStatus]>;
     [SocketEvent.NotifyRoleSwitched]: Handler<[{ updatedPlayers: PlayerMap }]>;
     [SocketEvent.NotifyBackToLobby]: Handler<[]>;
-    [SocketEvent.NotifyGuessWordChanged]: Handler<[{guessWord: string, emoji: string}]>;
+    [SocketEvent.NotifyGuessWordChanged]: Handler<[{ guessWord: string, emoji: string }]>;
 };
 
 export const useDuoGameState = () => {
@@ -61,7 +61,7 @@ export const useDuoGameState = () => {
         const isLobbyPage = pathname.includes(DuoGamePage.Lobby)
         const hasGameStarted = pathname.includes(DuoGamePage.ClueGiver) || pathname.includes(DuoGamePage.Guesser)
 
-        if (hasGameStarted && !store.myPlayer) {
+        if (hasGameStarted && !store.myPlayer && !isLobbyPage) {
             console.error('Player not found')
             router.push('/')
 
@@ -81,26 +81,26 @@ export const useDuoGameState = () => {
         socket.emit(SocketEvent.RequestWordGuessSuccessful, { gameId })
 
         router.push(`/duo/${gameId}/results?status=${GameStatus.Win}`)
-    }, [gameId, router, store, socket])
+    }, [gameId, router, socket])
 
     const handleRequestSwitchRole = useCallback(() => {
         if (!socket) return
 
         socket.emit(SocketEvent.RequestSwitchRole, { gameId })
-    }, [socket])
+    }, [socket, gameId])
 
     const handleRequestBackToLobby = useCallback(() => {
         if (!socket) return
 
         socket.emit(SocketEvent.RequestBackToLobby, { gameId })
-    }, [socket, router, gameId])
+    }, [socket, gameId])
 
 
     const handleRequestChangeGuessWord = useCallback(() => {
         if (!socket) return
 
         socket.emit(SocketEvent.RequestChangeGuessWord, { gameId })
-    }, [socket, router, gameId])
+    }, [socket, gameId])
 
     const handleNotifyGameStarted = useCallback(({ guessWord, finalPlayers, remainingTime, emoji }: GameStartedCallbackProps) => {
         if (!store.myPlayer) return
@@ -119,7 +119,13 @@ export const useDuoGameState = () => {
 
         const updatedPlayerWithRole = updatedPlayers[socket.id]
 
-        if (Object.keys(updatedPlayers).length === 1) store.setHostId(updatedPlayerWithRole.id)
+        if (!updatedPlayerWithRole) return
+
+        const firstPlayerJoined = Object.keys(updatedPlayers).length === 1
+
+        if (firstPlayerJoined) {
+            store.setHostId(updatedPlayerWithRole.id)
+        }
 
         store.setMyPlayer(updatedPlayerWithRole)
         store.setPlayers(Object.values(updatedPlayers))
@@ -129,7 +135,7 @@ export const useDuoGameState = () => {
         if (!socket) return
 
         router.push(`/duo/${gameId}/results?status=${gameStatus}`)
-    }, [gameId, router, store, socket])
+    }, [gameId, router, socket])
 
     const handleNotifyRoleSwitched = useCallback(({ updatedPlayers }: { updatedPlayers: PlayerMap }) => {
         if (!socket) return
@@ -149,12 +155,12 @@ export const useDuoGameState = () => {
     }, [socket, router, gameId])
 
 
-    const handleNotifyGuessWordChanged = useCallback(({ guessWord, emoji }: { guessWord: string, emoji: string }) => {        
+    const handleNotifyGuessWordChanged = useCallback(({ guessWord, emoji }: { guessWord: string, emoji: string }) => {
         if (!socket) return
 
         store.setGuessWord(guessWord)
         store.setEmoji(emoji)
-    }, [socket, router, gameId])
+    }, [socket, store])
 
     const handlers: Handlers = {
         [SocketEvent.RequestStartGame]: handleRequestStartGame,

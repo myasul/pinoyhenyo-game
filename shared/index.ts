@@ -20,6 +20,7 @@ export enum SocketEvent {
 
     // Default Socket Events
     Disconnect = 'disconnect',
+    Connect = 'connect',
 }
 
 export enum DuoGameRole {

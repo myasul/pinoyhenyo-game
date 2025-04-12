@@ -28,7 +28,7 @@ export default function ClueGiverPage() {
             socket.off(SocketEvent.NotifyWordGuessUnsuccessful)
             socket.off(SocketEvent.NotifyGuessWordChanged)
         }
-    }, [socket])
+    }, [socket, handlers, setRemainingTime])
 
     if (!myPlayer) return null
 
