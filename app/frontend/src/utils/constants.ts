@@ -5,3 +5,8 @@ export enum GameStatus {
     Waiting = 'WAITING',
     Unknown = 'UNKNOWN'
 }
+
+export enum Environment {
+    Development = 'development',
+    Production = 'production'
+}

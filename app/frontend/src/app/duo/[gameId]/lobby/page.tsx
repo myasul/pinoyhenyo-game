@@ -7,6 +7,7 @@ import { useSocket } from '@/hooks/useSocket';
 import { useEffect } from 'react';
 import { DuoGameRole, GameType, SocketEvent } from 'shared';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator'
+import { useRouter } from 'next/navigation';
 
 const DuoGameRoleText = {
     [DuoGameRole.ClueGiver]: 'Clue Giver',
@@ -15,7 +16,8 @@ const DuoGameRoleText = {
 }
 
 export default function LobbyPage() {
-    const { gameId, players, myPlayer, hostId, handlers } = useDuoGameState()
+    const { gameId, players, myPlayer, handlers } = useDuoGameState()
+    const router = useRouter()
     const socket = useSocket()
 
 
@@ -53,29 +55,44 @@ export default function LobbyPage() {
         })
     }, [socket, myPlayer, handlers])
 
+    const handleBackClick = () => {
+        router.push('/')
+    }
+
+    const handleCopyLinkClick = async () => {
+        try {
+            // TODO: Change the text to Copied when successfully copied.
+            await navigator.clipboard.writeText(window.location.href)
+        } catch (err) {
+            console.error('Failed to copy: ', err)
+        }
+    }
+
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold">Lobby ({gameId})</h1>
-            <h2 className='mt-4'>Players: </h2>
-            <ul className='list-disc ml-6'>
-                {Object.values(players).map((player, index) => (
-                    <li key={index}>
-                        {player.name} - {DuoGameRoleText[player.role]}
-                        {player.id === myPlayer?.id && (<b> (me)</b>)}
-                    </li>
-                ))}
-            </ul>
-            {
-                hostId === myPlayer?.id && (
-                    <Button
-                        variant='primary'
-                        label='Start Game'
-                        disabled={!(Object.values(players).length === 2 && myPlayer)}
-                        className='mt-4'
-                        onClick={handlers[SocketEvent.RequestStartGame]}
-                    />
-                )
-            }
+        <div className="p-6 flex flex-col justify-between h-full">
+            <div>
+                <h1 className="text-2xl font-bold">Lobby</h1>
+                <h2 className='mt-4'>Players: </h2>
+                <ul className='list-disc ml-6'>
+                    {Object.values(players).map((player, index) => (
+                        <li key={index}>
+                            {player.name} - {DuoGameRoleText[player.role]}
+                            {player.id === myPlayer?.id && (<b> (me)</b>)}
+                        </li>
+                    ))}
+                </ul>
+                <Button label='Copy Lobby Link' className='w-full text-gray-500 mt-10' onClick={handleCopyLinkClick} />
+            </div>
+            <div className='flex gap-1'>
+                <Button label='<' className='w-20 text-gray-500' onClick={handleBackClick} />
+                <Button
+                    variant='primary'
+                    label='Start Game'
+                    disabled={!(Object.values(players).length === 2 && myPlayer)}
+                    className='flex-1'
+                    onClick={handlers[SocketEvent.RequestStartGame]}
+                />
+            </div>
         </div>
     );
 }
