@@ -55,17 +55,15 @@ const defaultGameValues = {
 const getDuoGameRole = (players: { [playerId: string]: Player }) => {
     const playerCount = Object.keys(players).length
 
-    if (playerCount === 0) return DuoGameRole.Guesser
-
-    if (playerCount === 1) {
+    if (playerCount === 0) {
+        return DuoGameRole.Guesser
+    } else {
         const player = Object.values(players)[0]
 
         return player.role === DuoGameRole.Guesser
             ? DuoGameRole.ClueGiver
             : DuoGameRole.Guesser
     }
-
-    return DuoGameRole.ClueGiver
 }
 
 io.on('connection', (socket) => {
