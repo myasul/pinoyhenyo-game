@@ -23,9 +23,6 @@ export function CountdownCircle({ duration, timeRemaining, onComplete }: Countdo
     const progress = timeRemaining / duration;
     const strokeDashoffset = circumference * (1 - progress);
 
-    console.log('[CountdownCircle] strokeDashoffset:', strokeDashoffset);
-    console.log('[CountdownCircle] progress:', progress);
-
     return (
         <div className="w-32 h-32 flex items-center justify-center relative">
             <svg

@@ -4,9 +4,7 @@ import express from 'express'
 import http from 'http'
 import { Server } from 'socket.io'
 import cors from 'cors'
-import * as emoji from 'node-emoji'
 import { DuoGameRole, GameType, SocketEvent } from 'shared'
-import { supabase } from './lib/supabase'
 import { getRandomGuessWord, GuessWord } from './model/guess_word'
 
 const app = express()
@@ -36,7 +34,6 @@ type Game = {
     type: GameType
     settings: GameSettings
     guessWord?: string
-    emoji?: string
     timeRemaining: number
     timeIntervalId?: NodeJS.Timeout
 }
@@ -44,7 +41,6 @@ type Game = {
 type GameStartedData = {
     finalPlayers: Player[]
     guessWord: string
-    emoji: string
     duration: number
     timeRemaining: number
     passesRemaining: number
@@ -165,7 +161,6 @@ io.on('connection', (socket) => {
         game.timeIntervalId = timeLimitIntervalId
         game.timeRemaining = game.settings.duration
         game.guessWord = await getRandomGuessWord()
-        game.emoji = emoji.random().emoji
 
         const gameStartedData: GameStartedData = {
             finalPlayers,
@@ -173,7 +168,6 @@ io.on('connection', (socket) => {
             timeRemaining: game.timeRemaining,
             passesRemaining: game.settings.passLimit,
             duration: game.settings.duration,
-            emoji: game.emoji
         }
 
         io.to(gameId).emit(SocketEvent.NotifyGameStarted, { ...gameStartedData })
@@ -231,9 +225,8 @@ io.on('connection', (socket) => {
         const randomGuessWord = await getRandomGuessWord()
 
         game.guessWord = randomGuessWord
-        game.emoji = emoji.random().emoji
 
-        io.to(gameId).emit(SocketEvent.NotifyGuessWordChanged, { guessWord: game.guessWord, emoji: game.emoji })
+        io.to(gameId).emit(SocketEvent.NotifyGuessWordChanged, { guessWord: game.guessWord })
     })
 })
 

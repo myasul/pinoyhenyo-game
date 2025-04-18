@@ -23,7 +23,6 @@ type GameStartedCallbackProps = {
     finalPlayers: Player[]
     timeRemaining: number
     duration: number
-    emoji: string
     passesRemaining: number
 }
 
@@ -41,7 +40,7 @@ type Handlers = {
     [SocketEvent.NotifyWordGuessSuccessful]: Handler<[GameStatus]>;
     [SocketEvent.NotifyRoleSwitched]: Handler<[{ updatedPlayers: PlayerMap }]>;
     [SocketEvent.NotifyBackToLobby]: Handler<[]>;
-    [SocketEvent.NotifyGuessWordChanged]: Handler<[{ guessWord: string, emoji: string }]>;
+    [SocketEvent.NotifyGuessWordChanged]: Handler<[{ guessWord: string }]>;
 };
 
 export const useDuoGameState = () => {
@@ -101,6 +100,8 @@ export const useDuoGameState = () => {
     const handleRequestChangeGuessWord = useCallback(() => {
         if (!socket) return
 
+        console.log('[handleRequestChangeGuessWord] called')
+
         socket.emit(SocketEvent.RequestChangeGuessWord, { gameId })
     }, [socket, gameId])
 
@@ -108,7 +109,6 @@ export const useDuoGameState = () => {
         finalPlayers,
         duration,
         guessWord,
-        emoji,
         timeRemaining,
         passesRemaining
     }: GameStartedCallbackProps) => {
@@ -117,7 +117,6 @@ export const useDuoGameState = () => {
         store.setGuessWord(guessWord)
         store.setPlayers(finalPlayers)
         store.setTimeRemaining(timeRemaining)
-        store.setEmoji(emoji)
         store.setDuration(duration)
         store.setPassesRemaining(passesRemaining)
 
@@ -166,11 +165,10 @@ export const useDuoGameState = () => {
     }, [socket, router, gameId])
 
 
-    const handleNotifyGuessWordChanged = useCallback(({ guessWord, emoji }: { guessWord: string, emoji: string }) => {
+    const handleNotifyGuessWordChanged = useCallback(({ guessWord }: { guessWord: string }) => {
         if (!socket) return
 
         store.setGuessWord(guessWord)
-        store.setEmoji(emoji)
     }, [socket, store])
 
     const handlers: Handlers = {
