@@ -1,16 +1,17 @@
 'use client'
+import { FastForward, Pause } from "react-feather"
+import { useEffect } from "react"
+import { SocketEvent } from "shared"
 
 import { Button } from "@/components/Button"
 import { useDuoGameState } from "@/hooks/useDuoGameState"
 import { GameStatus } from "@/utils/constants"
 import { useSocket } from "@/hooks/useSocket"
-import { useEffect } from "react"
-import { SocketEvent } from "shared"
 import { CountdownCircle } from "@/components/CountdownCircle"
-import { FastForward, Pause } from "react-feather"
+import { TvStaticPlaceholder } from "@/components/TvStaticPlaceholder"
 
 export default function GuesserPage() {
-    const { setTimeRemaining, myPlayer, emoji, timeRemaining, handlers, duration, passesRemaining } = useDuoGameState()
+    const { setTimeRemaining, myPlayer, guessWord, timeRemaining, handlers, duration, passesRemaining } = useDuoGameState()
     const socket = useSocket()
 
     useEffect(() => {
@@ -49,11 +50,13 @@ export default function GuesserPage() {
                 <CountdownCircle duration={duration} timeRemaining={timeRemaining} />
                 <span className="text-3xl font-extrabold text-red-500">{passesRemaining}</span>
             </header>
-            <section className="flex flex-col items-center justify-between gap-4 w-full h-full">
+            <section className="flex flex-col items-center gap-4 w-full h-full">
                 <div className="border-gray-300 border rounded-md p-2 w-full bg-gray-100">
                     Ask a yes-or-no questions to figure out the word. Start by narrowing down the category (person, place, object, nature, food, action). Then keep guessing!!
                 </div>
-                <h1 className="text-2xl font-bold flex-1">{emoji}</h1>
+                <div className="h-full pt-10">
+                    <TvStaticPlaceholder word={guessWord} />
+                </div>
             </section>
             <footer className="flex w-full">
                 <Button label={<FastForward size='28' strokeWidth='2.5' />} className='w-full bg-red-200 text-red-800 hover:bg-red:300' onClick={handlers[SocketEvent.RequestChangeGuessWord]} />
