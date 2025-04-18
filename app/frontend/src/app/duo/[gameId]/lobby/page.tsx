@@ -10,6 +10,7 @@ import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generato
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, Play } from 'react-feather';
 import { InviteLinkBtn } from '@/components/InviteLink';
+import { WaveButton } from '@/components/WaveButton';
 
 const DuoGameRoleText = {
     [DuoGameRole.ClueGiver]: 'Clue Giver',
@@ -81,14 +82,16 @@ export default function LobbyPage() {
                 </section>
             </div>
             <footer className='flex gap-1'>
-                <Button label={<Play className='transform scale-x-[-1]' size='25' strokeWidth='2.5' />} className='w-20 text-gray-500' onClick={handleBackClick} />
-                <Button
-                    variant='primary'
-                    label='Start Game'
+                <WaveButton bgColor='bg-gray-300' className='w-1/6' textColor='text-gray-600' onClick={handleBackClick}>
+                    <Play className='transform scale-x-[-1]' size='25' strokeWidth='2.5' />
+                </WaveButton>
+                <WaveButton
                     disabled={!(Object.values(players).length === 2 && myPlayer)}
                     className='flex-1 text-xl'
                     onClick={handlers[SocketEvent.RequestStartGame]}
-                />
+                >
+                    StartGame
+                </WaveButton>
             </footer>
         </main>
     );

@@ -60,7 +60,7 @@ export default function GuesserPage() {
                 </div>
             </section>
             <footer className="flex w-full">
-                <WaveButton textColor='text-white' bgColor='bg-yellow-400' onClick={handlers[SocketEvent.RequestChangeGuessWord]}>
+                <WaveButton onClick={handlers[SocketEvent.RequestChangeGuessWord]}>
                     <FastForward size='28' strokeWidth='2.5' />
                 </WaveButton>
             </footer>
