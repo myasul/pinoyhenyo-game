@@ -9,6 +9,7 @@ import { GameStatus } from "@/utils/constants"
 import { useSocket } from "@/hooks/useSocket"
 import { CountdownCircle } from "@/components/CountdownCircle"
 import { TvStaticPlaceholder } from "@/components/TvStaticPlaceholder"
+import { WaveButton } from "@/components/WaveButton"
 
 export default function GuesserPage() {
     const { setTimeRemaining, myPlayer, guessWord, timeRemaining, handlers, duration, passesRemaining } = useDuoGameState()
@@ -59,7 +60,9 @@ export default function GuesserPage() {
                 </div>
             </section>
             <footer className="flex w-full">
-                <Button label={<FastForward size='28' strokeWidth='2.5' />} className='w-full bg-red-200 text-red-800 hover:bg-red:300' onClick={handlers[SocketEvent.RequestChangeGuessWord]} />
+                <WaveButton textColor='text-white' bgColor='bg-yellow-400' onClick={handlers[SocketEvent.RequestChangeGuessWord]}>
+                    <FastForward size='28' strokeWidth='2.5' />
+                </WaveButton>
             </footer>
         </main>
     )
