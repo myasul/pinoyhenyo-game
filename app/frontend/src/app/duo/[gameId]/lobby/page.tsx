@@ -9,6 +9,7 @@ import { DuoGameRole, GameType, SocketEvent } from 'shared';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator'
 import { useRouter } from 'next/navigation';
 import { ChevronLeft } from 'react-feather';
+import { InviteLinkBtn } from '@/components/InviteLink';
 
 const DuoGameRoleText = {
     [DuoGameRole.ClueGiver]: 'Clue Giver',
@@ -60,21 +61,12 @@ export default function LobbyPage() {
         router.push('/')
     }
 
-    const handleCopyLinkClick = async () => {
-        try {
-            // TODO: Change the text to Copied when successfully copied.
-            await navigator.clipboard.writeText(window.location.href)
-        } catch (err) {
-            console.error('Failed to copy: ', err)
-        }
-    }
-
     return (
         <main className="p-6 flex flex-col justify-between h-full">
             <div className='flex flex-col gap-6'>
-                <section>
-                    <h1 className='text-3xl mb-2 font-extrabold'>Players: </h1>
-                    <ul className='list-disc ml-6'>
+                <section className='flex flex-col items-center'>
+                    <h1 className='text-3xl mb-2 font-extrabold'>Players</h1>
+                    <ul className='list-disc ml-6 mb-5'>
                         {Object.values(players).map((player, index) => (
                             <li key={index}>
                                 {player.name} - {DuoGameRoleText[player.role]}
@@ -82,10 +74,10 @@ export default function LobbyPage() {
                             </li>
                         ))}
                     </ul>
-                    <Button label='Copy invite link' className='w-full text-gray-500 mt-10 text-lg' onClick={handleCopyLinkClick} />
+                    <InviteLinkBtn />
                 </section>
                 <section>
-                    <h1 className='text-3xl mb-2 font-extrabold'>Settings: </h1>
+                    <h1 className='text-3xl mb-2 font-extrabold'>Settings</h1>
                 </section>
             </div>
             <footer className='flex gap-1'>

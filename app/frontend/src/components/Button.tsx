@@ -14,7 +14,7 @@ export const Button: React.FC<ButtonProps> = ({ className, label, onClick, varia
     const variantStyle =
         variant === 'primary'
             ? "bg-green-500 text-white hover:bg-green-600"
-            : "bg-gray-200 text-gray-800 hover:bg-gray:500"
+            : "bg-gray-200 text-gray-800 hover:bg-gray:600"
 
     const disabledStyle = "opacity-50 cursor-not-allowed"
 
