@@ -9,14 +9,14 @@ import { SocketEvent } from "shared"
 import { useDuoGameState } from "@/hooks/useDuoGameState"
 
 export default function ClueGiverPage() {
-    const { myPlayer, setRemainingTime, remainingTime, guessWord, handlers } = useDuoGameState()
+    const { myPlayer, setTimeRemaining, timeRemaining, guessWord, handlers } = useDuoGameState()
     const socket = useSocket()
 
     useEffect(() => {
         if (!socket) return
 
         socket.on(SocketEvent.NotifyGuessWordChanged, handlers[SocketEvent.NotifyGuessWordChanged])
-        socket.on(SocketEvent.NotifyRemainingTimeUpdated, setRemainingTime)
+        socket.on(SocketEvent.NotifyRemainingTimeUpdated, setTimeRemaining)
         socket.on(SocketEvent.NotifyWordGuessUnsuccessful, () => {
             const handler = handlers[SocketEvent.NotifyWordGuessUnsuccessful]
 
@@ -28,14 +28,14 @@ export default function ClueGiverPage() {
             socket.off(SocketEvent.NotifyWordGuessUnsuccessful)
             socket.off(SocketEvent.NotifyGuessWordChanged)
         }
-    }, [socket, handlers, setRemainingTime])
+    }, [socket, handlers, setTimeRemaining])
 
     if (!myPlayer) return null
 
     return (
         <div className="p-6 justify-center flex flex-col items-center gap-5">
             <h1 className="text-2xl font-bold">Clue Giver ({myPlayer.name})</h1>
-            <h2 className="text-xl font-bold">{formatTime(remainingTime)}</h2>
+            <h2 className="text-xl font-bold">{formatTime(timeRemaining)}</h2>
             <h2 className="text-xl font-bold">{guessWord}</h2>
             <Button variant="primary" label="CORRECT!" onClick={handlers[SocketEvent.RequestWordGuessSuccessful]} />
         </div>

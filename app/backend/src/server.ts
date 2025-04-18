@@ -27,7 +27,7 @@ type Player = {
 }
 
 type GameSettings = {
-    guessingTimeLimit: number
+    duration: number
     passLimit: number
 }
 
@@ -37,8 +37,17 @@ type Game = {
     settings: GameSettings
     guessWord?: string
     emoji?: string
-    remainingTime: number
+    timeRemaining: number
     timeIntervalId?: NodeJS.Timeout
+}
+
+type GameStartedData = {
+    finalPlayers: Player[]
+    guessWord: string
+    emoji: string
+    duration: number
+    timeRemaining: number
+    passesRemaining: number
 }
 
 const gameMap: Record<string, Game> = {}
@@ -46,10 +55,10 @@ const defaultGameValues = {
     players: {},
     type: GameType.Unknown,
     settings: {
-        guessingTimeLimit: 20,
+        duration: 60,
         passLimit: 3
     },
-    remainingTime: 0
+    timeRemaining: 0
 }
 
 const getDuoGameRole = (players: { [playerId: string]: Player }) => {
@@ -143,25 +152,27 @@ io.on('connection', (socket) => {
         if (game.timeIntervalId) clearInterval(game.timeIntervalId)
 
         const timeLimitIntervalId = setInterval(() => {
-            game.remainingTime -= 1
+            game.timeRemaining -= 1
 
-            io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, game.remainingTime)
+            io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, game.timeRemaining)
 
-            if (game.remainingTime === 0) {
+            if (game.timeRemaining === 0) {
                 clearInterval(timeLimitIntervalId)
                 io.to(gameId).emit(SocketEvent.NotifyWordGuessUnsuccessful)
             }
         }, 1000)
 
         game.timeIntervalId = timeLimitIntervalId
-        game.remainingTime = game.settings.guessingTimeLimit
+        game.timeRemaining = game.settings.duration
         game.guessWord = await getRandomGuessWord()
         game.emoji = emoji.random().emoji
 
-        const gameStartedData = {
+        const gameStartedData: GameStartedData = {
             finalPlayers,
-            guessWord: game.guessWord,
-            remainingTime: game.remainingTime,
+            guessWord: game.guessWord || '',
+            timeRemaining: game.timeRemaining,
+            passesRemaining: game.settings.passLimit,
+            duration: game.settings.duration,
             emoji: game.emoji
         }
 

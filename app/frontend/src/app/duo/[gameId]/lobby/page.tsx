@@ -8,7 +8,7 @@ import { useEffect } from 'react';
 import { DuoGameRole, GameType, SocketEvent } from 'shared';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator'
 import { useRouter } from 'next/navigation';
-import { ChevronLeft } from 'react-feather';
+import { ChevronLeft, Play } from 'react-feather';
 import { InviteLinkBtn } from '@/components/InviteLink';
 
 const DuoGameRoleText = {
@@ -76,12 +76,12 @@ export default function LobbyPage() {
                     </ul>
                     <InviteLinkBtn />
                 </section>
-                <section>
+                <section className='flex flex-col items-center'>
                     <h1 className='text-3xl mb-2 font-extrabold'>Settings</h1>
                 </section>
             </div>
             <footer className='flex gap-1'>
-                <Button label={<ChevronLeft size='28' strokeWidth='2.5' />} className='w-20 text-gray-500' onClick={handleBackClick} />
+                <Button label={<Play className='transform scale-x-[-1]' size='25' strokeWidth='2.5' />} className='w-20 text-gray-500' onClick={handleBackClick} />
                 <Button
                     variant='primary'
                     label='Start Game'

@@ -21,8 +21,10 @@ enum DuoGamePage {
 type GameStartedCallbackProps = {
     guessWord: string
     finalPlayers: Player[]
-    remainingTime: number
+    timeRemaining: number
+    duration: number
     emoji: string
+    passesRemaining: number
 }
 
 type Handler<T extends unknown[] = unknown[]> = (...args: T) => void;
@@ -102,13 +104,22 @@ export const useDuoGameState = () => {
         socket.emit(SocketEvent.RequestChangeGuessWord, { gameId })
     }, [socket, gameId])
 
-    const handleNotifyGameStarted = useCallback(({ guessWord, finalPlayers, remainingTime, emoji }: GameStartedCallbackProps) => {
+    const handleNotifyGameStarted = useCallback(({
+        finalPlayers,
+        duration,
+        guessWord,
+        emoji,
+        timeRemaining,
+        passesRemaining
+    }: GameStartedCallbackProps) => {
         if (!store.myPlayer) return
 
         store.setGuessWord(guessWord)
         store.setPlayers(finalPlayers)
-        store.setRemainingTime(remainingTime)
+        store.setTimeRemaining(timeRemaining)
         store.setEmoji(emoji)
+        store.setDuration(duration)
+        store.setPassesRemaining(passesRemaining)
 
         if (store.myPlayer.role === DuoGameRole.ClueGiver) router.push(`/duo/${gameId}/clue-giver`)
         if (store.myPlayer.role === DuoGameRole.Guesser) router.push(`/duo/${gameId}/guesser`)
