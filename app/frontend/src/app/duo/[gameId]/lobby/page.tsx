@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { DuoGameRole, GameType, SocketEvent } from 'shared';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator'
 import { useRouter } from 'next/navigation';
+import { ChevronLeft } from 'react-feather';
 
 const DuoGameRoleText = {
     [DuoGameRole.ClueGiver]: 'Clue Giver',
@@ -69,30 +70,34 @@ export default function LobbyPage() {
     }
 
     return (
-        <div className="p-6 flex flex-col justify-between h-full">
-            <div>
-                <h1 className="text-2xl font-bold">Lobby</h1>
-                <h2 className='mt-4'>Players: </h2>
-                <ul className='list-disc ml-6'>
-                    {Object.values(players).map((player, index) => (
-                        <li key={index}>
-                            {player.name} - {DuoGameRoleText[player.role]}
-                            {player.id === myPlayer?.id && (<b> (me)</b>)}
-                        </li>
-                    ))}
-                </ul>
-                <Button label='Copy Lobby Link' className='w-full text-gray-500 mt-10' onClick={handleCopyLinkClick} />
+        <main className="p-6 flex flex-col justify-between h-full">
+            <div className='flex flex-col gap-6'>
+                <section>
+                    <h1 className='text-3xl mb-2 font-extrabold'>Players: </h1>
+                    <ul className='list-disc ml-6'>
+                        {Object.values(players).map((player, index) => (
+                            <li key={index}>
+                                {player.name} - {DuoGameRoleText[player.role]}
+                                {player.id === myPlayer?.id && (<b> (you)</b>)}
+                            </li>
+                        ))}
+                    </ul>
+                    <Button label='Copy invite link' className='w-full text-gray-500 mt-10 text-lg' onClick={handleCopyLinkClick} />
+                </section>
+                <section>
+                    <h1 className='text-3xl mb-2 font-extrabold'>Settings: </h1>
+                </section>
             </div>
-            <div className='flex gap-1'>
-                <Button label='<' className='w-20 text-gray-500' onClick={handleBackClick} />
+            <footer className='flex gap-1'>
+                <Button label={<ChevronLeft size='28' strokeWidth='2.5' />} className='w-20 text-gray-500' onClick={handleBackClick} />
                 <Button
                     variant='primary'
                     label='Start Game'
                     disabled={!(Object.values(players).length === 2 && myPlayer)}
-                    className='flex-1'
+                    className='flex-1 text-xl'
                     onClick={handlers[SocketEvent.RequestStartGame]}
                 />
-            </div>
-        </div>
+            </footer>
+        </main>
     );
 }

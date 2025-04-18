@@ -20,7 +20,7 @@ export default function HomePage() {
 
   return (
     <div className="p-6 flex flex-col items-center">
-      <h1 className="text-3xl font-bold mb-4">Henyo</h1>
+      <h1 className="mb-4 font-extrabold text-8xl">Henyo</h1>
       <p className="mb-6">Choose a game mode:</p>
       <div className="grid gap-4">
         <Button label='Duo' onClick={handleDuoModeClick} variant='primary' />
