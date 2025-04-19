@@ -1,6 +1,5 @@
 'use client'
 
-import { Button } from "@/components/Button"
 import { GameStatus } from "@/utils/constants"
 import { useSocket } from "@/hooks/useSocket"
 import { useEffect } from "react"
@@ -57,7 +56,7 @@ export default function ClueGiverPage() {
                 </div>
             </section>
             <footer className="flex w-full">
-                <WaveButton onClick={handlers[SocketEvent.RequestChangeGuessWord]} disabled={passesRemaining <= 0}>
+                <WaveButton onClick={handlers[SocketEvent.RequestWordGuessSuccessful]}  >
                     <Check size='28' strokeWidth='2.5' />
                 </WaveButton>
             </footer>
