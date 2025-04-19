@@ -3,7 +3,6 @@ import { FastForward, Pause } from "react-feather"
 import { useEffect } from "react"
 import { SocketEvent } from "shared"
 
-import { Button } from "@/components/Button"
 import { useDuoGameState } from "@/hooks/useDuoGameState"
 import { GameStatus } from "@/utils/constants"
 import { useSocket } from "@/hooks/useSocket"
@@ -60,7 +59,7 @@ export default function GuesserPage() {
                 </div>
             </section>
             <footer className="flex w-full">
-                <WaveButton onClick={handlers[SocketEvent.RequestChangeGuessWord]}>
+                <WaveButton onClick={handlers[SocketEvent.RequestChangeGuessWord]} disabled={passesRemaining <= 0}>
                     <FastForward size='28' strokeWidth='2.5' />
                 </WaveButton>
             </footer>

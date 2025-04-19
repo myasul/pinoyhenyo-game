@@ -165,10 +165,13 @@ export const useDuoGameState = () => {
     }, [socket, router, gameId])
 
 
-    const handleNotifyGuessWordChanged = useCallback(({ guessWord }: { guessWord: string }) => {
+    const handleNotifyGuessWordChanged = useCallback((
+        { guessWord, passesRemaining }: { guessWord: string, passesRemaining: number }
+    ) => {
         if (!socket) return
 
         store.setGuessWord(guessWord)
+        store.setPassesRemaining(passesRemaining)
     }, [socket, store])
 
     const handlers: Handlers = {
