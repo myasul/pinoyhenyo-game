@@ -27,10 +27,16 @@ export default function ClueGiverPage() {
 
         socket.on(SocketEvent.NotifyGuessWordChanged, handlers[SocketEvent.NotifyGuessWordChanged])
         socket.on(SocketEvent.NotifyRemainingTimeUpdated, setTimeRemaining)
-        socket.on(SocketEvent.NotifyWordGuessUnsuccessful, () => {
+        socket.on(SocketEvent.NotifyWordGuessUnsuccessful, ({ passedWords }: { passedWords: string[] }) => {
             const handler = handlers[SocketEvent.NotifyWordGuessUnsuccessful]
 
-            handler(GameStatus.Lose)
+            handler({ gameStatus: GameStatus.Lose, passedWords })
+        })
+
+        socket.on(SocketEvent.NotifyWordGuessSuccessful, ({ passedWords }: { passedWords: string[] }) => {
+            const handler = handlers[SocketEvent.NotifyWordGuessSuccessful]
+
+            handler({ gameStatus: GameStatus.Win, passedWords })
         })
 
         return () => {

@@ -37,6 +37,7 @@ type Game = {
     timeRemaining: number
     passesRemaining: number
     timeIntervalId?: NodeJS.Timeout
+    passedWords: string[]
 }
 
 type GameStartedData = {
@@ -56,7 +57,8 @@ const defaultGameValues: Game = {
         passLimit: 3
     },
     timeRemaining: 0,
-    passesRemaining: 0
+    passesRemaining: 0,
+    passedWords: [],
 }
 
 const getDuoGameRole = (players: { [playerId: string]: Player }) => {
@@ -156,7 +158,7 @@ io.on('connection', (socket) => {
 
             if (game.timeRemaining === 0) {
                 clearInterval(timeLimitIntervalId)
-                io.to(gameId).emit(SocketEvent.NotifyWordGuessUnsuccessful)
+                io.to(gameId).emit(SocketEvent.NotifyWordGuessUnsuccessful, { passedWords: game.passedWords })
             }
         }, 1000)
 
@@ -164,6 +166,7 @@ io.on('connection', (socket) => {
         game.timeRemaining = game.settings.duration
         game.passesRemaining = game.settings.passLimit
         game.guessWord = await getRandomGuessWord()
+        game.passedWords = []
 
         const gameStartedData: GameStartedData = {
             finalPlayers,
@@ -186,7 +189,7 @@ io.on('connection', (socket) => {
 
         clearInterval(game.timeIntervalId)
 
-        io.to(gameId).emit(SocketEvent.NotifyWordGuessSuccessful)
+        io.to(gameId).emit(SocketEvent.NotifyWordGuessSuccessful, { passedWords: game.passedWords })
     })
 
     socket.on(SocketEvent.RequestSwitchRole, ({ gameId }: { gameId: string }) => {
@@ -227,6 +230,7 @@ io.on('connection', (socket) => {
 
         const randomGuessWord = await getRandomGuessWord()
 
+        game.passedWords.push(game.guessWord ?? '')
         game.guessWord = randomGuessWord
         game.passesRemaining -= 1
 

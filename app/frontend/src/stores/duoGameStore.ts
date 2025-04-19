@@ -16,6 +16,7 @@ export type DuoGameState = {
     timeRemaining: number
     duration: number
     passesRemaining: number
+    passedWords: string[]
     setRole: (role: DuoGameRole) => void
     setGuessWord: (guessWord: string) => void
     setHostId: (hostId: string) => void
@@ -24,6 +25,7 @@ export type DuoGameState = {
     setPassesRemaining: (passesRemaining: number) => void
     setDuration: (duration: number) => void
     setMyPlayer: (player: Player) => void
+    setPassedWords: (passedWords: string[]) => void
 }
 
 export const useDuoGameStore = create<DuoGameState>((set) => ({
@@ -35,6 +37,7 @@ export const useDuoGameStore = create<DuoGameState>((set) => ({
     passesRemaining: 0,
     duration: 0,
     myPlayer: null,
+    passedWords: [],
     setTimeRemaining: (timeRemaining) => set({ timeRemaining }),
     setPassesRemaining: (passesRemaining) => set({ passesRemaining }),
     setDuration: (duration) => set({ duration }),
@@ -43,4 +46,5 @@ export const useDuoGameStore = create<DuoGameState>((set) => ({
     setHostId: (hostId) => set({ hostId }),
     setPlayers: (players) => set({ players }),
     setMyPlayer: (player: Player) => set({ myPlayer: player }),
+    setPassedWords: (passedWords) => set({ passedWords }),
 }))

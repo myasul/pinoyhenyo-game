@@ -1,6 +1,5 @@
 'use client'
 
-import { Button } from "@/components/Button"
 import { useDuoGameState } from "@/hooks/useDuoGameState"
 import { GameStatus } from "@/utils/constants"
 import { useSocket } from "@/hooks/useSocket"
@@ -18,7 +17,7 @@ const GameResultText: Partial<Record<GameStatus, string>> = {
 
 export default function ResultsPage() {
     const searchParams = useSearchParams()
-    const { handlers, guessWord, timeRemaining, duration } = useDuoGameState()
+    const { handlers, guessWord, timeRemaining, duration, passedWords } = useDuoGameState()
     const socket = useSocket()
     const router = useRouter()
 
@@ -52,10 +51,19 @@ export default function ResultsPage() {
                 <div>
                     {status === GameStatus.Lose ? "⏰ Time ran out!" : `⏰ Guessed in ${duration - timeRemaining} seconds!`}
                 </div>
+                <div>
+                    {
+                        passedWords.map((word, index) => (
+                            <div key={index} className="text-2xl">
+                                ❌ {word}
+                            </div>
+                        ))
+                    }
+                </div>
             </section>
             <footer className="flex w-full gap-2">
                 <WaveButton bgColor='bg-gray-300' className='w-1/6' textColor='text-gray-600' onClick={handleBackClick}>
-                    <X size='25' strokeWidth='2.5' />
+                    <X size='28' strokeWidth='2.5' />
                 </WaveButton>
                 <WaveButton onClick={handlers[SocketEvent.RequestStartGame]} >
                     <Repeat size='28' strokeWidth='2.5' />

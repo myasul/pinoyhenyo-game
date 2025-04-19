@@ -36,8 +36,8 @@ type Handlers = {
     [SocketEvent.RequestChangeGuessWord]: Handler<[]>;
     [SocketEvent.NotifyGameStarted]: Handler<[GameStartedCallbackProps]>;
     [SocketEvent.NotifyPlayersUpdated]: Handler<[{ updatedPlayers: PlayerMap }]>;
-    [SocketEvent.NotifyWordGuessUnsuccessful]: Handler<[GameStatus]>;
-    [SocketEvent.NotifyWordGuessSuccessful]: Handler<[GameStatus]>;
+    [SocketEvent.NotifyWordGuessUnsuccessful]: Handler<[{ gameStatus: GameStatus, passedWords: string[] }]>;
+    [SocketEvent.NotifyWordGuessSuccessful]: Handler<[{ gameStatus: GameStatus, passedWords: string[] }]>;
     [SocketEvent.NotifyRoleSwitched]: Handler<[{ updatedPlayers: PlayerMap }]>;
     [SocketEvent.NotifyBackToLobby]: Handler<[]>;
     [SocketEvent.NotifyGuessWordChanged]: Handler<[{ guessWord: string }]>;
@@ -80,9 +80,7 @@ export const useDuoGameState = () => {
         if (!socket) return
 
         socket.emit(SocketEvent.RequestWordGuessSuccessful, { gameId })
-
-        router.push(`/duo/${gameId}/results?status=${GameStatus.Win}`)
-    }, [gameId, router, socket])
+    }, [gameId, socket])
 
     const handleRequestSwitchRole = useCallback(() => {
         if (!socket) return
@@ -141,11 +139,15 @@ export const useDuoGameState = () => {
         store.setPlayers(Object.values(updatedPlayers))
     }, [store, socket])
 
-    const handleNotifyWordGuess = useCallback((gameStatus: GameStatus) => {
+    const handleNotifyWordGuess = useCallback((
+        { gameStatus, passedWords }: { gameStatus: GameStatus, passedWords: string[] }
+    ) => {
         if (!socket) return
 
+        store.setPassedWords(passedWords)
+
         router.push(`/duo/${gameId}/results?status=${gameStatus}`)
-    }, [gameId, router, socket])
+    }, [gameId, router, socket, store])
 
     const handleNotifyRoleSwitched = useCallback(({ updatedPlayers }: { updatedPlayers: PlayerMap }) => {
         if (!socket) return

@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from '@/components/Button';
 import { useDuoGameState } from '@/hooks/useDuoGameState';
 import { Player } from '@/stores/duoGameStore';
 import { useSocket } from '@/hooks/useSocket';
@@ -8,7 +7,7 @@ import { useEffect } from 'react';
 import { DuoGameRole, GameType, SocketEvent } from 'shared';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator'
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Play } from 'react-feather';
+import { Play } from 'react-feather';
 import { InviteLinkBtn } from '@/components/InviteLink';
 import { WaveButton } from '@/components/WaveButton';
 
@@ -83,14 +82,14 @@ export default function LobbyPage() {
             </div>
             <footer className='flex gap-1'>
                 <WaveButton bgColor='bg-gray-300' className='w-1/6' textColor='text-gray-600' onClick={handleBackClick}>
-                    <Play className='transform scale-x-[-1]' size='25' strokeWidth='2.5' />
+                    <Play className='transform scale-x-[-1]' size='28' strokeWidth='2.5' />
                 </WaveButton>
                 <WaveButton
                     disabled={!(Object.values(players).length === 2 && myPlayer)}
                     className='flex-1 text-xl'
                     onClick={handlers[SocketEvent.RequestStartGame]}
                 >
-                    StartGame
+                    <span className='font-extrabold'>StartGame</span>
                 </WaveButton>
             </footer>
         </main>
