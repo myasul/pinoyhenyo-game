@@ -3,13 +3,24 @@
 import { Button } from "@/components/Button"
 import { GameStatus } from "@/utils/constants"
 import { useSocket } from "@/hooks/useSocket"
-import { formatTime } from "@/utils/utils"
 import { useEffect } from "react"
-import { SocketEvent } from "shared"
+import { DuoGameRole, SocketEvent } from "shared"
 import { useDuoGameState } from "@/hooks/useDuoGameState"
+import { Check, Pause } from "react-feather"
+import { CountdownCircle } from "@/components/CountdownCircle"
+import { GameInstructions } from "@/components/GameInstructions"
+import { WaveButton } from "@/components/WaveButton"
 
 export default function ClueGiverPage() {
-    const { myPlayer, setTimeRemaining, timeRemaining, guessWord, handlers } = useDuoGameState()
+    const {
+        myPlayer,
+        setTimeRemaining,
+        timeRemaining,
+        guessWord,
+        handlers,
+        duration,
+        passesRemaining
+    } = useDuoGameState()
     const socket = useSocket()
 
     useEffect(() => {
@@ -33,11 +44,23 @@ export default function ClueGiverPage() {
     if (!myPlayer) return null
 
     return (
-        <div className="p-6 justify-center flex flex-col items-center gap-5">
-            <h1 className="text-2xl font-bold">Clue Giver ({myPlayer.name})</h1>
-            <h2 className="text-xl font-bold">{formatTime(timeRemaining)}</h2>
-            <h2 className="text-xl font-bold">{guessWord}</h2>
-            <Button variant="primary" label="CORRECT!" onClick={handlers[SocketEvent.RequestWordGuessSuccessful]} />
-        </div>
+        <main className="p-6 justify-between flex flex-col items-center gap-5 h-full">
+            <header className="flex items-center justify-between w-full h-16">
+                <Pause strokeWidth='2.5' />
+                <CountdownCircle duration={duration} timeRemaining={timeRemaining} />
+                <span className="text-3xl font-extrabold text-red-500">{passesRemaining}</span>
+            </header>
+            <section className="flex flex-col items-center gap-4 w-full h-full">
+                <GameInstructions role={DuoGameRole.ClueGiver} />
+                <div className="h-full pt-10 text-6xl mx-6 break-auto text-center">
+                    {guessWord}
+                </div>
+            </section>
+            <footer className="flex w-full">
+                <WaveButton onClick={handlers[SocketEvent.RequestChangeGuessWord]} disabled={passesRemaining <= 0}>
+                    <Check size='28' strokeWidth='2.5' />
+                </WaveButton>
+            </footer>
+        </main>
     )
 }

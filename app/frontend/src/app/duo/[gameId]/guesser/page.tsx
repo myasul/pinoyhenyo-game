@@ -1,7 +1,7 @@
 'use client'
 import { FastForward, Pause } from "react-feather"
 import { useEffect } from "react"
-import { SocketEvent } from "shared"
+import { DuoGameRole, SocketEvent } from "shared"
 
 import { useDuoGameState } from "@/hooks/useDuoGameState"
 import { GameStatus } from "@/utils/constants"
@@ -9,6 +9,7 @@ import { useSocket } from "@/hooks/useSocket"
 import { CountdownCircle } from "@/components/CountdownCircle"
 import { TvStaticPlaceholder } from "@/components/TvStaticPlaceholder"
 import { WaveButton } from "@/components/WaveButton"
+import { GameInstructions } from "@/components/GameInstructions"
 
 export default function GuesserPage() {
     const { setTimeRemaining, myPlayer, guessWord, timeRemaining, handlers, duration, passesRemaining } = useDuoGameState()
@@ -51,9 +52,7 @@ export default function GuesserPage() {
                 <span className="text-3xl font-extrabold text-red-500">{passesRemaining}</span>
             </header>
             <section className="flex flex-col items-center gap-4 w-full h-full">
-                <div className="border-gray-300 border rounded-md p-2 w-full bg-gray-100">
-                    Ask a yes-or-no questions to figure out the word. Start by narrowing down the category (person, place, object, nature, food, action). Then keep guessing!!
-                </div>
+                <GameInstructions role={DuoGameRole.Guesser} />
                 <div className="h-full pt-10">
                     <TvStaticPlaceholder word={guessWord} />
                 </div>
