@@ -4,7 +4,9 @@ import express from 'express'
 import http from 'http'
 import { Server } from 'socket.io'
 import cors from 'cors'
+import { v4 as uuid } from 'uuid'
 import { DuoGameRole, GameType, SocketEvent } from 'shared'
+
 import { getRandomGuessWord, GuessWord } from './model/guess_word'
 
 const app = express()
@@ -106,35 +108,80 @@ io.on('connection', (socket) => {
 
     socket.on(
         SocketEvent.RequestJoinGame,
-        (data: { gameId: string, type: GameType, player: Player }) => {
-            const { gameId, type, player } = data
+        (data: { gameId: string, gameType: GameType, playerName: string }, callback) => {
+            const { gameId, gameType, playerName } = data
+
+            const playerId = uuid()
 
             socket.join(gameId)
-            socket.data.gameId = gameId
 
+            socket.data.gameId = gameId
+            socket.data.playerId = playerId
+
+            // Start a new game
             if (!gameMap[gameId]) {
-                gameMap[gameId] = { ...defaultGameValues, type }
+                gameMap[gameId] = { ...defaultGameValues, type: gameType }
             }
 
             console.log(
                 `[${SocketEvent.RequestJoinGame}] Player joined game: `,
-                JSON.stringify({ gameId, type, player }, null, 2)
+                JSON.stringify({ gameId, gameType, playerName, playerId }, null, 2)
             )
 
             // Only support Duo mode for now
-            if (type !== GameType.Duo) return
+            if (gameType !== GameType.Duo) {
+                callback({ error: 'Unsupported game type. Only Duo mode is supported.' })
+                return
+            }
 
             const game = gameMap[gameId]
-
-            game.players[socket.id] = {
-                id: player.id,
-                name: player.name,
+            const newPlayer: Player = {
+                id: playerId,
+                name: playerName,
                 role: getDuoGameRole(game.players)
             }
 
+            game.players[playerId] = newPlayer
+
             io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: game.players })
 
-            // console.log(`[${SocketEvent.RequestJoinGame}] gameMap: `, JSON.stringify(gameMap, null, 2))
+            callback({ myPlayer: newPlayer })
+        }
+    )
+
+    socket.on(
+        SocketEvent.RequestRejoinGame,
+        ({ gameId, rejoiningPlayer }: { gameId: string, rejoiningPlayer: Player }, callback) => {
+            const game = gameMap[gameId]
+
+            if (!game) {
+                console.error(`Game (ID: ${gameId}) not found.`)
+                callback({ error: 'Game not found' })
+                return
+            }
+            
+            if (!game.players[rejoiningPlayer.id]) {
+                console.error(`Player (ID: ${rejoiningPlayer.id}) not found in game (ID: ${gameId}).`)
+                callback({ error: 'Player not found in game' })
+                return
+            }
+
+            socket.join(gameId)
+            socket.data.gameId = gameId
+            socket.data.playerId = rejoiningPlayer.id
+
+            console.log(
+                `[${SocketEvent.RequestRejoinGame}] Player rejoined game: `,
+                JSON.stringify({ gameId, rejoiningPlayer }, null, 2)
+            )
+
+            console.log('[RequestRejoinGame] game: ', game)
+
+            game.players[rejoiningPlayer.id] = rejoiningPlayer
+
+            io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: game.players })
+
+            callback({ myPlayer: rejoiningPlayer })
         }
     )
 

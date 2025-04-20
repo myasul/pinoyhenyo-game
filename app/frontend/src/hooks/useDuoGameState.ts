@@ -6,6 +6,7 @@ import { useParams, usePathname, useRouter } from "next/navigation"
 import { useCallback, useEffect } from "react"
 import { DuoGameRole, SocketEvent } from "shared"
 import { GameStatus } from "@/utils/constants"
+import { useDuoGameSession } from "./useDuoGameSession"
 
 type DuoLobbyPageParams = { gameId: string }
 
@@ -43,12 +44,12 @@ type Handlers = {
     [SocketEvent.NotifyGuessWordChanged]: Handler<[{ guessWord: string }]>;
 };
 
-export const useDuoGameState = () => {
-    const { gameId } = useParams<DuoLobbyPageParams>()
+export const useDuoGameState = (gameId: string) => {
     const pathname = usePathname()
     const router = useRouter()
-    const socket = useSocket()
+    const { socket } = useSocket()
     const store = useDuoGameStore()
+    const { myPlayer } = useDuoGameSession(gameId)
 
     useEffect(() => {
         if (!gameId) {
@@ -62,13 +63,13 @@ export const useDuoGameState = () => {
         const isLobbyPage = pathname.includes(DuoGamePage.Lobby)
         const hasGameStarted = pathname.includes(DuoGamePage.ClueGiver) || pathname.includes(DuoGamePage.Guesser)
 
-        if (hasGameStarted && !store.myPlayer && !isLobbyPage) {
+        if (hasGameStarted && !myPlayer && !isLobbyPage) {
             console.error('Player not found')
             router.push('/')
 
             return
         }
-    }, [gameId, socket, pathname, router, store.myPlayer])
+    }, [gameId, socket, pathname, router, myPlayer])
 
     const handleRequestStartGame = useCallback(() => {
         if (!socket) return
@@ -110,7 +111,7 @@ export const useDuoGameState = () => {
         timeRemaining,
         passesRemaining
     }: GameStartedCallbackProps) => {
-        if (!store.myPlayer) return
+        if (!myPlayer) return
 
         store.setGuessWord(guessWord)
         store.setPlayers(finalPlayers)
@@ -118,26 +119,21 @@ export const useDuoGameState = () => {
         store.setDuration(duration)
         store.setPassesRemaining(passesRemaining)
 
-        if (store.myPlayer.role === DuoGameRole.ClueGiver) router.push(`/duo/${gameId}/clue-giver`)
-        if (store.myPlayer.role === DuoGameRole.Guesser) router.push(`/duo/${gameId}/guesser`)
-    }, [gameId, router, store])
+        if (myPlayer.role === DuoGameRole.ClueGiver) router.push(`/duo/${gameId}/clue-giver`)
+        if (myPlayer.role === DuoGameRole.Guesser) router.push(`/duo/${gameId}/guesser`)
+    }, [gameId, router, store, myPlayer])
 
     const handleNotifyPlayersUpdated = useCallback(({ updatedPlayers }: { updatedPlayers: PlayerMap }) => {
         if (!socket) return
 
-        const updatedPlayerWithRole = updatedPlayers[socket.id]
-
-        if (!updatedPlayerWithRole) return
-
-        const firstPlayerJoined = Object.keys(updatedPlayers).length === 1
-
-        if (firstPlayerJoined) {
-            store.setHostId(updatedPlayerWithRole.id)
+        if (myPlayer && !updatedPlayers[myPlayer.id]) {
+            console.error('Player not found in updated players')
+            router.push('/')
+            return
         }
 
-        store.setMyPlayer(updatedPlayerWithRole)
         store.setPlayers(Object.values(updatedPlayers))
-    }, [store, socket])
+    }, [store, socket, myPlayer, router])
 
     const handleNotifyWordGuess = useCallback((
         { gameStatus, passedWords }: { gameStatus: GameStatus, passedWords: string[] }

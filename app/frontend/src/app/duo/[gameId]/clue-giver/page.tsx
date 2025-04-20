@@ -20,7 +20,7 @@ export default function ClueGiverPage() {
         duration,
         passesRemaining
     } = useDuoGameState()
-    const socket = useSocket()
+    const { socket } = useSocket()
 
     useEffect(() => {
         if (!socket) return

@@ -1,49 +1,37 @@
 'use client';
 
 import { useDuoGameState } from '@/hooks/useDuoGameState';
-import { Player } from '@/stores/duoGameStore';
 import { useSocket } from '@/hooks/useSocket';
-import { useEffect } from 'react';
-import { DuoGameRole, GameType, SocketEvent } from 'shared';
-import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator'
+import React, { useCallback, useEffect } from 'react';
+import { DuoGameRole, SocketEvent } from 'shared';
 import { useRouter } from 'next/navigation';
-import { Play } from 'react-feather';
-import { InviteLinkBtn } from '@/components/InviteLink';
-import { WaveButton } from '@/components/WaveButton';
+import { DuoGamePlayerSessionStatus, useDuoGameSession } from '@/hooks/useDuoGameSession';
+import LobbyNewJoiner from './components/LobbyNewJoiner';
+import { LobbyMain } from './components/LobbyMain';
 
-const DuoGameRoleText = {
+export const DuoGameRoleText = {
     [DuoGameRole.ClueGiver]: 'Clue Giver',
     [DuoGameRole.Guesser]: 'Guesser',
     [DuoGameRole.Unknown]: 'Unknown',
 }
 
-export default function LobbyPage() {
-    const { gameId, players, myPlayer, handlers } = useDuoGameState()
+type Props = {
+    params: Promise<{ gameId: string }>
+}
+
+export default function LobbyPage({ params }: Props) {
+    const { gameId } = React.use(params)
+
+    const { players, handlers } = useDuoGameState(gameId)
+    const { joinGame, playerSessionStatus, myPlayer } = useDuoGameSession(gameId)
     const router = useRouter()
-    const socket = useSocket()
+    const { socket } = useSocket()
 
-
-    useEffect(() => {
-        if (!socket) return
-
-        const isExistingPlayer = Object.values(players).some(player => player.id === socket.id)
-
-        if (isExistingPlayer) return
-
-        const randomName = uniqueNamesGenerator({
-            dictionaries: [adjectives, animals],
-            separator: '-',
-            length: 2
-        })
-
-        const player: Player = {
-            id: socket.id,
-            name: randomName,
-            role: DuoGameRole.Unknown
-        }
-
-        socket.emit(SocketEvent.RequestJoinGame, { gameId, type: GameType.Duo, player })
-    }, [gameId, players, socket])
+    const isLobbyReady = [
+        DuoGamePlayerSessionStatus.NewJoiner,
+        DuoGamePlayerSessionStatus.Joined,
+        DuoGamePlayerSessionStatus.Rejoined
+    ].includes(playerSessionStatus)
 
     useEffect(() => {
         if (!socket) return
@@ -57,41 +45,24 @@ export default function LobbyPage() {
         })
     }, [socket, myPlayer, handlers])
 
-    const handleBackClick = () => {
+    const handleBackClick = useCallback(() => {
+        socket.disconnect()
         router.push('/')
-    }
+    }, [socket, router])
+
+
+    if (!isLobbyReady) return
 
     return (
-        <main className="p-6 flex flex-col justify-between h-full">
-            <div className='flex flex-col gap-6'>
-                <section className='flex flex-col items-center'>
-                    <h1 className='text-3xl mb-2 font-extrabold'>Players</h1>
-                    <ul className='list-disc ml-6 mb-5'>
-                        {Object.values(players).map((player, index) => (
-                            <li key={index}>
-                                {player.name} - {DuoGameRoleText[player.role]}
-                                {player.id === myPlayer?.id && (<b> (you)</b>)}
-                            </li>
-                        ))}
-                    </ul>
-                    <InviteLinkBtn />
-                </section>
-                <section className='flex flex-col items-center'>
-                    <h1 className='text-3xl mb-2 font-extrabold'>Settings</h1>
-                </section>
-            </div>
-            <footer className='flex gap-1'>
-                <WaveButton bgColor='bg-gray-300' className='w-1/6' textColor='text-gray-600' onClick={handleBackClick}>
-                    <Play className='transform scale-x-[-1]' size='28' strokeWidth='2.5' />
-                </WaveButton>
-                <WaveButton
-                    disabled={!(Object.values(players).length === 2 && myPlayer)}
-                    className='flex-1 text-xl'
-                    onClick={handlers[SocketEvent.RequestStartGame]}
-                >
-                    <span className='font-extrabold'>StartGame</span>
-                </WaveButton>
-            </footer>
-        </main>
+        playerSessionStatus === DuoGamePlayerSessionStatus.NewJoiner
+            ? <LobbyNewJoiner onJoin={joinGame} onExit={handleBackClick} />
+            : (
+                <LobbyMain
+                    players={players}
+                    myPlayer={myPlayer}
+                    onStartGame={handlers[SocketEvent.RequestStartGame]}
+                    onExit={handleBackClick}
+                />
+            )
     );
 }

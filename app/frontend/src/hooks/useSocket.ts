@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { SocketEvent } from "shared"
 import io, { Socket } from "socket.io-client"
 
@@ -8,30 +8,43 @@ export const getSocket = () => {
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001'
 
     if (!socketInstance) {
-        socketInstance = io.connect(socketUrl)
+        socketInstance = io(socketUrl)
     }
 
     return socketInstance
 }
 
 export const useSocket = () => {
-    const [connnectedSocket, setConnectedSocket] = useState<typeof Socket | null>(null)
+    const [connectedSocket, setConnectedSocket] = useState<typeof Socket | null>(null)
+    const isExplicityDisconnected = useRef(false)
 
     useEffect(() => {
         const socket = getSocket()
 
-        if (socket.id) setConnectedSocket(socket)
+        if (socket.id && socket.connected) {
+            setConnectedSocket(socket)
+        }
 
         socket.addEventListener('connect', () => {
             setConnectedSocket(socket)
         })
 
         return () => {
+            if (!isExplicityDisconnected.current) return
+
             socket.removeListener(SocketEvent.Connect)
 
-            if (connnectedSocket) connnectedSocket.disconnect()
+            if (connectedSocket) connectedSocket.disconnect()
         }
-    }, [])
+    }, [connectedSocket])
 
-    return connnectedSocket
+    const disconnectSocket = () => {
+        isExplicityDisconnected.current = true
+
+        socketInstance?.disconnect()
+        setConnectedSocket(null)
+        socketInstance = null
+    }
+
+    return { disconnectSocket, socket: connectedSocket }
 }

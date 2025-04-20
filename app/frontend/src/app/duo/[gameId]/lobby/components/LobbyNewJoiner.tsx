@@ -1,0 +1,42 @@
+import { WaveButton } from '@/components/WaveButton';
+import { useState } from 'react';
+import { X } from 'react-feather';
+
+type Props = {
+    onJoin: (playerName: string) => void;
+    onExit?: () => void;
+}
+
+export default function LobbyNewJoiner({ onJoin, onExit }: Props) {
+    const [name, setName] = useState('');
+
+    return (
+        <main className="p-6 flex flex-col w-full h-full items-center justify-between">
+            <section className="flex flex-col items-center gap-3">
+                <h2 className="text-lg font-semibold text-gray-800">
+                    Please enter your nickname:
+                </h2>
+
+                <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter your nickname here"
+                    className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+            </section>
+            <footer className='flex gap-1 w-full'>
+                <WaveButton bgColor='bg-gray-300' className='w-1/6' textColor='text-gray-600' onClick={onExit}>
+                    <X className='transform scale-x-[-1]' size='28' strokeWidth='2.5' />
+                </WaveButton>
+                <WaveButton
+                    onClick={() => onJoin(name.trim())}
+                    disabled={!name.trim()}
+                    className='flex-1 text-xl'
+                >
+                    Join Game
+                </WaveButton>
+            </footer>
+        </main>
+    );
+}

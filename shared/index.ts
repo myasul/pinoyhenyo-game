@@ -1,6 +1,8 @@
 export enum SocketEvent {
     // Client initiated
     RequestJoinGame = 'request:joinGame',
+    RequestRejoinGame = 'request:rejoinGame',
+    RequestLeaveGame = 'request:leaveGame',
     RequestStartGame = 'request:startGame',
     RequestUpdateTimeLimit = 'request:updateTimeLimit',
     RequestWordGuessSuccessful = 'request:wordGuessSuccessful',
@@ -34,4 +36,10 @@ export enum GameType {
     Duo = 'DUO',
     Battle = 'BATTLE',
     Unknown = 'UNKNOWN'
+}
+
+export type Player = {
+    id: string
+    name: string
+    role: DuoGameRole
 }
