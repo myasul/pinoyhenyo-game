@@ -9,6 +9,13 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        fil: {
+          yellow: '#FFF4B8',
+          blue: '#B8D8FF',
+          red: '#FFB8B8',
+          white: '#FDFDFD',
+          darkText: '#2B2B2B',
+        },
       },
       animation: {
         wave: 'wave 0.6s ease-out',
