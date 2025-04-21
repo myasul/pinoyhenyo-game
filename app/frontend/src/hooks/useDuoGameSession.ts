@@ -70,6 +70,7 @@ export const useDuoGameSession = (gameId: string) => {
         })
     }, [socket, gameId, setMyPlayer, joinGame])
 
+    // Rejoining logic
     useEffect(() => {
         if (!socket) return
 
@@ -81,7 +82,9 @@ export const useDuoGameSession = (gameId: string) => {
             router.push('/')
         }
 
-        if (myPlayer || playerSessionStatus === DuoGamePlayerSessionStatus.Rejoining) return
+        const shouldRejoin = !(myPlayer || playerSessionStatus === DuoGamePlayerSessionStatus.Rejoining)
+
+        if (!shouldRejoin) return
 
         const rejoiningPlayerData = localStorage.getItem(playerLocalStorageKey)
 

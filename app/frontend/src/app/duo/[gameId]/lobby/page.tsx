@@ -51,6 +51,7 @@ export default function LobbyPage({ params }: Props) {
     }, [socket, router])
 
 
+    // Add a loading page
     if (!isLobbyReady) return
 
     return (
