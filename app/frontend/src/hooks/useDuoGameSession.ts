@@ -70,6 +70,21 @@ export const useDuoGameSession = (gameId: string) => {
         })
     }, [socket, gameId, setMyPlayer, joinGame])
 
+    const leaveGame = useCallback(() => {
+        if (!socket) return
+
+        socket.emit(SocketEvent.RequestLeaveGame, { gameId }, () => {
+            // Remove player from the game
+            setPlayerSessionStatus(DuoGamePlayerSessionStatus.Left)
+            localStorage.removeItem(playerLocalStorageKey)
+            setMyPlayer(null)
+            disconnectSocket()
+
+            // Redirect to the home page
+            router.push('/')
+        })
+    }, [socket, gameId, playerLocalStorageKey, setMyPlayer, disconnectSocket, router])
+
     // Rejoining logic
     useEffect(() => {
         if (!socket) return
@@ -100,6 +115,7 @@ export const useDuoGameSession = (gameId: string) => {
 
     return {
         joinGame,
+        leaveGame,
         playerSessionStatus,
         myPlayer,
     }

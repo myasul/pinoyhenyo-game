@@ -2,7 +2,7 @@ import 'dotenv/config'
 
 import express from 'express'
 import http from 'http'
-import { Server } from 'socket.io'
+import { DefaultEventsMap, Server, Socket } from 'socket.io'
 import cors from 'cors'
 import { v4 as uuid } from 'uuid'
 import { DuoGameRole, GameType, SocketEvent } from 'shared'
@@ -32,7 +32,7 @@ type GameSettings = {
 }
 
 type Game = {
-    players: { [playerId: string]: Player }
+    players: Map<string, Player>
     type: GameType
     settings: GameSettings
     guessWord?: string
@@ -50,65 +50,135 @@ type GameStartedData = {
     passesRemaining: number
 }
 
-const gameMap: Record<string, Game> = {}
-const defaultGameValues: Game = {
-    players: {},
-    type: GameType.Unknown,
-    settings: {
-        duration: 60,
-        passLimit: 3
-    },
-    timeRemaining: 0,
-    passesRemaining: 0,
-    passedWords: [],
+
+type GameSocketData = {
+    gameId?: string | null
+    playerId?: string | null
 }
 
-const getDuoGameRole = (players: { [playerId: string]: Player }) => {
-    const playerCount = Object.keys(players).length
+type GameSocket = Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, GameSocketData>
 
-    if (playerCount === 0) {
-        return DuoGameRole.Guesser
-    } else {
-        const player = Object.values(players)[0]
+const gameMap: Map<string, Game> = new Map()
 
-        return player.role === DuoGameRole.Guesser
-            ? DuoGameRole.ClueGiver
-            : DuoGameRole.Guesser
+const getDefaultGameValues = (): Game => {
+    return {
+        players: new Map<string, Player>(),
+        type: GameType.Unknown,
+        settings: {
+            duration: 60,
+            passLimit: 3
+        },
+        timeRemaining: 0,
+        passesRemaining: 0,
+        passedWords: [],
     }
 }
 
-io.on('connection', (socket) => {
+
+const getDuoGameRole = (players: Map<string, Player>) => {
+    // Get the first player in the map
+    const player = players.values().next().value
+
+    if (player) {
+        return player.role === DuoGameRole.Guesser
+            ? DuoGameRole.ClueGiver
+            : DuoGameRole.Guesser
+    } else {
+        return DuoGameRole.Guesser
+    }
+}
+
+function removePlayerFromGame(socket: GameSocket, gameId: string, playerId: string) {
+    const game = gameMap.get(gameId);
+
+    if (!game) return false;
+
+    // Remove player from game
+    game.players.delete(playerId);
+
+    // Clean up socket data
+    socket.data.gameId = null;
+    socket.data.playerId = null;
+
+    // Leave the room
+    socket.leave(gameId);
+
+    // If no players are left, clean up the game
+    if (Object.keys(game.players).length === 0) {
+        gameMap.delete(gameId);
+
+        return true; // Game was deleted
+    }
+
+    console.log(`Player (ID: ${playerId}) removed from game (ID: ${gameId}).`);
+
+    // Notify remaining players
+    io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: Object.fromEntries(game.players) });
+
+    return true; // Success
+}
+
+
+io.on('connection', (socket: GameSocket) => {
     socket.on(SocketEvent.Disconnect, () => {
-        console.log('Player disconnected: ', socket.id)
+        console.log('Player disconnected: ', socket.data)
 
-        const gameId = socket.data.gameId
+        const { gameId: serverGameId, playerId } = socket.data
+        const reconnectionGracePeriod = 10000
 
-        if (!gameId) {
-            // TODO: Redirect to home page
-            console.error('Game ID not available')
+        setTimeout(() => {
+            if (!(playerId && serverGameId)) return
+
+            const isPlayerReconnected = Array.from(io.sockets.sockets.values()).some((socket) => {
+                return socket.data.playerId === playerId && socket.data.gameId === serverGameId
+            })
+
+            if (isPlayerReconnected) return
+
+            console.log(`Player (ID: ${playerId}) fully disconnected from game (ID: ${serverGameId}).`)
+
+            removePlayerFromGame(socket, serverGameId, playerId)
+        }, reconnectionGracePeriod)
+    })
+
+    socket.on(SocketEvent.RequestLeaveGame, ({ gameId: clientGameId }: { gameId: string }, callback) => {
+        const { gameId: serverGameId, playerId } = socket.data
+
+        if (!(serverGameId && playerId)) {
+            const errorMessage = 'Game ID or Player ID not available'
+
+            console.error(errorMessage)
+            callback({ error: 'Unsupported game type. Only Duo mode is supported.' })
+
             return
         }
 
-        const game = gameMap[gameId]
+        if (serverGameId !== clientGameId) {
+            const errorMessage = `Game ID mismatch: ${serverGameId} !== ${clientGameId}`
 
-        if (!game) {
-            console.error(`Game (ID: ${gameId}) not found.`)
+            console.error(errorMessage)
+            callback({ error: errorMessage })
+
             return
         }
 
-        delete game.players[socket.id]
+        const isPlayerSuccessfullyRemoved = removePlayerFromGame(socket, serverGameId, playerId)
 
-        if (Object.keys(game.players).length === 0) {
-            delete gameMap[gameId]
-            return
+        if (!isPlayerSuccessfullyRemoved) {
+            const errorMessage = `Failed to remove player (ID: ${playerId}) from game (ID: ${serverGameId}).`
+
+            console.error(errorMessage)
         }
 
-        io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: game.players })
+        // Notify the player that they have left the game
+        callback({ isPlayerSuccessfullyRemoved })
     })
 
     socket.on(
         SocketEvent.RequestJoinGame,
         (data: { gameId: string, gameType: GameType, playerName: string }, callback) => {
+            console.log('[RequestJoinGame] games before joining: ', JSON.stringify(gameMap, null, 2))
+
             const { gameId, gameType, playerName } = data
 
             const playerId = uuid()
@@ -118,9 +188,16 @@ io.on('connection', (socket) => {
             socket.data.gameId = gameId
             socket.data.playerId = playerId
 
+
+
+            // const game = gameMap[gameId]
+            let game = gameMap.get(gameId)
+
             // Start a new game
-            if (!gameMap[gameId]) {
-                gameMap[gameId] = { ...defaultGameValues, type: gameType }
+            if (!game) {
+                game = { ...getDefaultGameValues(), type: gameType }
+
+                gameMap.set(gameId, game)
             }
 
             console.log(
@@ -134,16 +211,20 @@ io.on('connection', (socket) => {
                 return
             }
 
-            const game = gameMap[gameId]
+            console.log('[RequestJoinGame] game to be updated: ', JSON.stringify(game, null, 2))
+
             const newPlayer: Player = {
                 id: playerId,
                 name: playerName,
                 role: getDuoGameRole(game.players)
             }
 
-            game.players[playerId] = newPlayer
+            game.players.set(playerId, newPlayer)
 
-            io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: game.players })
+            console.log('[RequestJoinGame] gameId: ', gameId)
+            console.log('[RequestJoinGame] games after joining: ', JSON.stringify(gameMap, null, 2))
+
+            io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: Object.fromEntries(game.players) })
 
             callback({ myPlayer: newPlayer })
         }
@@ -152,15 +233,15 @@ io.on('connection', (socket) => {
     socket.on(
         SocketEvent.RequestRejoinGame,
         ({ gameId, rejoiningPlayer }: { gameId: string, rejoiningPlayer: Player }, callback) => {
-            const game = gameMap[gameId]
+            const game = gameMap.get(gameId)
 
             if (!game) {
                 console.error(`Game (ID: ${gameId}) not found.`)
                 callback({ error: 'Game not found' })
                 return
             }
-            
-            if (!game.players[rejoiningPlayer.id]) {
+
+            if (!game.players.has(rejoiningPlayer.id)) {
                 console.error(`Player (ID: ${rejoiningPlayer.id}) not found in game (ID: ${gameId}).`)
                 callback({ error: 'Player not found in game' })
                 return
@@ -177,9 +258,12 @@ io.on('connection', (socket) => {
 
             console.log('[RequestRejoinGame] game: ', game)
 
-            game.players[rejoiningPlayer.id] = rejoiningPlayer
+            game.players.set(rejoiningPlayer.id, rejoiningPlayer)
 
-            io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: game.players })
+            console.log('[RequestJoinGame] gameId: ', gameId)
+            console.log('[RequestJoinGame] games: ', JSON.stringify(gameMap, null, 2))
+
+            io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: Object.fromEntries(game.players) })
 
             callback({ myPlayer: rejoiningPlayer })
         }
@@ -189,7 +273,7 @@ io.on('connection', (socket) => {
         console.log('[SocketEvent.RequestStartGame]')
         const { gameId, finalPlayers } = data
 
-        const game = gameMap[gameId]
+        const game = gameMap.get(gameId)
 
         if (!game) {
             console.error(`Game (ID: ${gameId}) not found.`)
@@ -227,7 +311,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on(SocketEvent.RequestWordGuessSuccessful, ({ gameId }: { gameId: string }) => {
-        const game = gameMap[gameId]
+        const game = gameMap.get(gameId)
 
         if (!game) {
             console.error(`Game (ID: ${gameId}) not found.`)
@@ -240,7 +324,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on(SocketEvent.RequestSwitchRole, ({ gameId }: { gameId: string }) => {
-        const game = gameMap[gameId]
+        const game = gameMap.get(gameId)
 
         if (!game) {
             console.error(`Game (ID: ${gameId}) not found.`)
@@ -253,11 +337,11 @@ io.on('connection', (socket) => {
                 : DuoGameRole.Guesser
         }
 
-        io.to(gameId).emit(SocketEvent.NotifyRoleSwitched, { updatedPlayers: game.players })
+        io.to(gameId).emit(SocketEvent.NotifyRoleSwitched, { updatedPlayers: Object.fromEntries(game.players) })
     })
 
     socket.on(SocketEvent.RequestBackToLobby, ({ gameId }: { gameId: string }) => {
-        const game = gameMap[gameId]
+        const game = gameMap.get(gameId)
 
         if (!game) {
             console.error(`Game (ID: ${gameId}) not found.`)
@@ -268,7 +352,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on(SocketEvent.RequestChangeGuessWord, async ({ gameId }: { gameId: string }) => {
-        const game = gameMap[gameId]
+        const game = gameMap.get(gameId)
 
         if (!game) {
             console.error(`Game (ID: ${gameId}) not found.`)

@@ -2,9 +2,8 @@
 
 import { useDuoGameState } from '@/hooks/useDuoGameState';
 import { useSocket } from '@/hooks/useSocket';
-import React, { useCallback, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { DuoGameRole, SocketEvent } from 'shared';
-import { useRouter } from 'next/navigation';
 import { DuoGamePlayerSessionStatus, useDuoGameSession } from '@/hooks/useDuoGameSession';
 import LobbyNewJoiner from './components/LobbyNewJoiner';
 import { LobbyMain } from './components/LobbyMain';
@@ -24,8 +23,7 @@ export default function LobbyPage({ params }: Props) {
     const { gameId } = React.use(params)
 
     const { players, handlers } = useDuoGameState(gameId)
-    const { joinGame, playerSessionStatus, myPlayer } = useDuoGameSession(gameId)
-    const router = useRouter()
+    const { joinGame, leaveGame, playerSessionStatus, myPlayer } = useDuoGameSession(gameId)
     const { socket } = useSocket()
 
     const isLobbyReady = [
@@ -46,11 +44,6 @@ export default function LobbyPage({ params }: Props) {
         })
     }, [socket, myPlayer, handlers])
 
-    const handleBackClick = useCallback(() => {
-        socket.disconnect()
-        router.push('/')
-    }, [socket, router])
-
     if (!isLobbyReady) {
         return (
             <main className="p-6 flex flex-col w-full h-full items-center justify-center bg-fil-yellow">
@@ -61,13 +54,13 @@ export default function LobbyPage({ params }: Props) {
 
     return (
         playerSessionStatus === DuoGamePlayerSessionStatus.NewJoiner
-            ? <LobbyNewJoiner onJoin={joinGame} onExit={handleBackClick} />
+            ? <LobbyNewJoiner onJoin={joinGame} onExit={leaveGame} />
             : (
                 <LobbyMain
                     players={players}
                     myPlayer={myPlayer}
                     onStartGame={handlers[SocketEvent.RequestStartGame]}
-                    onExit={handleBackClick}
+                    onExit={leaveGame}
                 />
             )
     );

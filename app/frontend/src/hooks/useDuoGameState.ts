@@ -124,6 +124,8 @@ export const useDuoGameState = (gameId: string) => {
     }, [gameId, router, store, myPlayer])
 
     const handleNotifyPlayersUpdated = useCallback(({ updatedPlayers }: { updatedPlayers: PlayerMap }) => {
+        console.log('[handleNotifyPlayersUpdated] updatedPlayers: ', updatedPlayers)
+
         if (!socket) return
 
         if (myPlayer && !updatedPlayers[myPlayer.id]) {
