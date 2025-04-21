@@ -19,6 +19,7 @@ export default {
       },
       animation: {
         wave: 'wave 0.6s ease-out',
+        spin: 'spin 2s linear infinite',
       },
       keyframes: {
         wave: {

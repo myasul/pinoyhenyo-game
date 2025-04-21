@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { DuoGamePlayerSessionStatus, useDuoGameSession } from '@/hooks/useDuoGameSession';
 import LobbyNewJoiner from './components/LobbyNewJoiner';
 import { LobbyMain } from './components/LobbyMain';
+import { LoadingIcon } from '@/components/LoadingIcon';
 
 export const DuoGameRoleText = {
     [DuoGameRole.ClueGiver]: 'Clue Giver',
@@ -50,9 +51,13 @@ export default function LobbyPage({ params }: Props) {
         router.push('/')
     }, [socket, router])
 
-
-    // Add a loading page
-    if (!isLobbyReady) return
+    if (!isLobbyReady) {
+        return (
+            <main className="p-6 flex flex-col w-full h-full items-center justify-center bg-fil-yellow">
+                <LoadingIcon size='100' />
+            </main>
+        )
+    }
 
     return (
         playerSessionStatus === DuoGamePlayerSessionStatus.NewJoiner
