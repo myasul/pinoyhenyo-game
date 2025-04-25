@@ -1,9 +1,12 @@
 import 'dotenv/config'
 
+// import * as express from 'express'
 import express from 'express'
+// import * as http from 'http'
 import http from 'http'
-import { DefaultEventsMap, Server, Socket } from 'socket.io'
+// import * as cors from 'cors'
 import cors from 'cors'
+import { DefaultEventsMap, Server, Socket } from 'socket.io'
 import { v4 as uuid } from 'uuid'
 import { DuoGameRole, GameType, SocketEvent } from 'shared'
 
@@ -74,6 +77,27 @@ const getDefaultGameValues = (): Game => {
     }
 }
 
+const stringifyGame = (game: Game) => {
+    const { timeIntervalId, players, ...serializableProps } = game
+    const playersObject = Object.fromEntries(players)
+
+    return JSON.stringify({ ...serializableProps, players: playersObject }, null, 2)
+}
+
+const stringifyGameMap = (gameMap: Map<string, Game>) => {
+    const gameMapObject = Object.fromEntries(gameMap)
+
+    const serializedGameMap = Object.entries(gameMapObject).reduce((acc, [gameId, game]) => {
+        const { timeIntervalId, players, ...serializableProps } = game
+        const playersObject = Object.fromEntries(players)
+
+        acc[gameId] = { ...serializableProps, players: playersObject }
+        return acc
+    }, {} as Record<string, unknown>)
+
+    return JSON.stringify(serializedGameMap, null, 2)
+}
+
 
 const getDuoGameRole = (players: Map<string, Player>) => {
     // Get the first player in the map
@@ -104,7 +128,7 @@ function removePlayerFromGame(socket: GameSocket, gameId: string, playerId: stri
     socket.leave(gameId);
 
     // If no players are left, clean up the game
-    if (Object.keys(game.players).length === 0) {
+    if (game.players.size === 0) {
         gameMap.delete(gameId);
 
         return true; // Game was deleted
@@ -177,7 +201,7 @@ io.on('connection', (socket: GameSocket) => {
     socket.on(
         SocketEvent.RequestJoinGame,
         (data: { gameId: string, gameType: GameType, playerName: string }, callback) => {
-            console.log('[RequestJoinGame] games before joining: ', JSON.stringify(gameMap, null, 2))
+            console.log('[RequestJoinGame] games before joining: ', stringifyGameMap(gameMap))
 
             const { gameId, gameType, playerName } = data
 
@@ -187,8 +211,6 @@ io.on('connection', (socket: GameSocket) => {
 
             socket.data.gameId = gameId
             socket.data.playerId = playerId
-
-
 
             // const game = gameMap[gameId]
             let game = gameMap.get(gameId)
@@ -211,7 +233,6 @@ io.on('connection', (socket: GameSocket) => {
                 return
             }
 
-            console.log('[RequestJoinGame] game to be updated: ', JSON.stringify(game, null, 2))
 
             const newPlayer: Player = {
                 id: playerId,
@@ -222,7 +243,7 @@ io.on('connection', (socket: GameSocket) => {
             game.players.set(playerId, newPlayer)
 
             console.log('[RequestJoinGame] gameId: ', gameId)
-            console.log('[RequestJoinGame] games after joining: ', JSON.stringify(gameMap, null, 2))
+            console.log('[RequestJoinGame] games after joining: ', stringifyGameMap(gameMap))
 
             io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: Object.fromEntries(game.players) })
 
@@ -256,12 +277,9 @@ io.on('connection', (socket: GameSocket) => {
                 JSON.stringify({ gameId, rejoiningPlayer }, null, 2)
             )
 
-            console.log('[RequestRejoinGame] game: ', game)
-
             game.players.set(rejoiningPlayer.id, rejoiningPlayer)
 
-            console.log('[RequestJoinGame] gameId: ', gameId)
-            console.log('[RequestJoinGame] games: ', JSON.stringify(gameMap, null, 2))
+            console.log('[RequestRejoinGame] game: ', stringifyGame(game))
 
             io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: Object.fromEntries(game.players) })
 
