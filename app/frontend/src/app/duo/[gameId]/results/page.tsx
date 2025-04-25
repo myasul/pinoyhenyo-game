@@ -10,6 +10,7 @@ import { WaveButton } from "@/components/WaveButton"
 import { Repeat, X } from "react-feather"
 import { useRouter } from "next/navigation"
 import { useDuoGameSession } from "@/hooks/useDuoGameSession"
+import { PageLayout } from "@/components/PageLayout"
 
 const GameResultText: Partial<Record<GameStatus, string>> = {
     [GameStatus.Lose]: 'SAYANG! TRY AGAIN HENYO!',
@@ -45,7 +46,7 @@ export default function ResultsPage({ params }: Props) {
     }, [socket, handlers])
 
     return (
-        <main className="p-6 flex flex-col justify-between h-full w-full items-center bg-fil-yellow text-fil-darkText">
+        <PageLayout>
             <header>
                 <h1 className="text-4xl font-bold break-words text-center">{GameResultText[status as GameStatus]}</h1>
             </header>
@@ -77,6 +78,6 @@ export default function ResultsPage({ params }: Props) {
                     <Repeat size='28' strokeWidth='2.5' />
                 </WaveButton>
             </footer>
-        </main>
+        </PageLayout>
     )
 }

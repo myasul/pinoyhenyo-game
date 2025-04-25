@@ -1,3 +1,4 @@
+import { PageLayout } from '@/components/PageLayout';
 import { WaveButton } from '@/components/WaveButton';
 import { useState } from 'react';
 import { X } from 'react-feather';
@@ -11,7 +12,7 @@ export default function LobbyNewJoiner({ onJoin, onExit }: Props) {
     const [name, setName] = useState('');
 
     return (
-        <main className="p-6 flex flex-col w-full h-full items-center justify-between bg-fil-yellow">
+        <PageLayout>
             <section className="flex flex-col items-center gap-3">
                 <h2 className="text-lg font-semibold text-gray-800">
                     Please enter your nickname:
@@ -42,6 +43,6 @@ export default function LobbyNewJoiner({ onJoin, onExit }: Props) {
                     Join Game
                 </WaveButton>
             </footer>
-        </main>
+        </PageLayout>
     );
 }

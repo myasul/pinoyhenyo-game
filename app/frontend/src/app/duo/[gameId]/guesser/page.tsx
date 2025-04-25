@@ -12,6 +12,7 @@ import { TvStaticPlaceholder } from "@/components/TvStaticPlaceholder"
 import { WaveButton } from "@/components/WaveButton"
 import { GameInstructions } from "@/components/GameInstructions"
 import { useDuoGameSession } from "@/hooks/useDuoGameSession"
+import { PageLayout } from "@/components/PageLayout"
 
 type Props = {
     params: Promise<{ gameId: string }>
@@ -62,7 +63,7 @@ export default function GuesserPage({ params }: Props) {
     if (!myPlayer) return null
 
     return (
-        <main className="p-6 justify-between flex flex-col items-center gap-5 h-full bg-fil-yellow text-fil-darkText">
+        <PageLayout>
             <header className="flex items-center justify-between w-full h-16">
                 <Pause strokeWidth='2.5' />
                 <CountdownCircle duration={duration} timeRemaining={timeRemaining} />
@@ -83,6 +84,6 @@ export default function GuesserPage({ params }: Props) {
                     <FastForward size='28' strokeWidth='2.5' />
                 </WaveButton>
             </footer>
-        </main>
+        </PageLayout>
     )
 }

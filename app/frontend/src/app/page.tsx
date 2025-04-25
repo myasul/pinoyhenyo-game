@@ -1,5 +1,6 @@
 'use client'
 import { Button } from '@/components/Button';
+import { PageLayout } from '@/components/PageLayout';
 import axios from 'axios';
 
 import { useRouter } from 'next/navigation';
@@ -19,7 +20,7 @@ export default function HomePage() {
   }
 
   return (
-    <main className="p-6 min-h-screen flex flex-col items-center justify-center bg-fil-yellow">
+    <PageLayout>
       <h1 className="mb-4 text-8xl font-extrabold drop-shadow-md flex space-x-2">
         <span className="text-[#0038A8]">H</span>
         <span className="text-[#CE1126]">E</span>
@@ -48,6 +49,6 @@ export default function HomePage() {
           Henyo is a classic Filipino guessing game where one player gives clues and the other guesses the word!
         </p>
       </div>
-    </main>
+    </PageLayout>
   );
 }

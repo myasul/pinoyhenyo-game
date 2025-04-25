@@ -3,6 +3,7 @@ import { InviteLinkBtn } from "./InviteLink"
 import { WaveButton } from "@/components/WaveButton"
 import { X } from "react-feather"
 import { DuoGameRoleText } from "../page"
+import { PageLayout } from "@/components/PageLayout"
 
 type Props = {
     players: Player[]
@@ -13,7 +14,7 @@ type Props = {
 
 export const LobbyMain = ({ players, myPlayer, onExit, onStartGame }: Props) => {
     return (
-        <main className="p-6 flex flex-col justify-between h-full w-full items-center bg-fil-yellow">
+        <PageLayout>
             <div className="flex flex-col gap-6 w-full max-w-md">
                 <section className="flex flex-col items-center w-full gap-4">
                     <h1 className="text-3xl mb-2 font-extrabold text-fil-darkText">Players</h1>
@@ -64,6 +65,6 @@ export const LobbyMain = ({ players, myPlayer, onExit, onStartGame }: Props) => 
                     <span className="font-extrabold">Start Game</span>
                 </WaveButton>
             </footer>
-        </main>
+        </PageLayout>
     )
 }

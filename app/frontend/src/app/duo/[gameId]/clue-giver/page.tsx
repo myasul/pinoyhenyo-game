@@ -10,6 +10,7 @@ import { CountdownCircle } from "@/components/CountdownCircle"
 import { GameInstructions } from "@/components/GameInstructions"
 import { WaveButton } from "@/components/WaveButton"
 import { useDuoGameSession } from "@/hooks/useDuoGameSession"
+import { PageLayout } from "@/components/PageLayout"
 
 type Props = {
     params: Promise<{ gameId: string }>
@@ -58,7 +59,7 @@ export default function ClueGiverPage({ params }: Props) {
     if (!myPlayer) return null
 
     return (
-        <main className="p-6 justify-between flex flex-col items-center gap-5 h-full">
+        <PageLayout>
             <header className="flex items-center justify-between w-full h-16">
                 <Pause strokeWidth='2.5' />
                 <CountdownCircle duration={duration} timeRemaining={timeRemaining} />
@@ -75,6 +76,6 @@ export default function ClueGiverPage({ params }: Props) {
                     <Check size='28' strokeWidth='2.5' />
                 </WaveButton>
             </footer>
-        </main>
+        </PageLayout>
     )
 }
