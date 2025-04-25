@@ -2,15 +2,22 @@
 
 import { GameStatus } from "@/utils/constants"
 import { useSocket } from "@/hooks/useSocket"
-import { useEffect } from "react"
+import React, { useEffect } from "react"
 import { DuoGameRole, SocketEvent } from "shared"
 import { useDuoGameState } from "@/hooks/useDuoGameState"
 import { Check, Pause } from "react-feather"
 import { CountdownCircle } from "@/components/CountdownCircle"
 import { GameInstructions } from "@/components/GameInstructions"
 import { WaveButton } from "@/components/WaveButton"
+import { useDuoGameSession } from "@/hooks/useDuoGameSession"
 
-export default function ClueGiverPage() {
+type Props = {
+    params: Promise<{ gameId: string }>
+}
+
+export default function ClueGiverPage({ params }: Props) {
+    const { gameId } = React.use(params)
+
     const {
         myPlayer,
         setTimeRemaining,
@@ -19,7 +26,9 @@ export default function ClueGiverPage() {
         handlers,
         duration,
         passesRemaining
-    } = useDuoGameState()
+    } = useDuoGameState(gameId)
+    useDuoGameSession(gameId)
+
     const { socket } = useSocket()
 
     useEffect(() => {
@@ -62,7 +71,7 @@ export default function ClueGiverPage() {
                 </div>
             </section>
             <footer className="flex w-full">
-                <WaveButton onClick={handlers[SocketEvent.RequestWordGuessSuccessful]}  >
+                <WaveButton className="w-full" onClick={handlers[SocketEvent.RequestWordGuessSuccessful]}  >
                     <Check size='28' strokeWidth='2.5' />
                 </WaveButton>
             </footer>

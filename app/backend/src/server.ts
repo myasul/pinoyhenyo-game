@@ -8,7 +8,7 @@ import http from 'http'
 import cors from 'cors'
 import { DefaultEventsMap, Server, Socket } from 'socket.io'
 import { v4 as uuid } from 'uuid'
-import { DuoGameRole, GameType, SocketEvent } from 'shared'
+import { DuoGameRole, ServerGame, GameType, Player, SocketEvent, SerializableServerGame } from 'shared'
 
 import { getRandomGuessWord, GuessWord } from './model/guess_word'
 
@@ -22,28 +22,6 @@ const io = new Server(server, {
         origin: '*'
     }
 })
-
-type Player = {
-    id: string
-    name: string
-    role: DuoGameRole
-}
-
-type GameSettings = {
-    duration: number
-    passLimit: number
-}
-
-type Game = {
-    players: Map<string, Player>
-    type: GameType
-    settings: GameSettings
-    guessWord?: string
-    timeRemaining: number
-    passesRemaining: number
-    timeIntervalId?: NodeJS.Timeout
-    passedWords: string[]
-}
 
 type GameStartedData = {
     finalPlayers: Player[]
@@ -61,9 +39,9 @@ type GameSocketData = {
 
 type GameSocket = Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, GameSocketData>
 
-const gameMap: Map<string, Game> = new Map()
+const gameMap: Map<string, ServerGame> = new Map()
 
-const getDefaultGameValues = (): Game => {
+const getDefaultGameValues = (): ServerGame => {
     return {
         players: new Map<string, Player>(),
         type: GameType.Unknown,
@@ -77,14 +55,14 @@ const getDefaultGameValues = (): Game => {
     }
 }
 
-const stringifyGame = (game: Game) => {
+const stringifyGame = (game: ServerGame) => {
     const { timeIntervalId, players, ...serializableProps } = game
     const playersObject = Object.fromEntries(players)
 
     return JSON.stringify({ ...serializableProps, players: playersObject }, null, 2)
 }
 
-const stringifyGameMap = (gameMap: Map<string, Game>) => {
+const stringifyGameMap = (gameMap: Map<string, ServerGame>) => {
     const gameMapObject = Object.fromEntries(gameMap)
 
     const serializedGameMap = Object.entries(gameMapObject).reduce((acc, [gameId, game]) => {
@@ -96,6 +74,13 @@ const stringifyGameMap = (gameMap: Map<string, Game>) => {
     }, {} as Record<string, unknown>)
 
     return JSON.stringify(serializedGameMap, null, 2)
+}
+
+const serializeGame = (game: ServerGame): SerializableServerGame => {
+    const { timeIntervalId, players, ...serializableProps } = game
+    const playersObject = Object.fromEntries(players)
+
+    return { ...serializableProps, players: playersObject }
 }
 
 
@@ -131,7 +116,7 @@ function removePlayerFromGame(socket: GameSocket, gameId: string, playerId: stri
     if (game.players.size === 0) {
         gameMap.delete(gameId);
 
-        return true; // Game was deleted
+        return true; // ServerGame was deleted
     }
 
     console.log(`Player (ID: ${playerId}) removed from game (ID: ${gameId}).`);
@@ -169,7 +154,7 @@ io.on('connection', (socket: GameSocket) => {
         const { gameId: serverGameId, playerId } = socket.data
 
         if (!(serverGameId && playerId)) {
-            const errorMessage = 'Game ID or Player ID not available'
+            const errorMessage = 'ServerGame ID or Player ID not available'
 
             console.error(errorMessage)
             callback({ error: 'Unsupported game type. Only Duo mode is supported.' })
@@ -178,7 +163,7 @@ io.on('connection', (socket: GameSocket) => {
         }
 
         if (serverGameId !== clientGameId) {
-            const errorMessage = `Game ID mismatch: ${serverGameId} !== ${clientGameId}`
+            const errorMessage = `ServerGame ID mismatch: ${serverGameId} !== ${clientGameId}`
 
             console.error(errorMessage)
             callback({ error: errorMessage })
@@ -234,20 +219,20 @@ io.on('connection', (socket: GameSocket) => {
             }
 
 
-            const newPlayer: Player = {
+            const joiningPlayer: Player = {
                 id: playerId,
                 name: playerName,
                 role: getDuoGameRole(game.players)
             }
 
-            game.players.set(playerId, newPlayer)
+            game.players.set(playerId, joiningPlayer)
 
             console.log('[RequestJoinGame] gameId: ', gameId)
             console.log('[RequestJoinGame] games after joining: ', stringifyGameMap(gameMap))
 
             io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: Object.fromEntries(game.players) })
 
-            callback({ myPlayer: newPlayer })
+            callback({ joiningPlayer, game: serializeGame(game) })
         }
     )
 
@@ -257,8 +242,8 @@ io.on('connection', (socket: GameSocket) => {
             const game = gameMap.get(gameId)
 
             if (!game) {
-                console.error(`Game (ID: ${gameId}) not found.`)
-                callback({ error: 'Game not found' })
+                console.error(`ServerGame (ID: ${gameId}) not found.`)
+                callback({ error: 'ServerGame not found' })
                 return
             }
 
@@ -283,7 +268,7 @@ io.on('connection', (socket: GameSocket) => {
 
             io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: Object.fromEntries(game.players) })
 
-            callback({ myPlayer: rejoiningPlayer })
+            callback({ rejoiningPlayer, game: serializeGame(game) })
         }
     )
 
@@ -294,7 +279,7 @@ io.on('connection', (socket: GameSocket) => {
         const game = gameMap.get(gameId)
 
         if (!game) {
-            console.error(`Game (ID: ${gameId}) not found.`)
+            console.error(`ServerGame (ID: ${gameId}) not found.`)
             return
         }
 
@@ -332,7 +317,7 @@ io.on('connection', (socket: GameSocket) => {
         const game = gameMap.get(gameId)
 
         if (!game) {
-            console.error(`Game (ID: ${gameId}) not found.`)
+            console.error(`ServerGame (ID: ${gameId}) not found.`)
             return
         }
 
@@ -345,7 +330,7 @@ io.on('connection', (socket: GameSocket) => {
         const game = gameMap.get(gameId)
 
         if (!game) {
-            console.error(`Game (ID: ${gameId}) not found.`)
+            console.error(`ServerGame (ID: ${gameId}) not found.`)
             return
         }
 
@@ -362,7 +347,7 @@ io.on('connection', (socket: GameSocket) => {
         const game = gameMap.get(gameId)
 
         if (!game) {
-            console.error(`Game (ID: ${gameId}) not found.`)
+            console.error(`ServerGame (ID: ${gameId}) not found.`)
             return
         }
 
@@ -373,7 +358,7 @@ io.on('connection', (socket: GameSocket) => {
         const game = gameMap.get(gameId)
 
         if (!game) {
-            console.error(`Game (ID: ${gameId}) not found.`)
+            console.error(`ServerGame (ID: ${gameId}) not found.`)
             return
         }
 

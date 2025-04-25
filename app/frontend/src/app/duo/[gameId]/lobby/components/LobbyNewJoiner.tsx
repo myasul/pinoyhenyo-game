@@ -27,9 +27,9 @@ export default function LobbyNewJoiner({ onJoin, onExit }: Props) {
             </section>
             <footer className='flex gap-1 w-full'>
                 <WaveButton
-                    bgColor='bg-white'
+                    bgColor='bg-gray-300'
+                    textColor='text-gray-600'
                     className='w-1/4'
-                    textColor='text-fil-darkGrey'
                     onClick={onExit}
                 >
                     <X size='28' strokeWidth='2.5' />
@@ -37,9 +37,7 @@ export default function LobbyNewJoiner({ onJoin, onExit }: Props) {
                 <WaveButton
                     onClick={() => onJoin(name.trim())}
                     disabled={!name.trim()}
-                    className='flex-1 text-xl w-full font-extrabold flex-grow hover:bg-blue-300'
-                    bgColor="bg-fil-blue"
-                    textColor="text-[#0038A8]"
+                    className='w-full'
                 >
                     Join Game
                 </WaveButton>

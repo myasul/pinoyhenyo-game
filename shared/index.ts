@@ -44,3 +44,29 @@ export type Player = {
     name: string
     role: DuoGameRole
 }
+
+export type GameSettings = {
+    duration: number
+    passLimit: number
+}
+
+export type ServerGame = {
+    players: Map<string, Player>
+    type: GameType
+    settings: GameSettings
+    guessWord?: string
+    timeRemaining: number
+    passesRemaining: number
+    timeIntervalId?: NodeJS.Timeout
+    passedWords: string[]
+}
+
+export type SerializableServerGame = {
+    players: Record<string, Player>
+    type: GameType
+    settings: GameSettings
+    guessWord?: string
+    timeRemaining: number
+    passesRemaining: number
+    passedWords: string[]
+}

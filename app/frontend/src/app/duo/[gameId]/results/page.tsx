@@ -4,22 +4,29 @@ import { useDuoGameState } from "@/hooks/useDuoGameState"
 import { GameStatus } from "@/utils/constants"
 import { useSocket } from "@/hooks/useSocket"
 import { useSearchParams } from "next/navigation"
-import { useEffect } from "react"
+import React, { useEffect } from "react"
 import { SocketEvent } from "shared"
 import { WaveButton } from "@/components/WaveButton"
 import { Repeat, X } from "react-feather"
 import { useRouter } from "next/navigation"
+import { useDuoGameSession } from "@/hooks/useDuoGameSession"
 
 const GameResultText: Partial<Record<GameStatus, string>> = {
     [GameStatus.Lose]: 'SAYANG! TRY AGAIN HENYO!',
     [GameStatus.Win]: 'YOU ARE HENYO!',
 }
 
-export default function ResultsPage() {
+type Props = {
+    params: Promise<{ gameId: string }>
+}
+
+export default function ResultsPage({ params }: Props) {
+    const { gameId } = React.use(params)
+
+    const { leaveGame } = useDuoGameSession(gameId)
     const searchParams = useSearchParams()
-    const { handlers, guessWord, timeRemaining, duration, passedWords } = useDuoGameState()
-    const socket = useSocket()
-    const router = useRouter()
+    const { handlers, guessWord, timeRemaining, duration, passedWords } = useDuoGameState(gameId)
+    const { socket } = useSocket()
 
     const status = searchParams.get('status') as GameStatus
 
@@ -37,12 +44,8 @@ export default function ResultsPage() {
         })
     }, [socket, handlers])
 
-    const handleBackClick = () => {
-        router.push('/')
-    }
-
     return (
-        <main className="p-6 justify-between flex flex-col items-center gap-5 h-full">
+        <main className="p-6 flex flex-col justify-between h-full w-full items-center bg-fil-yellow text-fil-darkText">
             <header>
                 <h1 className="text-4xl font-bold break-words text-center">{GameResultText[status as GameStatus]}</h1>
             </header>
@@ -62,10 +65,15 @@ export default function ResultsPage() {
                 </div>
             </section>
             <footer className="flex w-full gap-2">
-                <WaveButton bgColor='bg-gray-300' className='w-1/6' textColor='text-gray-600' onClick={handleBackClick}>
+                <WaveButton
+                    bgColor='bg-gray-300'
+                    textColor='text-gray-600'
+                    className='w-1/4'
+                    onClick={leaveGame}
+                >
                     <X size='28' strokeWidth='2.5' />
                 </WaveButton>
-                <WaveButton onClick={handlers[SocketEvent.RequestStartGame]} >
+                <WaveButton onClick={handlers[SocketEvent.RequestStartGame]} className="w-full">
                     <Repeat size='28' strokeWidth='2.5' />
                 </WaveButton>
             </footer>

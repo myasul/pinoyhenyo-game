@@ -1,7 +1,7 @@
 'use client'
 
 import { FastForward, Pause } from "react-feather"
-import { useEffect } from "react"
+import React, { useEffect } from "react"
 import { DuoGameRole, SocketEvent } from "shared"
 
 import { useDuoGameState } from "@/hooks/useDuoGameState"
@@ -11,10 +11,27 @@ import { CountdownCircle } from "@/components/CountdownCircle"
 import { TvStaticPlaceholder } from "@/components/TvStaticPlaceholder"
 import { WaveButton } from "@/components/WaveButton"
 import { GameInstructions } from "@/components/GameInstructions"
+import { useDuoGameSession } from "@/hooks/useDuoGameSession"
 
-export default function GuesserPage() {
-    const { setTimeRemaining, myPlayer, guessWord, timeRemaining, handlers, duration, passesRemaining } = useDuoGameState()
-    const socket = useSocket()
+type Props = {
+    params: Promise<{ gameId: string }>
+}
+
+export default function GuesserPage({ params }: Props) {
+    const { gameId } = React.use(params)
+
+    const {
+        setTimeRemaining,
+        myPlayer,
+        guessWord,
+        timeRemaining,
+        handlers,
+        duration,
+        passesRemaining
+    } = useDuoGameState(gameId)
+    useDuoGameSession(gameId)
+
+    const { socket } = useSocket()
 
     useEffect(() => {
         if (!socket) return
@@ -45,7 +62,7 @@ export default function GuesserPage() {
     if (!myPlayer) return null
 
     return (
-        <main className="p-6 justify-between flex flex-col items-center gap-5 h-full">
+        <main className="p-6 justify-between flex flex-col items-center gap-5 h-full bg-fil-yellow text-fil-darkText">
             <header className="flex items-center justify-between w-full h-16">
                 <Pause strokeWidth='2.5' />
                 <CountdownCircle duration={duration} timeRemaining={timeRemaining} />
@@ -58,7 +75,11 @@ export default function GuesserPage() {
                 </div>
             </section>
             <footer className="flex w-full">
-                <WaveButton onClick={handlers[SocketEvent.RequestChangeGuessWord]} disabled={passesRemaining <= 0}>
+                <WaveButton
+                    className="w-full"
+                    onClick={handlers[SocketEvent.RequestChangeGuessWord]}
+                    disabled={passesRemaining <= 0}
+                >
                     <FastForward size='28' strokeWidth='2.5' />
                 </WaveButton>
             </footer>

@@ -2,22 +2,13 @@
 
 import { Player, useDuoGameStore } from "@/stores/duoGameStore"
 import { useSocket } from "./useSocket"
-import { useParams, usePathname, useRouter } from "next/navigation"
-import { useCallback, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useCallback } from "react"
 import { DuoGameRole, SocketEvent } from "shared"
 import { GameStatus } from "@/utils/constants"
 import { useDuoGameSession } from "./useDuoGameSession"
 
-type DuoLobbyPageParams = { gameId: string }
-
 type PlayerMap = { [playerId: string]: Player }
-
-enum DuoGamePage {
-    Lobby = 'lobby',
-    ClueGiver = 'clue-giver',
-    Guesser = 'guesser',
-    Results = 'results',
-}
 
 type GameStartedCallbackProps = {
     guessWord: string
@@ -45,31 +36,10 @@ type Handlers = {
 };
 
 export const useDuoGameState = (gameId: string) => {
-    const pathname = usePathname()
     const router = useRouter()
     const { socket } = useSocket()
     const store = useDuoGameStore()
     const { myPlayer } = useDuoGameSession(gameId)
-
-    useEffect(() => {
-        if (!gameId) {
-            // TODO: Add frontend error logger
-            router.push('/')
-            return
-        }
-
-        if (!socket) return
-
-        const isLobbyPage = pathname.includes(DuoGamePage.Lobby)
-        const hasGameStarted = pathname.includes(DuoGamePage.ClueGiver) || pathname.includes(DuoGamePage.Guesser)
-
-        if (hasGameStarted && !myPlayer && !isLobbyPage) {
-            console.error('Player not found')
-            router.push('/')
-
-            return
-        }
-    }, [gameId, socket, pathname, router, myPlayer])
 
     const handleRequestStartGame = useCallback(() => {
         if (!socket) return

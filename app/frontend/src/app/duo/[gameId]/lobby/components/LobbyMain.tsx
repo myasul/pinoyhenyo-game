@@ -49,19 +49,17 @@ export const LobbyMain = ({ players, myPlayer, onExit, onStartGame }: Props) => 
 
             <footer className="flex gap-1 w-full max-w-md">
                 <WaveButton
-                    bgColor='bg-white'
+                    bgColor='bg-gray-300'
+                    textColor='text-gray-600'
                     className='w-1/4'
-                    textColor='text-fil-darkGrey'
                     onClick={onExit}
                 >
                     <X size="28" strokeWidth="2.5" />
                 </WaveButton>
                 <WaveButton
                     disabled={players.length !== 2}
-                    className='flex-1 text-xl w-full font-extrabold flex-grow hover:bg-blue-300'
-                    bgColor="bg-fil-blue"
-                    textColor="text-[#0038A8]"
                     onClick={onStartGame}
+                    className="w-full"
                 >
                     <span className="font-extrabold">Start Game</span>
                 </WaveButton>

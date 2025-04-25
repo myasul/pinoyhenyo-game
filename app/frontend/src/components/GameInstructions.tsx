@@ -6,7 +6,7 @@ const GameInstructionsMap = {
 }
 
 export const GameInstructions = ({ role }: { role: DuoGameRole }) => (
-    <div className="border-gray-300 border rounded-md p-2 w-full bg-gray-100">
+    <div className="border-gray-300 border rounded-md p-2 w-full bg-fil-yellow">
         {GameInstructionsMap[role]}
     </div>
 )
