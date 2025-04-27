@@ -8,7 +8,12 @@ export const getSocket = () => {
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001'
 
     if (!socketInstance) {
-        socketInstance = io(socketUrl)
+        socketInstance = io(socketUrl, {
+            transports: ['websocket'],
+            reconnectionAttempts: 10,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+        })
     }
 
     return socketInstance
