@@ -27,12 +27,12 @@ export const getRandomGuessWord = async () => {
 
     if (error) {
         console.error(`Error fetching random guess words: ${error.message}`)
-        return
+        return null
     }
 
     if (data.length === 0) {
         console.error('No random guess words found')
-        return
+        return null
     }
 
     const randomGuessWord = data[0] as GuessWord

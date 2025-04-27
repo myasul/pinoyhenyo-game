@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { useSocket } from "./useSocket"
-import { SocketEvent, Player, GameType, ServerGame, SerializableServerGame } from "shared"
+import { SocketEvent, Player, GameType, ServerGame, SerializedGame, SocketResponse } from "shared"
 import { usePathname, useRouter } from "next/navigation"
 import { useDuoGameStore } from "@/stores/duoGameStore"
 import { DuoGamePage } from "@/utils/constants"
@@ -25,13 +25,13 @@ export const useDuoGameSession = (gameId: string) => {
 
     const playerLocalStorageKey = `henyo-duo-player-${gameId}`
 
-    const setupGame = useCallback((joiningPlayer: Player, serverGame: SerializableServerGame) => {
+    const setupGame = useCallback((joiningPlayer: Player, game: SerializedGame) => {
         store.setMyPlayer(joiningPlayer)
-        store.setGuessWord(serverGame.guessWord ?? null)
-        store.setPlayers(Object.values(serverGame.players))
-        store.setTimeRemaining(serverGame.timeRemaining)
-        store.setDuration(serverGame.settings.duration)
-        store.setPassesRemaining(serverGame.passesRemaining)
+        store.setGuessWord(game.guessWord ?? null)
+        store.setPlayers(Object.values(game.players))
+        store.setTimeRemaining(game.timeRemaining)
+        store.setDuration(game.settings.duration)
+        store.setPassesRemaining(game.passesRemaining)
     }, [store])
 
     const joinGame = useCallback((playerName: string) => {
@@ -49,13 +49,15 @@ export const useDuoGameSession = (gameId: string) => {
         socket.emit(
             SocketEvent.RequestJoinGame,
             { gameId, gameType: GameType.Duo, playerName },
-            (serverResponse: { joiningPlayer: Player, game: SerializableServerGame, error: string }) => {
-                if (serverResponse.error) {
+            (serverResponse: SocketResponse<{ joiningPlayer: Player, game: SerializedGame }>) => {
+                if (!serverResponse.success) {
                     console.error('Failed to join game. Error: ', serverResponse.error)
                     router.push('/')
+
+                    return
                 }
 
-                const { joiningPlayer, game } = serverResponse
+                const { joiningPlayer, game } = serverResponse.data
 
                 localStorage.setItem(playerLocalStorageKey, JSON.stringify(joiningPlayer))
 
@@ -73,14 +75,16 @@ export const useDuoGameSession = (gameId: string) => {
         socket.emit(
             SocketEvent.RequestRejoinGame,
             { gameId, rejoiningPlayer },
-            (serverResponse: { rejoiningPlayer: Player, game: SerializableServerGame, error: string }) => {
-                if (serverResponse.error) {
+            (serverResponse: SocketResponse<{ rejoiningPlayer: Player, game: SerializedGame }>) => {
+                if (!serverResponse.success) {
+                    console.error(`Failed to rejoin game. 'Error: ${serverResponse.error}`)
+
                     // Join the game as a new player
                     joinGame(rejoiningPlayer.name)
                     return
                 }
 
-                setupGame(serverResponse.rejoiningPlayer, serverResponse.game)
+                setupGame(serverResponse.data.rejoiningPlayer, serverResponse.data.game)
                 setPlayerSessionStatus(DuoGamePlayerSessionStatus.Rejoined)
 
             })
@@ -102,12 +106,15 @@ export const useDuoGameSession = (gameId: string) => {
     }, [socket, gameId, playerLocalStorageKey, store, disconnectSocket, router])
 
     // Determines if the player can join the game (as a new player or rejoining)
-    const handlePlayerEnteringTheGame = useEvent(({ game, error }: { game: SerializableServerGame | null, error: string }) => {
-        if (error) {
-            console.error('Failed to enter the game. Error: ', error)
+    const handlePlayerEnteringTheGame = useEvent((
+        socketResponse: SocketResponse<{ game: SerializedGame | null, error: string }>) => {
+        if (!socketResponse.success) {
+            console.error('Failed to enter the game. Error: ', socketResponse.error)
             router.push('/')
             return
         }
+
+        const { game } = socketResponse.data    
 
         const isPlayerAlreadyInGame = store.myPlayer
         const isPlayerRejoining = playerSessionStatus === DuoGamePlayerSessionStatus.Rejoining

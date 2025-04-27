@@ -16,7 +16,7 @@ export enum SocketEvent {
     NotifyPlayersUpdated = 'notify:playersUpdated',
     NotifyGameStarted = 'notify:gameStarted',
     NotifyRemainingTimeUpdated = 'notify:remainingTimeUpdated',
-    NotifyWordGuessUnsuccessful = 'notify:wordGuessUnsuccessful',
+    NotifyWordGuessFailed = 'notify:wordGuessFailed',
     NotifyWordGuessSuccessful = 'notify:wordGuessSuccessful',
     NotifyRoleSwitched = 'notify:roleSwitched',
     NotifyBackToLobby = 'notify:backToLobby',
@@ -62,12 +62,19 @@ export type ServerGame = {
     passedWords: string[]
 }
 
-export type SerializableServerGame = {
+export type SerializedGame = {
     players: Record<string, Player>
     type: GameType
     settings: GameSettings
-    guessWord?: string
+    guessWord: string | null
     timeRemaining: number
     passesRemaining: number
     passedWords: string[]
 }
+
+/**
+ * Standardized response for client callbacks
+ */
+export type SocketResponse<T = void> =
+    | { success: true; data: T }
+    | { success: false; error: string };

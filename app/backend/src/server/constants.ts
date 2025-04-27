@@ -1,0 +1,1 @@
+export const DISCONNECTION_GRACE_PERIOD = 10_000 // 10 seconds

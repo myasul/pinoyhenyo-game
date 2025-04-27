@@ -40,21 +40,21 @@ export default function GuesserPage({ params }: Props) {
         socket.on(SocketEvent.NotifyRemainingTimeUpdated, setTimeRemaining)
         socket.on(SocketEvent.NotifyGuessWordChanged, handlers[SocketEvent.NotifyGuessWordChanged])
 
-        socket.on(SocketEvent.NotifyWordGuessUnsuccessful, ({ passedWords }: { passedWords: string[] }) => {
-            const handler = handlers[SocketEvent.NotifyWordGuessUnsuccessful]
+        socket.on(SocketEvent.NotifyWordGuessFailed, ({ passedWords }: { passedWords: string[] }) => {
+            const handler = handlers[SocketEvent.NotifyWordGuessFailed]
 
             handler({ gameStatus: GameStatus.Lose, passedWords })
         })
 
         socket.on(SocketEvent.NotifyWordGuessSuccessful, ({ passedWords }: { passedWords: string[] }) => {
-            const handler = handlers[SocketEvent.NotifyWordGuessUnsuccessful]
+            const handler = handlers[SocketEvent.NotifyWordGuessFailed]
 
             handler({ gameStatus: GameStatus.Win, passedWords })
         })
 
         return () => {
             socket.off(SocketEvent.NotifyRemainingTimeUpdated)
-            socket.off(SocketEvent.NotifyWordGuessUnsuccessful)
+            socket.off(SocketEvent.NotifyWordGuessFailed)
             socket.off(SocketEvent.NotifyWordGuessSuccessful)
             socket.off(SocketEvent.NotifyGuessWordChanged)
         }
