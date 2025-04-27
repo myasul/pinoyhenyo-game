@@ -40,7 +40,7 @@ export const LobbyMain = ({ players, myPlayer, onExit, onStartGame }: Props) => 
                             </li>
                         ))}
                     </ul>
-                    <InviteLinkBtn />
+                    {players.length < 2 && <InviteLinkBtn />}
                 </section>
 
                 <section className="flex flex-col items-center">
