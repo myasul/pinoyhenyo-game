@@ -32,7 +32,7 @@ type Handlers = {
     [SocketEvent.NotifyWordGuessSuccessful]: Handler<[{ gameStatus: GameStatus, passedWords: string[] }]>;
     [SocketEvent.NotifyRoleSwitched]: Handler<[{ updatedPlayers: PlayerMap }]>;
     [SocketEvent.NotifyBackToLobby]: Handler<[]>;
-    [SocketEvent.NotifyGuessWordChanged]: Handler<[{ guessWord: string }]>;
+    [SocketEvent.NotifyGuessWordChanged]: Handler<[{ guessWord: string, passesRemaining: number }]>;
 };
 
 export const useDuoGameState = (gameId: string) => {

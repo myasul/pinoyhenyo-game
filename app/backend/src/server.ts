@@ -272,6 +272,22 @@ io.on('connection', (socket: GameSocket) => {
         }
     )
 
+    socket.on(
+        SocketEvent.RequestEnterGame,
+        ({ gameId }: { gameId: string }, callback) => {
+            const game = gameMap.get(gameId)
+
+            if (!game) {
+                callback({ game: null })
+                return
+            }
+
+            socket.data.gameId = gameId
+
+            callback({ game: serializeGame(game) })
+        }
+    )
+
     socket.on(SocketEvent.RequestStartGame, async (data: { gameId: string, finalPlayers: Player[] }) => {
         console.log('[SocketEvent.RequestStartGame]')
         const { gameId, finalPlayers } = data

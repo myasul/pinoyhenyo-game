@@ -27,7 +27,7 @@ export const useDuoGameSession = (gameId: string) => {
 
     const setupGame = useCallback((joiningPlayer: Player, serverGame: SerializableServerGame) => {
         store.setMyPlayer(joiningPlayer)
-        store.setGuessWord(serverGame.guessWord)
+        store.setGuessWord(serverGame.guessWord ?? null)
         store.setPlayers(Object.values(serverGame.players))
         store.setTimeRemaining(serverGame.timeRemaining)
         store.setDuration(serverGame.settings.duration)
@@ -101,42 +101,58 @@ export const useDuoGameSession = (gameId: string) => {
         })
     }, [socket, gameId, playerLocalStorageKey, store, disconnectSocket, router])
 
-    const handleRejoining = useEvent(() => {
-        const isInADuoPage = pathname.includes('duo')
-
-        // This hook can only be used in a duo game page
-        if (!isInADuoPage) {
-            disconnectSocket()
+    // Determines if the player can join the game (as a new player or rejoining)
+    const handlePlayerEnteringTheGame = useEvent(({ game, error }: { game: SerializableServerGame | null, error: string }) => {
+        if (error) {
+            console.error('Failed to enter the game. Error: ', error)
             router.push('/')
-        }
-
-        const shouldRejoin = !(store.myPlayer || playerSessionStatus === DuoGamePlayerSessionStatus.Rejoining)
-
-        if (!shouldRejoin) return
-
-        const rejoiningPlayerData = localStorage.getItem(playerLocalStorageKey)
-
-        if (!rejoiningPlayerData) {
-            const hasGameStarted = !pathname.includes(DuoGamePage.Lobby)
-
-            if (hasGameStarted) {
-                router.push('/')
-                return
-            }
-
-            setPlayerSessionStatus(DuoGamePlayerSessionStatus.NewJoiner)
             return
         }
 
-        const rejoiningPlayer: Player = JSON.parse(rejoiningPlayerData)
+        const isPlayerAlreadyInGame = store.myPlayer
+        const isPlayerRejoining = playerSessionStatus === DuoGamePlayerSessionStatus.Rejoining
 
-        rejoinGame(rejoiningPlayer)
+        if (isPlayerAlreadyInGame || isPlayerRejoining) return
+
+        const rejoiningPlayerData = localStorage.getItem(playerLocalStorageKey)
+        const rejoiningPlayer = rejoiningPlayerData ? JSON.parse(rejoiningPlayerData) : null
+        const isRejoiningPlayer = rejoiningPlayer && game && game.players[rejoiningPlayer.id]
+
+        if (isRejoiningPlayer) {
+            rejoinGame(JSON.parse(rejoiningPlayerData!))
+            return
+        }
+
+        const isGameFull = game && Object.values(game.players).length >= 2
+        const hasGameStarted = !pathname.includes(DuoGamePage.Lobby)
+
+        // TODO: Can improve UI/UX by showing a message to the user
+        // before redirecting them to the home page
+        if (hasGameStarted || isGameFull) {
+            console.error('Game is full or has already started. Cannot join the game.')
+            router.push('/')
+            return
+        }
+
+        setPlayerSessionStatus(DuoGamePlayerSessionStatus.NewJoiner)
     })
 
     // Rejoining logic
     useEffect(() => {
-        handleRejoining()
-    }, [handleRejoining, socket])
+        if (!socket) return
+
+        socket.emit(SocketEvent.RequestEnterGame, { gameId }, handlePlayerEnteringTheGame)
+    }, [socket, handlePlayerEnteringTheGame, gameId])
+
+    useEffect(() => {
+        const isInADuoPage = pathname.includes('duo')
+
+        if (isInADuoPage) return
+
+        // This hook can only be used in a duo game page
+        disconnectSocket()
+        router.push('/')
+    }, [router, pathname, disconnectSocket])
 
     return {
         joinGame,

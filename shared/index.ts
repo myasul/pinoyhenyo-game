@@ -10,6 +10,7 @@ export enum SocketEvent {
     // TODO: Remove RequestBackToLobby logic
     RequestBackToLobby = 'request:backToLobby',
     RequestChangeGuessWord = 'request:changeGuessWord',
+    RequestEnterGame = 'request:enterGame',
 
     // Server initiated
     NotifyPlayersUpdated = 'notify:playersUpdated',

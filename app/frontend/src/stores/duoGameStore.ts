@@ -7,8 +7,7 @@ export type Player = {
     role: DuoGameRole
 }
 
-export type DuoGameState = {
-    hostId: string | null
+export interface DuoGameState {
     role: DuoGameRole | null
     guessWord: string | null
     myPlayer: Player | null
@@ -18,18 +17,16 @@ export type DuoGameState = {
     passesRemaining: number
     passedWords: string[]
     setRole: (role: DuoGameRole) => void
-    setGuessWord: (guessWord: string) => void
-    setHostId: (hostId: string) => void
+    setGuessWord: (guessWord: string | null) => void
     setPlayers: (players: Player[]) => void
     setTimeRemaining: (timeRemaining: number) => void
     setPassesRemaining: (passesRemaining: number) => void
     setDuration: (duration: number) => void
-    setMyPlayer: (player: Player) => void
+    setMyPlayer: (player: Player | null) => void
     setPassedWords: (passedWords: string[]) => void
 }
 
 export const useDuoGameStore = create<DuoGameState>((set) => ({
-    hostId: null,
     role: null,
     guessWord: null,
     players: [],
@@ -43,8 +40,7 @@ export const useDuoGameStore = create<DuoGameState>((set) => ({
     setDuration: (duration) => set({ duration }),
     setRole: (role) => set({ role }),
     setGuessWord: (guessWord) => set({ guessWord }),
-    setHostId: (hostId) => set({ hostId }),
     setPlayers: (players) => set({ players }),
-    setMyPlayer: (player: Player) => set({ myPlayer: player }),
+    setMyPlayer: (player) => set({ myPlayer: player }),
     setPassedWords: (passedWords) => set({ passedWords }),
 }))

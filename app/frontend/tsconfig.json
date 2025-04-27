@@ -29,7 +29,7 @@
       ]
     },
     "skipLibCheck": true,
-    "strict": false,
+    "strict": true,
     "esModuleInterop": true
   },
   "include": [

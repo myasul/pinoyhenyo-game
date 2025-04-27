@@ -53,7 +53,7 @@ export default function LobbyPage({ params }: Props) {
     }
 
     return (
-        playerSessionStatus === DuoGamePlayerSessionStatus.NewJoiner
+        playerSessionStatus === DuoGamePlayerSessionStatus.NewJoiner || !myPlayer
             ? <LobbyNewJoiner onJoin={joinGame} onExit={leaveGame} />
             : (
                 <LobbyMain

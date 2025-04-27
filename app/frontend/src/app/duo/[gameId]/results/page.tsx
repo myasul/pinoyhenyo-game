@@ -8,7 +8,6 @@ import React, { useEffect } from "react"
 import { SocketEvent } from "shared"
 import { WaveButton } from "@/components/WaveButton"
 import { Repeat, X } from "react-feather"
-import { useRouter } from "next/navigation"
 import { useDuoGameSession } from "@/hooks/useDuoGameSession"
 import { PageLayout } from "@/components/PageLayout"
 
