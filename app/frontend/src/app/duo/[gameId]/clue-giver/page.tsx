@@ -11,6 +11,7 @@ import { GameInstructions } from "@/components/GameInstructions"
 import { WaveButton } from "@/components/WaveButton"
 import { useDuoGameSession } from "@/hooks/useDuoGameSession"
 import { PageLayout } from "@/components/PageLayout"
+import { Footer } from "@/components/Footer"
 
 type Props = {
     params: Promise<{ gameId: string }>
@@ -61,7 +62,6 @@ export default function ClueGiverPage({ params }: Props) {
     return (
         <PageLayout>
             <header className="flex items-center justify-between w-full h-16">
-                <Pause strokeWidth='2.5' />
                 <CountdownCircle duration={duration} timeRemaining={timeRemaining} />
                 <span className="text-3xl font-extrabold text-red-500">{passesRemaining}</span>
             </header>
@@ -71,11 +71,12 @@ export default function ClueGiverPage({ params }: Props) {
                     {guessWord}
                 </div>
             </section>
-            <footer className="flex w-full">
-                <WaveButton className="w-full" onClick={handlers[SocketEvent.RequestWordGuessSuccessful]}  >
-                    <Check size='28' strokeWidth='2.5' />
-                </WaveButton>
-            </footer>
+            <Footer
+                onContinue={handlers[SocketEvent.RequestWordGuessSuccessful]}
+                isBackDisabled
+                continueLabel={<Check size='28' strokeWidth='2.5' />}
+                cancelLabel={<Pause size='28' strokeWidth='2.5' />}
+            />
         </PageLayout>
     )
 }

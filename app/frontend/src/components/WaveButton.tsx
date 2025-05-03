@@ -30,7 +30,7 @@ export const WaveButton = ({
             disabled={disabled}
             onClick={handleClick}
             className={
-                `shadow-md relative overflow-hidden px-6 py-3 rounded-md focus:outline-none flex items-center justify-center text-xl font-extrabold ${textColor} ${bgColor} ${className} ${disabled ? 'opacity-50' : ''}`
+                `shadow-md relative overflow-hidden px-6 py-3 rounded-md focus:outline-none flex items-center justify-center text-2xl font-extrabold ${textColor} ${bgColor} ${className} ${disabled ? 'opacity-50' : ''}`
             }
         >
             {isAnimating && (

@@ -1,7 +1,6 @@
+import { Footer } from '@/components/Footer';
 import { PageLayout } from '@/components/PageLayout';
-import { WaveButton } from '@/components/WaveButton';
 import { useState } from 'react';
-import { X } from 'react-feather';
 
 type Props = {
     onJoin: (playerName: string) => void;
@@ -26,23 +25,12 @@ export default function LobbyNewJoiner({ onJoin, onExit }: Props) {
                     className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
             </section>
-            <footer className='flex gap-1 w-full'>
-                <WaveButton
-                    bgColor='bg-fil-deepBlue'
-                    textColor='text-fil-yellow'
-                    className='w-1/4'
-                    onClick={onExit}
-                >
-                    <X size='28' strokeWidth='2.5' />
-                </WaveButton>
-                <WaveButton
-                    onClick={() => onJoin(name.trim())}
-                    disabled={!name.trim()}
-                    className='w-full'
-                >
-                    Join Game
-                </WaveButton>
-            </footer>
+            <Footer
+                onBack={onExit}
+                onContinue={() => onJoin(name.trim())}
+                isContinueDisabled={!name.trim()}
+                continueLabel="Join"
+            />
         </PageLayout>
     );
 }

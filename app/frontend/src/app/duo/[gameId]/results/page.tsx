@@ -6,13 +6,13 @@ import { useSocket } from "@/hooks/useSocket"
 import { useSearchParams } from "next/navigation"
 import React, { useEffect } from "react"
 import { SocketEvent } from "shared"
-import { WaveButton } from "@/components/WaveButton"
-import { Repeat, X } from "react-feather"
+import { Repeat } from "react-feather"
 import { useDuoGameSession } from "@/hooks/useDuoGameSession"
 import { PageLayout } from "@/components/PageLayout"
+import { Footer } from "@/components/Footer"
 
 const GameResultText: Partial<Record<GameStatus, string>> = {
-    [GameStatus.Lose]: 'SAYANG! TRY AGAIN HENYO!',
+    [GameStatus.Lose]: 'YOU GUYS LOST 😔',
     [GameStatus.Win]: 'YOU ARE HENYO!',
 }
 
@@ -46,7 +46,7 @@ export default function ResultsPage({ params }: Props) {
     return (
         <PageLayout>
             <header>
-                <h1 className="text-4xl font-bold break-words text-center">{GameResultText[status as GameStatus]}</h1>
+                <h1 className="text-4xl font-bold break-normal text-center text-fil-deepBlue">{GameResultText[status as GameStatus]}</h1>
             </header>
             <section className="flex flex-col items-center gap-4 w-full h-full">
                 <div className="text-4xl">&quot;{guessWord}&quot;</div>
@@ -63,19 +63,12 @@ export default function ResultsPage({ params }: Props) {
                     }
                 </div>
             </section>
-            <footer className="flex w-full gap-2">
-                <WaveButton
-                    bgColor='bg-gray-300'
-                    textColor='text-gray-600'
-                    className='w-1/4'
-                    onClick={leaveGame}
-                >
-                    <X size='28' strokeWidth='2.5' />
-                </WaveButton>
-                <WaveButton onClick={handlers[SocketEvent.RequestStartGame]} className="w-full">
-                    <Repeat size='28' strokeWidth='2.5' />
-                </WaveButton>
-            </footer>
+            <Footer
+                onBack={leaveGame}
+                onContinue={handlers[SocketEvent.RequestStartGame]}
+                isContinueDisabled={false}
+                continueLabel={<Repeat size='28' strokeWidth='2.5' />}
+            />
         </PageLayout>
     )
 }

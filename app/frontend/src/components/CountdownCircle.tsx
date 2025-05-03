@@ -24,7 +24,7 @@ export function CountdownCircle({ duration, timeRemaining, onComplete }: Countdo
     const strokeDashoffset = circumference * (1 - progress);
 
     return (
-        <div className="w-32 h-32 flex items-center justify-center relative">
+        <div className="h-32 flex items-center justify-center relative">
             <svg
                 height={radius * 2}
                 width={radius * 2}
@@ -55,9 +55,13 @@ export function CountdownCircle({ duration, timeRemaining, onComplete }: Countdo
             </svg>
 
             {/* Timer display */}
-            <span className="absolute text-xl font-semibold text-gray-800">
+            <span
+                className={
+                    `absolute text-xl font-semibold ${timeRemaining <= 10 ? 'text-fil-deepRed' : 'text-fil-darkText'}`
+                }
+            >
                 {timeRemaining}s
             </span>
-        </div>
+        </div >
     );
 }

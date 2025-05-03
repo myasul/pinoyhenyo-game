@@ -7,6 +7,7 @@ import { PageLayout } from "@/components/PageLayout"
 import { RadioGroup } from "@/components/RadioGroup"
 import { useState } from "react"
 import { CheckboxGroup } from "@/components/CheckboxGroup"
+import { Footer } from "@/components/Footer"
 
 type Props = {
     players: Player[]
@@ -60,7 +61,7 @@ export const LobbyMain = ({ players, myPlayer, onExit, onStartGame }: Props) => 
                                 className={
                                     `
                                         flex items-center justify-between px-4 py-3 rounded-2xl shadow-md border-2 
-                                        ${player.id === myPlayer.id ? 'bg-fil-blue border-fil-deepBlue animate-pulseJoin text-white' : 'bg-fil-white border-fil-yellow text-fil-darkText'}
+                                        ${player.id === myPlayer.id ? 'bg-fil-blue border-fil-deepBlue animate-pulseJoin text-fil-deepBlue' : 'bg-fil-white border-fil-yellow text-fil-darkText'}
                                     `
                                 }
                             >
@@ -112,24 +113,12 @@ export const LobbyMain = ({ players, myPlayer, onExit, onStartGame }: Props) => 
                     </div>
                 </section>
             </div>
-
-            <footer className="flex gap-1 w-full max-w-md">
-                <WaveButton
-                    bgColor='bg-fil-deepBlue'
-                    textColor='text-fil-yellow'
-                    className='w-1/4'
-                    onClick={onExit}
-                >
-                    <X size="28" strokeWidth="2.5" />
-                </WaveButton>
-                <WaveButton
-                    disabled={players.length !== 2}
-                    onClick={handleStartGame}
-                    className="w-full"
-                >
-                    <span className="font-extrabold">Start Game</span>
-                </WaveButton>
-            </footer>
+            <Footer
+                onBack={onExit}
+                onContinue={handleStartGame}
+                isContinueDisabled={players.length !== 2}
+                continueLabel="Start"
+            />
         </PageLayout>
     )
 }

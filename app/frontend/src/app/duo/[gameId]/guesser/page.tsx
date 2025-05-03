@@ -9,10 +9,10 @@ import { GameStatus } from "@/utils/constants"
 import { useSocket } from "@/hooks/useSocket"
 import { CountdownCircle } from "@/components/CountdownCircle"
 import { TvStaticPlaceholder } from "@/components/TvStaticPlaceholder"
-import { WaveButton } from "@/components/WaveButton"
 import { GameInstructions } from "@/components/GameInstructions"
 import { useDuoGameSession } from "@/hooks/useDuoGameSession"
 import { PageLayout } from "@/components/PageLayout"
+import { Footer } from "@/components/Footer"
 
 type Props = {
     params: Promise<{ gameId: string }>
@@ -65,25 +65,22 @@ export default function GuesserPage({ params }: Props) {
     return (
         <PageLayout>
             <header className="flex items-center justify-between w-full h-16">
-                <Pause strokeWidth='2.5' />
                 <CountdownCircle duration={duration} timeRemaining={timeRemaining} />
                 <span className="text-3xl font-extrabold text-red-500">{passesRemaining}</span>
             </header>
             <section className="flex flex-col items-center gap-4 w-full h-full">
                 <GameInstructions role={DuoGameRole.Guesser} />
                 <div className="h-full pt-10">
-                    <TvStaticPlaceholder word={guessWord} />
+                    <TvStaticPlaceholder word={guessWord ?? ''} />
                 </div>
             </section>
-            <footer className="flex w-full">
-                <WaveButton
-                    className="w-full"
-                    onClick={handlers[SocketEvent.RequestChangeGuessWord]}
-                    disabled={passesRemaining <= 0}
-                >
-                    <FastForward size='28' strokeWidth='2.5' />
-                </WaveButton>
-            </footer>
+            <Footer
+                onContinue={handlers[SocketEvent.RequestChangeGuessWord]}
+                isBackDisabled={false}
+                isContinueDisabled={passesRemaining <= 0}
+                continueLabel={<FastForward size='28' strokeWidth='2.5' />}
+                cancelLabel={<Pause size='28' strokeWidth='2.5' />}
+            />
         </PageLayout>
     )
 }

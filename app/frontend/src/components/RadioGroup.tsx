@@ -17,8 +17,8 @@ export const RadioGroup = <Value extends string | number>({ options, selected, o
                     type="button"
                     value={option.value}
                     onClick={() => onSelect(option.value)}
-                    className={`px-4 py-2 rounded-xl font-medium border transition-colors duration-200
-                            ${selected === option.value ? 'bg-fil-blue text-white' : 'bg-white text-fil-darkText'}`
+                    className={`px-4 py-2 rounded-xl font-medium  border-2 transition-colors duration-200 shadow-md
+                            ${selected === option.value ? 'bg-fil-blue text-white border-fil-deepBlue' : 'bg-white text-fil-darkText border-fil-blue'}`
                     }
                     key={option.value}
                 >
