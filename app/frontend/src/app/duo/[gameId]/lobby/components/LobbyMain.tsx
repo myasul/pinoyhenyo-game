@@ -1,4 +1,4 @@
-import { DuoGameRole, Player } from "shared"
+import { DuoGameRole, Player, SupportedLanguages } from "shared"
 import { InviteLinkBtn } from "./InviteLink"
 import { WaveButton } from "@/components/WaveButton"
 import { X } from "react-feather"
@@ -6,6 +6,7 @@ import { DuoGameRoleText } from "../page"
 import { PageLayout } from "@/components/PageLayout"
 import { RadioGroup } from "@/components/RadioGroup"
 import { useState } from "react"
+import { CheckboxGroup } from "@/components/CheckboxGroup"
 
 type Props = {
     players: Player[]
@@ -14,23 +15,28 @@ type Props = {
     onStartGame: () => void
 }
 
-
+const LanguageOptions = [
+    { label: 'English', value: SupportedLanguages.English },
+    { label: 'Tagalog', value: SupportedLanguages.Tagalog },
+]
 
 const SettingsDefaults = {
     duration: 60,
     passes: 3,
-    languagesUsed: ['English', 'Tagalog'],
+    languagesUsed: LanguageOptions.map((option) => option.value),
 }
 
 const SettingsOptions = {
     duration: [30, 60, 90, 120],
     passes: [0, 1, 2, 3, 4, 5],
+    languagesUsed: LanguageOptions,
 }
 
 
 export const LobbyMain = ({ players, myPlayer, onExit, onStartGame }: Props) => {
     const [duration, setDuration] = useState(SettingsDefaults.duration)
     const [passes, setPasses] = useState(SettingsDefaults.passes)
+    const [languagesUsed, setLanguagesUsed] = useState(SettingsDefaults.languagesUsed)
 
     return (
         <PageLayout>
@@ -60,7 +66,6 @@ export const LobbyMain = ({ players, myPlayer, onExit, onStartGame }: Props) => 
                         ))}
                     </ul>
                     {players.length < 2 && <InviteLinkBtn />}
-                    <InviteLinkBtn />
                 </section>
 
                 <section className="flex flex-col items-center text-center gap-3">
@@ -73,7 +78,7 @@ export const LobbyMain = ({ players, myPlayer, onExit, onStartGame }: Props) => 
                                 value,
                             }))}
                             selected={duration}
-                            onChange={(value) => setDuration(value)}
+                            onSelect={(value) => setDuration(value)}
                         />
                     </div>
                     <div className="flex flex-col gap-2">
@@ -84,7 +89,15 @@ export const LobbyMain = ({ players, myPlayer, onExit, onStartGame }: Props) => 
                                 value,
                             }))}
                             selected={passes}
-                            onChange={(value) => setPasses(value)}
+                            onSelect={(value) => setPasses(value)}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label className="font-extrabold">Languages Used</label>
+                        <CheckboxGroup
+                            options={SettingsOptions.languagesUsed}
+                            selected={languagesUsed}
+                            onSelect={(value) => setLanguagesUsed(value)}
                         />
                     </div>
                 </section>
