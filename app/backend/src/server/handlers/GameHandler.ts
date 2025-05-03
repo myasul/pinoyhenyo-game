@@ -14,6 +14,7 @@ export class GameHandler implements IHandler {
         socket.on(SocketEvent.RequestStartGame, (data, callback) => this.onStartGame(data, callback ?? this.defaultCallback))
         socket.on(SocketEvent.RequestWordGuessSuccessful, (data, callback) => this.onWordGuessSuccessful(data, callback ?? this.defaultCallback))
         socket.on(SocketEvent.RequestChangeGuessWord, (data, callback) => this.onChangeGuessWord(data, callback ?? this.defaultCallback))
+        socket.on(SocketEvent.RequestBackToLobby, (data, callback) => this.onBackToLobby(data, callback ?? this.defaultCallback))
     }
 
     private defaultCallback(response: SocketResponse) {
@@ -21,6 +22,8 @@ export class GameHandler implements IHandler {
     }
 
     private onStartGame(
+        // Remove settings from the request since this will
+        // handled by RequestUpdateSettings event
         { gameId, settings }: { gameId: string, settings: GameSettings },
         callback: (response: SocketResponse<null>) => void
     ) {
@@ -45,6 +48,23 @@ export class GameHandler implements IHandler {
                 this.io.to(gameId).emit(SocketEvent.NotifyGameStarted, game)
             }
         })
+
+        callback({ success: true, data: null })
+    }
+
+    private onBackToLobby(
+        { gameId }: { gameId: string },
+        callback: (response: SocketResponse<null>) => void
+    ) {
+        const game = this.gameManager.get(gameId)
+
+        if (!game) {
+            console.error(`ServerGame (ID: ${gameId}) not found.`)
+            callback({ success: false, error: `ServerGame (ID: ${gameId}) not found.` })
+            return
+        }
+
+        game.reset((game) => this.io.to(gameId).emit(SocketEvent.NotifyBackToLobby, game))
 
         callback({ success: true, data: null })
     }

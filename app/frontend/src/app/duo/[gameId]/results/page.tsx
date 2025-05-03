@@ -1,15 +1,16 @@
 'use client'
 
+import { useSearchParams } from "next/navigation"
+import React, { useEffect, useState } from "react"
+import { SocketEvent } from "shared"
+import { Repeat } from "react-feather"
+
 import { useDuoGameState } from "@/hooks/useDuoGameState"
 import { GameStatus } from "@/utils/constants"
 import { useSocket } from "@/hooks/useSocket"
-import { useSearchParams } from "next/navigation"
-import React, { useEffect } from "react"
-import { SocketEvent } from "shared"
-import { Repeat } from "react-feather"
-import { useDuoGameSession } from "@/hooks/useDuoGameSession"
 import { PageLayout } from "@/components/PageLayout"
 import { Footer } from "@/components/Footer"
+import { LoadingIcon } from "@/components/LoadingIcon"
 
 const GameResultText: Partial<Record<GameStatus, string>> = {
     [GameStatus.Lose]: 'YOU GUYS LOST 😔',
@@ -23,10 +24,10 @@ type Props = {
 export default function ResultsPage({ params }: Props) {
     const { gameId } = React.use(params)
 
-    const { leaveGame } = useDuoGameSession(gameId)
     const searchParams = useSearchParams()
-    const { handlers, guessWord, timeRemaining, duration, passedWords } = useDuoGameState(gameId)
+    const { handlers, guessWord, timeRemaining, settings, passedWords } = useDuoGameState(gameId)
     const { socket } = useSocket()
+    const [isLoading, setIsLoading] = useState(false)
 
     const status = searchParams.get('status') as GameStatus
 
@@ -38,20 +39,43 @@ export default function ResultsPage({ params }: Props) {
 
         return (() => {
             socket.off(SocketEvent.NotifyGameStarted)
-            socket.off(SocketEvent.NotifyRoleSwitched)
             socket.off(SocketEvent.NotifyBackToLobby)
         })
     }, [socket, handlers])
 
+    const handleBack = () => {
+        setIsLoading(true)
+
+        const backToLobby = handlers[SocketEvent.RequestBackToLobby]
+
+        backToLobby()
+    }
+
+    const handleContinue = () => {
+        setIsLoading(true)
+
+        const restartGame = handlers[SocketEvent.RequestStartGame]
+
+        restartGame(settings)
+    }
+
+    if (isLoading) {
+        return (
+            <PageLayout className="justify-center">
+                <LoadingIcon />
+            </PageLayout>
+        )
+    }
+
     return (
         <PageLayout>
-            <header>
-                <h1 className="text-4xl font-bold break-normal text-center text-fil-deepBlue">{GameResultText[status as GameStatus]}</h1>
+            <header className="text-4xl font-bold break-normal text-center text-fil-deepBlue">
+                {GameResultText[status as GameStatus]}
             </header>
             <section className="flex flex-col items-center gap-4 w-full h-full">
                 <div className="text-4xl">&quot;{guessWord}&quot;</div>
                 <div>
-                    {status === GameStatus.Lose ? "⏰ Time ran out!" : `⏰ Guessed in ${duration - timeRemaining} seconds!`}
+                    {status === GameStatus.Lose ? "⏰ Time ran out!" : `⏰ Guessed in ${settings.duration - timeRemaining} seconds!`}
                 </div>
                 <div>
                     {
@@ -64,8 +88,8 @@ export default function ResultsPage({ params }: Props) {
                 </div>
             </section>
             <Footer
-                onBack={leaveGame}
-                onContinue={handlers[SocketEvent.RequestStartGame]}
+                onBack={handleBack}
+                onContinue={handleContinue}
                 isContinueDisabled={false}
                 continueLabel={<Repeat size='28' strokeWidth='2.5' />}
             />

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Button } from "../../../../../components/Button"
+import { WaveButton } from "@/components/WaveButton"
 
 export const InviteLinkBtn = () => {
     const [copied, setCopied] = useState(false)
@@ -18,13 +18,13 @@ export const InviteLinkBtn = () => {
     }
 
     return (
-        <Button
-            variant="secondary"
-            className={`transition-all duration-500 w-3/4 shadow-md font-extrabold border
-                ${copied ? 'bg-fil-deepYellow  text-fil-deepBlue' : 'bg-fil-deepBlue text-white border-fil-blue'}
-              `}
-            label={copied ? "Copied!" : "Copy invite link"}
+        <WaveButton
+            className="transition-all duration-500 w-3/4 shadow-md font-extrabold border border-fil-blue rounded-xl text-lg h-10"
+            bgColor={copied ? 'bg-fil-deepYellow' : 'bg-fil-deepBlue'}
+            textColor={copied ? 'text-fil-deepBlue' : 'text-white'}
             onClick={handleCopy}
-        />
+        >
+            {copied ? "Copied!" : "Copy invite link"}
+        </WaveButton>
     )
 }

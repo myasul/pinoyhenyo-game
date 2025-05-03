@@ -120,6 +120,17 @@ export class Game {
         return onChangeGuessWord(this.serialize())
     }
 
+    reset(onReset: (game: SerializedGame) => void) {
+        if (this.#timeIntervaldId) clearInterval(this.#timeIntervaldId)
+        this.#timeIntervaldId = undefined
+        this.#timeRemaining = 0
+        this.#passesRemaining = 0
+        this.#guessWord = null
+        this.#passedWords = []
+
+        onReset(this.serialize())
+    }
+
     serialize(): SerializedGame {
         const playersObject = Object.fromEntries(this.#players)
 

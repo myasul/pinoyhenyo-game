@@ -27,8 +27,8 @@ export default function GuesserPage({ params }: Props) {
         guessWord,
         timeRemaining,
         handlers,
-        duration,
-        passesRemaining
+        passesRemaining,
+        settings: { duration }
     } = useDuoGameState(gameId)
     useDuoGameSession(gameId)
 

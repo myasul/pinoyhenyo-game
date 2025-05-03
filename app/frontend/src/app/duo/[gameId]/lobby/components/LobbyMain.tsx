@@ -1,7 +1,5 @@
 import { DuoGameRole, GameSettings, Player, SupportedLanguages } from "shared"
 import { InviteLinkBtn } from "./InviteLink"
-import { WaveButton } from "@/components/WaveButton"
-import { X } from "react-feather"
 import { DuoGameRoleText } from "../page"
 import { PageLayout } from "@/components/PageLayout"
 import { RadioGroup } from "@/components/RadioGroup"
@@ -12,6 +10,7 @@ import { Footer } from "@/components/Footer"
 type Props = {
     players: Player[]
     myPlayer: Player
+    settings: GameSettings
     onExit: () => void
     onStartGame: (settings: GameSettings) => void
 }
@@ -21,23 +20,16 @@ const LanguageOptions = [
     { label: 'Tagalog', value: SupportedLanguages.Tagalog },
 ]
 
-const SettingsDefaults = {
-    duration: 60,
-    passes: 3,
-    languagesUsed: LanguageOptions.map((option) => option.value),
-}
-
 const SettingsOptions = {
     duration: [30, 60, 90, 120],
     passes: [0, 1, 2, 3, 4, 5],
     languagesUsed: LanguageOptions,
 }
 
-
-export const LobbyMain = ({ players, myPlayer, onExit, onStartGame }: Props) => {
-    const [duration, setDuration] = useState(SettingsDefaults.duration)
-    const [passes, setPasses] = useState(SettingsDefaults.passes)
-    const [languagesUsed, setLanguagesUsed] = useState(SettingsDefaults.languagesUsed)
+export const LobbyMain = ({ players, myPlayer, settings, onExit, onStartGame }: Props) => {
+    const [duration, setDuration] = useState(settings.duration)
+    const [passes, setPasses] = useState(settings.passes)
+    const [languagesUsed, setLanguagesUsed] = useState(settings.languagesUsed)
 
     const handleStartGame = () => {
         const settings: GameSettings = {
@@ -51,7 +43,7 @@ export const LobbyMain = ({ players, myPlayer, onExit, onStartGame }: Props) => 
 
     return (
         <PageLayout>
-            <div className="flex flex-col gap-5 w-full">
+            <div className="flex flex-col gap-6 w-full">
                 <section className="flex flex-col items-center w-full gap-3">
                     <h1 className="text-3xl font-extrabold text-fil-deepBlue">Players</h1>
                     <ul className="grid grid-cols-1 gap-3 w-full">
@@ -76,11 +68,12 @@ export const LobbyMain = ({ players, myPlayer, onExit, onStartGame }: Props) => 
                             </li>
                         ))}
                     </ul>
-                    {players.length < 2 && <InviteLinkBtn />}
+                    {/* {players.length < 2 && <InviteLinkBtn />} */}
+                    <InviteLinkBtn />
                 </section>
 
                 <section className="flex flex-col items-center text-center gap-3">
-                    <h1 className="text-3xl mb-2 font-extrabold text-fil-deepBlue">Settings</h1>
+                    <h1 className="text-3xl font-extrabold text-fil-deepBlue">Settings</h1>
                     <div className="flex flex-col gap-2">
                         <label className="font-extrabold">Duration (seconds)</label>
                         <RadioGroup

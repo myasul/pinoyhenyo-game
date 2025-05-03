@@ -8,7 +8,6 @@ import { useDuoGameState } from "@/hooks/useDuoGameState"
 import { Check, Pause } from "react-feather"
 import { CountdownCircle } from "@/components/CountdownCircle"
 import { GameInstructions } from "@/components/GameInstructions"
-import { WaveButton } from "@/components/WaveButton"
 import { useDuoGameSession } from "@/hooks/useDuoGameSession"
 import { PageLayout } from "@/components/PageLayout"
 import { Footer } from "@/components/Footer"
@@ -26,8 +25,8 @@ export default function ClueGiverPage({ params }: Props) {
         timeRemaining,
         guessWord,
         handlers,
-        duration,
-        passesRemaining
+        passesRemaining,
+        settings: { duration }
     } = useDuoGameState(gameId)
     useDuoGameSession(gameId)
 
@@ -54,6 +53,7 @@ export default function ClueGiverPage({ params }: Props) {
             socket.off(SocketEvent.NotifyRemainingTimeUpdated)
             socket.off(SocketEvent.NotifyWordGuessFailed)
             socket.off(SocketEvent.NotifyGuessWordChanged)
+            socket.off(SocketEvent.NotifyWordGuessSuccessful)
         }
     }, [socket, handlers, setTimeRemaining])
 

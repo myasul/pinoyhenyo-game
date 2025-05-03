@@ -1,27 +1,18 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect } from "react"
 import { useSocket } from "./useSocket"
-import { SocketEvent, Player, GameType, ServerGame, SerializedGame, SocketResponse } from "shared"
+import { SocketEvent, Player, GameType, SerializedGame, SocketResponse } from "shared"
 import { usePathname, useRouter } from "next/navigation"
 import { useDuoGameStore } from "@/stores/duoGameStore"
-import { DuoGamePage } from "@/utils/constants"
+import { DuoGamePage, DuoGamePlayerSessionStatus } from "@/utils/constants"
 import { useEvent } from "./useEvent"
-
-export enum DuoGamePlayerSessionStatus {
-    Idle = 'IDLE',
-    NewJoiner = 'NEW_JOINER',
-    Joining = 'JOINING',
-    Joined = 'JOINED',
-    Rejoining = 'REJOINING',
-    Rejoined = 'REJOINED',
-    Left = 'LEFT',
-}
 
 export const useDuoGameSession = (gameId: string) => {
     const router = useRouter()
     const pathname = usePathname()
     const { socket, disconnectSocket } = useSocket()
-    const [playerSessionStatus, setPlayerSessionStatus] = useState<DuoGamePlayerSessionStatus>(DuoGamePlayerSessionStatus.Idle)
     const store = useDuoGameStore()
+
+    const { myPlayerStatus, setMyPlayerStatus, myPlayer, setMyPlayer } = store
 
     const playerLocalStorageKey = `henyo-duo-player-${gameId}`
 
@@ -30,19 +21,18 @@ export const useDuoGameSession = (gameId: string) => {
         store.setGuessWord(game.guessWord ?? null)
         store.setPlayers(Object.values(game.players))
         store.setTimeRemaining(game.timeRemaining)
-        store.setDuration(game.settings.duration)
         store.setPassesRemaining(game.passesRemaining)
     }, [store])
 
     const joinGame = useCallback((playerName: string) => {
         if (!socket) return
 
-        setPlayerSessionStatus(DuoGamePlayerSessionStatus.Joining)
+        setMyPlayerStatus(DuoGamePlayerSessionStatus.Joining)
 
         // Player has either rejoined or still in the game
-        if (store.myPlayer) {
-            localStorage.setItem(playerLocalStorageKey, JSON.stringify(store.myPlayer))
-            setPlayerSessionStatus(DuoGamePlayerSessionStatus.Joined)
+        if (myPlayer) {
+            localStorage.setItem(playerLocalStorageKey, JSON.stringify(myPlayer))
+            setMyPlayerStatus(DuoGamePlayerSessionStatus.Joined)
             return
         }
 
@@ -63,14 +53,14 @@ export const useDuoGameSession = (gameId: string) => {
 
                 setupGame(joiningPlayer, game)
 
-                setPlayerSessionStatus(DuoGamePlayerSessionStatus.Joined)
+                setMyPlayerStatus(DuoGamePlayerSessionStatus.Joined)
             })
-    }, [socket, router, gameId, store, playerLocalStorageKey, setupGame])
+    }, [socket, router, gameId, playerLocalStorageKey, setupGame, setMyPlayerStatus, myPlayer])
 
     const rejoinGame = useEvent((rejoiningPlayer: Player) => {
         if (!socket) return
 
-        setPlayerSessionStatus(DuoGamePlayerSessionStatus.Rejoining)
+        setMyPlayerStatus(DuoGamePlayerSessionStatus.Rejoining)
 
         socket.emit(
             SocketEvent.RequestRejoinGame,
@@ -85,7 +75,7 @@ export const useDuoGameSession = (gameId: string) => {
                 }
 
                 setupGame(serverResponse.data.rejoiningPlayer, serverResponse.data.game)
-                setPlayerSessionStatus(DuoGamePlayerSessionStatus.Rejoined)
+                setMyPlayerStatus(DuoGamePlayerSessionStatus.Rejoined)
 
             })
     })
@@ -96,16 +86,16 @@ export const useDuoGameSession = (gameId: string) => {
         socket.emit(SocketEvent.RequestLeaveGame, { gameId })
 
         // Remove player from the game
-        setPlayerSessionStatus(DuoGamePlayerSessionStatus.Left)
+        setMyPlayerStatus(DuoGamePlayerSessionStatus.Left)
         localStorage.removeItem(playerLocalStorageKey)
-        store.setMyPlayer(null)
+        setMyPlayer(null)
         disconnectSocket()
 
         console.log('[Lobby page] Player left the game. Redirecting to home page...')
 
         // Redirect to the home page
         router.push('/')
-    }, [socket, gameId, playerLocalStorageKey, store, disconnectSocket, router])
+    }, [socket, gameId, playerLocalStorageKey, setMyPlayer, disconnectSocket, router, setMyPlayerStatus])
 
     // Determines if the player can join the game (as a new player or rejoining)
     const handlePlayerEnteringTheGame = useEvent((
@@ -119,7 +109,7 @@ export const useDuoGameSession = (gameId: string) => {
         const { game } = socketResponse.data
 
         const isPlayerAlreadyInGame = store.myPlayer
-        const isPlayerRejoining = playerSessionStatus === DuoGamePlayerSessionStatus.Rejoining
+        const isPlayerRejoining = myPlayerStatus === DuoGamePlayerSessionStatus.Rejoining
 
         if (isPlayerAlreadyInGame || isPlayerRejoining) return
 
@@ -143,7 +133,7 @@ export const useDuoGameSession = (gameId: string) => {
             return
         }
 
-        setPlayerSessionStatus(DuoGamePlayerSessionStatus.NewJoiner)
+        setMyPlayerStatus(DuoGamePlayerSessionStatus.NewJoiner)
     })
 
     // Rejoining logic
@@ -166,7 +156,6 @@ export const useDuoGameSession = (gameId: string) => {
     return {
         joinGame,
         leaveGame,
-        playerSessionStatus,
-        myPlayer: store.myPlayer,
+        myPlayerStatus
     }
 }

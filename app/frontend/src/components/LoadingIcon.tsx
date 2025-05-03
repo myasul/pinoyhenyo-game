@@ -1,4 +1,4 @@
-export const LoadingIcon = ({ size }: { size: string }) => (
+export const LoadingIcon = ({ size = '100' }: { size?: string }) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
         version="1.1"

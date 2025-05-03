@@ -1,3 +1,5 @@
+import { GameSettings, SupportedLanguages } from "shared";
+
 export enum GameStatus {
     Started = 'STARTED',
     Win = 'WIN',
@@ -16,4 +18,20 @@ export enum DuoGamePage {
 export enum Environment {
     Development = 'development',
     Production = 'production'
+}
+
+export const DefaultGameSettings: GameSettings = {
+    duration: 60,
+    passes: 3,
+    languagesUsed: [SupportedLanguages.English, SupportedLanguages.Tagalog]
+}
+
+export enum DuoGamePlayerSessionStatus {
+    Idle = 'IDLE',
+    NewJoiner = 'NEW_JOINER',
+    Joining = 'JOINING',
+    Joined = 'JOINED',
+    Rejoining = 'REJOINING',
+    Rejoined = 'REJOINED',
+    Left = 'LEFT',
 }

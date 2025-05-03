@@ -7,7 +7,6 @@ export enum SocketEvent {
     RequestUpdateTimeLimit = 'request:updateTimeLimit',
     RequestWordGuessSuccessful = 'request:wordGuessSuccessful',
     RequestSwitchRole = 'request:switchRole',
-    // TODO: Remove RequestBackToLobby logic
     RequestBackToLobby = 'request:backToLobby',
     RequestChangeGuessWord = 'request:changeGuessWord',
     RequestEnterGame = 'request:enterGame',
