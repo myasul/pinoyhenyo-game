@@ -38,8 +38,7 @@ export const useSocket = () => {
             if (!isExplicityDisconnected.current) return
 
             socket.removeListener(SocketEvent.Connect)
-
-            if (connectedSocket) connectedSocket.disconnect()
+            connectedSocket?.disconnect()
         }
     }, [connectedSocket])
 

@@ -93,16 +93,18 @@ export const useDuoGameSession = (gameId: string) => {
     const leaveGame = useCallback(() => {
         if (!socket) return
 
-        socket.emit(SocketEvent.RequestLeaveGame, { gameId }, () => {
-            // Remove player from the game
-            setPlayerSessionStatus(DuoGamePlayerSessionStatus.Left)
-            localStorage.removeItem(playerLocalStorageKey)
-            store.setMyPlayer(null)
-            disconnectSocket()
+        socket.emit(SocketEvent.RequestLeaveGame, { gameId })
 
-            // Redirect to the home page
-            router.push('/')
-        })
+        // Remove player from the game
+        setPlayerSessionStatus(DuoGamePlayerSessionStatus.Left)
+        localStorage.removeItem(playerLocalStorageKey)
+        store.setMyPlayer(null)
+        disconnectSocket()
+
+        console.log('[Lobby page] Player left the game. Redirecting to home page...')
+
+        // Redirect to the home page
+        router.push('/')
     }, [socket, gameId, playerLocalStorageKey, store, disconnectSocket, router])
 
     // Determines if the player can join the game (as a new player or rejoining)
@@ -114,7 +116,7 @@ export const useDuoGameSession = (gameId: string) => {
             return
         }
 
-        const { game } = socketResponse.data    
+        const { game } = socketResponse.data
 
         const isPlayerAlreadyInGame = store.myPlayer
         const isPlayerRejoining = playerSessionStatus === DuoGamePlayerSessionStatus.Rejoining

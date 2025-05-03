@@ -21,7 +21,7 @@ export const InviteLinkBtn = () => {
         <Button
             variant="secondary"
             className={`transition-all duration-500 w-3/4
-                ${copied ? 'bg-fil-red hover:bg-red-300 text-black' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'}
+                ${copied ? 'bg-fil-yellow hover:bg-yellow-300 text-black' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'}
               `}
             label={copied ? "Copied!" : "Copy invite link"}
             onClick={handleCopy}

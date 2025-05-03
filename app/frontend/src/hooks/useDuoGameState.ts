@@ -107,6 +107,9 @@ export const useDuoGameState = (gameId: string) => {
 
         if (myPlayer && !isMyPlayerInUpdatedPlayers) {
             console.error('Player not found in updated players')
+
+            console.log('[Lobby page] Player not found in updated players. Redirecting to home page...')
+
             router.push('/')
             return
         }
