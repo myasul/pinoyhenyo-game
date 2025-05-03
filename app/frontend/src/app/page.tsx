@@ -1,6 +1,6 @@
 'use client'
-import { Button } from '@/components/Button';
 import { PageLayout } from '@/components/PageLayout';
+import { WaveButton } from '@/components/WaveButton';
 import axios from 'axios';
 
 import { useRouter } from 'next/navigation';
@@ -29,22 +29,30 @@ export default function HomePage() {
         <span className="text-[#0038A8]">O</span>
       </h1>
 
-      <p className="mb-6 text-fil-red text-lg">Choose a game mode:</p>
-
-      <div className="grid gap-4">
-        <Button
-          label='Solo'
-          onClick={handleDuoModeClick}
-          overrideTWStyle='bg-fil-blue text-blue-900 hover:bg-blue-300'
-        />
-        <Button
-          label='Duo'
-          onClick={handleDuoModeClick}
-          overrideTWStyle='bg-fil-red text-red-800 hover:bg-red-300'
-        />
+      <div>
+        <p className="mb-6 text-fil-red text-lg">Choose a game mode:</p>
+        <div className="grid gap-4">
+          <WaveButton
+            disabled
+            onClick={handleDuoModeClick}
+            bgColor='bg-fil-red'
+            textColor='text-red-800'
+            className='!rounded-xl'
+          >
+            Solo
+          </WaveButton>
+          <WaveButton
+            onClick={handleDuoModeClick}
+            bgColor='bg-fil-blue'
+            textColor='text-blue-800'
+            className='!rounded-xl'
+          >
+            Duo
+          </WaveButton>
+        </div>
       </div>
 
-      <div className="mt-6 text-center text-fil-darkText max-w-md">
+      <div className="mt-6 text-center text-fil-darkText max-w-md h-3/4">
         <p>
           Henyo is a classic Filipino guessing game where one player gives clues and the other guesses the word!
         </p>
