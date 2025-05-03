@@ -72,6 +72,11 @@ export type SerializedGame = {
     passedWords: string[]
 }
 
+export enum SupportedLanguages {
+    English = 'en',
+    Tagalog = 'tl',
+}
+
 /**
  * Standardized response for client callbacks
  */

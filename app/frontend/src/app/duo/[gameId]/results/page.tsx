@@ -34,7 +34,6 @@ export default function ResultsPage({ params }: Props) {
         if (!socket) return
 
         socket.on(SocketEvent.NotifyGameStarted, handlers[SocketEvent.NotifyGameStarted])
-        socket.on(SocketEvent.NotifyRoleSwitched, handlers[SocketEvent.NotifyRoleSwitched])
         socket.on(SocketEvent.NotifyBackToLobby, handlers[SocketEvent.NotifyBackToLobby])
 
         return (() => {

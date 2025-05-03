@@ -10,8 +10,8 @@ type WaveButtonProps = {
 
 export const WaveButton = ({
     children,
-    bgColor = 'bg-yellow-300',
-    textColor = 'text-yellow-800',
+    bgColor = 'bg-fil-deepYellow',
+    textColor = 'text-fil-deepBlue',
     disabled,
     onClick,
     className

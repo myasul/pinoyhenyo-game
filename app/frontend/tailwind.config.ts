@@ -15,6 +15,9 @@ export default {
           red: '#FFB8B8',
           white: '#FDFDFD',
           darkText: '#2B2B2B',
+          deepBlue: '#0038A8',
+          deepRed: '#CE1126',
+          deepYellow: '#FCD116'
         },
       },
       animation: {

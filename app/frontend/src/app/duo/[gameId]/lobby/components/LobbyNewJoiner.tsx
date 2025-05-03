@@ -28,8 +28,8 @@ export default function LobbyNewJoiner({ onJoin, onExit }: Props) {
             </section>
             <footer className='flex gap-1 w-full'>
                 <WaveButton
-                    bgColor='bg-gray-300'
-                    textColor='text-gray-600'
+                    bgColor='bg-fil-deepBlue'
+                    textColor='text-fil-yellow'
                     className='w-1/4'
                     onClick={onExit}
                 >
