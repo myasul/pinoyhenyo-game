@@ -2,17 +2,22 @@ import { Server } from "socket.io"
 import { GameManager } from "../services/GameManager"
 import { GameSocket } from "../types"
 import { SocketEvent, SocketResponse } from "shared"
+import { IHandler } from "./IHandler"
 
-export class GameHandler {
+export class GameHandler implements IHandler {
     constructor(
         private io: Server,
         private gameManager: GameManager
     ) { }
 
     register(socket: GameSocket) {
-        socket.on(SocketEvent.RequestStartGame, (data, callback) => this.onStartGame(data, callback))
-        socket.on(SocketEvent.RequestWordGuessSuccessful, (data, callback) => this.onWordGuessSuccessful(data, callback))
-        socket.on(SocketEvent.RequestChangeGuessWord, (data, callback) => this.onChangeGuessWord(data, callback))
+        socket.on(SocketEvent.RequestStartGame, (data, callback) => this.onStartGame(data, callback ?? this.defaultCallback))
+        socket.on(SocketEvent.RequestWordGuessSuccessful, (data, callback) => this.onWordGuessSuccessful(data, callback ?? this.defaultCallback))
+        socket.on(SocketEvent.RequestChangeGuessWord, (data, callback) => this.onChangeGuessWord(data, callback ?? this.defaultCallback))
+    }
+
+    private defaultCallback(response: SocketResponse) {
+        return response
     }
 
     private onStartGame(

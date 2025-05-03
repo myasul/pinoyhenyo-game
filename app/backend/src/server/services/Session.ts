@@ -28,6 +28,8 @@ export class Session {
         if (this.gameId) this.socket.leave(this.gameId)
         this.socket.data.gameId = undefined
         this.socket.data.playerId = undefined
+
+        this.socket.disconnect()
     }
 
     isStillConnected(connectedSockets: Map<string, GameSocket>): boolean {

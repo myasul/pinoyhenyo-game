@@ -5,8 +5,9 @@ import { v4 as uuid } from 'uuid'
 import { GameSocket } from "../types";
 import { DISCONNECTION_GRACE_PERIOD } from "../constants";
 import { GameManager } from "../services/GameManager";
+import { IHandler } from "./IHandler";
 
-export class PlayerHandler {
+export class PlayerHandler implements IHandler {
     constructor(
         private io: Server,
         private gameManager: GameManager
@@ -14,10 +15,14 @@ export class PlayerHandler {
 
     register(socket: GameSocket) {
         socket.on(SocketEvent.Disconnect, () => this.onDisconnect(socket))
-        socket.on(SocketEvent.RequestLeaveGame, (data, callback) => this.onLeave(socket, data, callback))
-        socket.on(SocketEvent.RequestJoinGame, (data, callback) => this.onJoin(socket, data, callback))
-        socket.on(SocketEvent.RequestRejoinGame, (data, callback) => this.onRejoin(socket, data, callback))
-        socket.on(SocketEvent.RequestEnterGame, (data, callback) => this.onEnter(socket, data, callback))
+        socket.on(SocketEvent.RequestLeaveGame, (data, callback) => this.onLeave(socket, data, callback ?? this.defaultCallback))
+        socket.on(SocketEvent.RequestJoinGame, (data, callback) => this.onJoin(socket, data, callback ?? this.defaultCallback))
+        socket.on(SocketEvent.RequestRejoinGame, (data, callback) => this.onRejoin(socket, data, callback ?? this.defaultCallback))
+        socket.on(SocketEvent.RequestEnterGame, (data, callback) => this.onEnter(socket, data, callback ?? this.defaultCallback))
+    }
+
+    private defaultCallback(response: SocketResponse) {
+        return response
     }
 
     private onJoin(
@@ -143,6 +148,8 @@ export class PlayerHandler {
     }
 
     private onDisconnect(socket: GameSocket) {
+        console.log(`[${SocketEvent.Disconnect}] Player disconnected: `, socket.id)
+        
         const session = this.gameManager.getSession(socket)
 
         if (!session.gameId || !session.playerId) return
