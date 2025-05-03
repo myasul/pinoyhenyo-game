@@ -1,7 +1,7 @@
 import { Server } from "socket.io"
 import { GameManager } from "../services/GameManager"
 import { GameSocket } from "../types"
-import { SocketEvent, SocketResponse } from "shared"
+import { GameSettings, SocketEvent, SocketResponse } from "shared"
 import { IHandler } from "./IHandler"
 
 export class GameHandler implements IHandler {
@@ -21,7 +21,7 @@ export class GameHandler implements IHandler {
     }
 
     private onStartGame(
-        { gameId }: { gameId: string },
+        { gameId, settings }: { gameId: string, settings: GameSettings },
         callback: (response: SocketResponse<null>) => void
     ) {
         const game = this.gameManager.get(gameId)
@@ -34,6 +34,7 @@ export class GameHandler implements IHandler {
 
         game.start({
             tickDelaySeconds: 1,
+            settings,
             onTick: (game) => {
                 this.io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, game.timeRemaining)
             },

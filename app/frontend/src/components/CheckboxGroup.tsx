@@ -11,11 +11,11 @@ type Props<Value extends string | number> = {
 
 export const CheckboxGroup = <Value extends string | number>({ options, selected, onSelect }: Props<Value>) => {
     const handleSelect = (value: Value) => {
-        if (selected.includes(value)) {
-            onSelect(selected.filter((v) => v !== value))
-        } else {
-            onSelect([...selected, value])
-        }
+        const updatedSelected = selected.includes(value)
+            ? selected.filter((v) => v !== value)
+            : [...selected, value]
+
+        onSelect(updatedSelected)
     }
 
     return (

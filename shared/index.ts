@@ -48,7 +48,8 @@ export type Player = {
 
 export type GameSettings = {
     duration: number
-    passLimit: number
+    passes: number
+    languagesUsed: SupportedLanguages[]
 }
 
 export type ServerGame = {

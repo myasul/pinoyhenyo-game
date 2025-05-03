@@ -4,14 +4,14 @@ import { Player, useDuoGameStore } from "@/stores/duoGameStore"
 import { useSocket } from "./useSocket"
 import { useRouter } from "next/navigation"
 import { useCallback } from "react"
-import { DuoGameRole, SerializedGame, SocketEvent, SocketResponse } from "shared"
+import { DuoGameRole, GameSettings, SerializedGame, SocketEvent, SocketResponse } from "shared"
 import { GameStatus } from "@/utils/constants"
 import { useDuoGameSession } from "./useDuoGameSession"
 
 type Handler<T extends unknown[] = unknown[]> = (...args: T) => void;
 
 type Handlers = {
-    [SocketEvent.RequestStartGame]: Handler<[]>;
+    [SocketEvent.RequestStartGame]: Handler<[settings: GameSettings]>;
     [SocketEvent.RequestWordGuessSuccessful]: Handler<[]>;
     [SocketEvent.RequestSwitchRole]: Handler<[]>;
     [SocketEvent.RequestBackToLobby]: Handler<[]>;
@@ -30,17 +30,17 @@ export const useDuoGameState = (gameId: string) => {
     const store = useDuoGameStore()
     const { myPlayer } = useDuoGameSession(gameId)
 
-    const handleRequestStartGame = useCallback(() => {
+    const handleRequestStartGame = useCallback((settings: GameSettings) => {
         if (!socket) return
 
         socket.emit(
             SocketEvent.RequestStartGame,
-            { gameId, finalPlayers: Object.values(store.players) },
+            { gameId, settings },
             // TODO: Encapsulate this in a function to handle 
             // errors (redirect to the home page)
             (_socketResponse: SocketResponse) => undefined
         )
-    }, [socket, gameId, store.players])
+    }, [socket, gameId])
 
     const handleRequestWordGuessSuccessful = useCallback(() => {
         if (!socket) return

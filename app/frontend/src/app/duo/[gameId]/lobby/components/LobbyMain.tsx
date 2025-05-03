@@ -1,4 +1,4 @@
-import { DuoGameRole, Player, SupportedLanguages } from "shared"
+import { DuoGameRole, GameSettings, Player, SupportedLanguages } from "shared"
 import { InviteLinkBtn } from "./InviteLink"
 import { WaveButton } from "@/components/WaveButton"
 import { X } from "react-feather"
@@ -12,7 +12,7 @@ type Props = {
     players: Player[]
     myPlayer: Player
     onExit: () => void
-    onStartGame: () => void
+    onStartGame: (settings: GameSettings) => void
 }
 
 const LanguageOptions = [
@@ -37,6 +37,16 @@ export const LobbyMain = ({ players, myPlayer, onExit, onStartGame }: Props) => 
     const [duration, setDuration] = useState(SettingsDefaults.duration)
     const [passes, setPasses] = useState(SettingsDefaults.passes)
     const [languagesUsed, setLanguagesUsed] = useState(SettingsDefaults.languagesUsed)
+
+    const handleStartGame = () => {
+        const settings: GameSettings = {
+            duration,
+            passes,
+            languagesUsed,
+        }
+
+        onStartGame(settings)
+    }
 
     return (
         <PageLayout>
@@ -114,7 +124,7 @@ export const LobbyMain = ({ players, myPlayer, onExit, onStartGame }: Props) => 
                 </WaveButton>
                 <WaveButton
                     disabled={players.length !== 2}
-                    onClick={onStartGame}
+                    onClick={handleStartGame}
                     className="w-full"
                 >
                     <span className="font-extrabold">Start Game</span>

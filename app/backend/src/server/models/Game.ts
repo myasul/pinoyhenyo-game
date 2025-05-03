@@ -1,6 +1,11 @@
-import { DuoGameRole, GameSettings, GameType, Player, SerializedGame } from "shared";
+import { DuoGameRole, GameSettings, GameType, Player, SerializedGame, SupportedLanguages } from "shared";
 import { getRandomGuessWord } from "../../model/guess_word";
-import { stringify } from "querystring";
+
+const DEFAULT_SETTINGS: GameSettings = {
+    duration: 60,
+    passes: 3,
+    languagesUsed: [SupportedLanguages.English, SupportedLanguages.Tagalog],
+}
 
 export class Game {
     #players: Map<string, Player> = new Map()
@@ -11,16 +16,19 @@ export class Game {
     #passedWords: string[] = []
     #settings: GameSettings = {
         duration: 60,
-        passLimit: 3
+        passes: 3,
+        languagesUsed: [],
     }
     #getRandomGuessWord: () => Promise<string | null>
 
     constructor(
         public readonly id: string,
         public readonly type = GameType.Duo,
+        settings: Partial<GameSettings> = {},
         getRandomGuessWordFunc = getRandomGuessWord,
     ) {
         this.#getRandomGuessWord = getRandomGuessWordFunc
+        this.#settings = { ...DEFAULT_SETTINGS, ...settings }
     }
 
     get players() {
@@ -59,11 +67,12 @@ export class Game {
     // TODO: Settings should be passed in the start method
     async start(opts: {
         tickDelaySeconds: number,
+        settings: Partial<GameSettings>,
         onTick: (game: SerializedGame) => void,
         onGameStarted: (game: SerializedGame) => void,
         onGameOver: (game: SerializedGame) => void
     }) {
-        const { tickDelaySeconds, onTick, onGameOver, onGameStarted } = opts
+        const { tickDelaySeconds, settings, onTick, onGameOver, onGameStarted } = opts
 
         if (this.#timeIntervaldId) clearInterval(this.#timeIntervaldId)
 
@@ -77,9 +86,10 @@ export class Game {
             }
         }, tickDelaySeconds * 1000)
 
+        this.#settings = { ...this.#settings, ...settings }
         this.#timeIntervaldId = timeIntervaldId
         this.#timeRemaining = this.#settings.duration
-        this.#passesRemaining = this.#settings.passLimit
+        this.#passesRemaining = this.#settings.passes
         this.#guessWord = await this.#getRandomGuessWord()
         this.#passedWords = []
 
@@ -101,7 +111,7 @@ export class Game {
 
         const nextGuessWord = await this.#getRandomGuessWord()
 
-        if (!nextGuessWord) return  onChangeGuessWord(this.serialize())
+        if (!nextGuessWord) return onChangeGuessWord(this.serialize())
 
         if (currentGuessWord) this.#passedWords.push(currentGuessWord)
         this.#guessWord = nextGuessWord
