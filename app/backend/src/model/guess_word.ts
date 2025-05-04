@@ -1,3 +1,4 @@
+import { SupportedLanguages } from "shared"
 import { supabase } from "../lib/supabase"
 
 enum Category {
@@ -22,8 +23,8 @@ export type GuessWord = {
 
 
 // TODO: Add error handling
-export const getRandomGuessWord = async () => {
-    const { data, error } = await supabase.rpc('get_random_guess_words')
+export const getRandomGuessWord = async (languages: SupportedLanguages[] = []) => {
+    const { data, error } = await supabase.rpc('get_random_guess_words', { languages, count: 1 })
 
     if (error) {
         console.error(`Error fetching random guess words: ${error.message}`)

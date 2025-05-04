@@ -19,7 +19,7 @@ export class Game {
         passes: 3,
         languagesUsed: [],
     }
-    #getRandomGuessWord: () => Promise<string | null>
+    #getRandomGuessWord: (languages?: SupportedLanguages[]) => Promise<string | null>
 
     constructor(
         public readonly id: string,
@@ -90,7 +90,7 @@ export class Game {
         this.#timeIntervaldId = timeIntervaldId
         this.#timeRemaining = this.#settings.duration
         this.#passesRemaining = this.#settings.passes
-        this.#guessWord = await this.#getRandomGuessWord()
+        this.#guessWord = await this.#getRandomGuessWord(this.#settings.languagesUsed)
         this.#passedWords = []
 
         onGameStarted(this.serialize())
@@ -109,7 +109,7 @@ export class Game {
 
         if (this.#passesRemaining === 0) return onChangeGuessWord(this.serialize())
 
-        const nextGuessWord = await this.#getRandomGuessWord()
+        const nextGuessWord = await this.#getRandomGuessWord(this.#settings.languagesUsed)
 
         if (!nextGuessWord) return onChangeGuessWord(this.serialize())
 

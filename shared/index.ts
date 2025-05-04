@@ -73,8 +73,8 @@ export type SerializedGame = {
 }
 
 export enum SupportedLanguages {
-    English = 'en',
-    Tagalog = 'tl',
+    English = 'ENGLISH',
+    Tagalog = 'TAGALOG',
 }
 
 /**
