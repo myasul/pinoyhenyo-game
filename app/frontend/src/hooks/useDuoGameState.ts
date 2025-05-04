@@ -5,7 +5,7 @@ import { useSocket } from "./useSocket"
 import { useRouter } from "next/navigation"
 import { useCallback } from "react"
 import { DuoGameRole, GameSettings, Player, SerializedGame, SocketEvent } from "shared"
-import { GameStatus } from "@/utils/constants"
+import { DuoGamePlayerSessionStatus, GameStatus } from "@/utils/constants"
 
 type Handler<T extends unknown[] = unknown[]> = (...args: T) => void;
 
@@ -33,12 +33,20 @@ export const useDuoGameState = (gameId: string) => {
     // Sync game state coming from the server
     // Only syncing game state that is shared between players
     const syncGameState = useCallback((game: SerializedGame) => {
+        store.setMyPlayerStatus(DuoGamePlayerSessionStatus.Syncing)
+
+        // add new player status (syncing)
         store.setSettings(game.settings)
         store.setTimeRemaining(game.timeRemaining)
         store.setPassesRemaining(game.passesRemaining)
         store.setGuessWord(game.guessWord)
         store.setPlayers(Object.values(game.players))
         store.setPassedWords(game.passedWords)
+
+        // Add artificial delay to simulate syncing
+        setTimeout(() => {
+            store.setMyPlayerStatus(DuoGamePlayerSessionStatus.Synced)
+        }, 500)
     }, [store])
 
     const handleRequestStartGame = useCallback((settings: GameSettings) => {

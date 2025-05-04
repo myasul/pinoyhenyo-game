@@ -34,7 +34,8 @@ export default function LobbyPage({ params }: Props) {
     const isLobbyReady = [
         DuoGamePlayerSessionStatus.NewJoiner,
         DuoGamePlayerSessionStatus.Joined,
-        DuoGamePlayerSessionStatus.Rejoined
+        DuoGamePlayerSessionStatus.Rejoined,
+        DuoGamePlayerSessionStatus.Synced
     ].includes(myPlayerStatus)
 
     useEffect(() => {

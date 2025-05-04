@@ -6,7 +6,7 @@ import { SocketEvent } from "shared"
 import { Repeat } from "react-feather"
 
 import { useDuoGameState } from "@/hooks/useDuoGameState"
-import { GameStatus } from "@/utils/constants"
+import { DuoGamePlayerSessionStatus, GameStatus } from "@/utils/constants"
 import { useSocket } from "@/hooks/useSocket"
 import { PageLayout } from "@/components/PageLayout"
 import { Footer } from "@/components/Footer"
@@ -25,11 +25,13 @@ export default function ResultsPage({ params }: Props) {
     const { gameId } = React.use(params)
 
     const searchParams = useSearchParams()
-    const { handlers, guessWord, timeRemaining, settings, passedWords } = useDuoGameState(gameId)
+    const { handlers, guessWord, timeRemaining, settings, passedWords, myPlayerStatus } = useDuoGameState(gameId)
     const { socket } = useSocket()
     const [isLoading, setIsLoading] = useState(false)
 
     const status = searchParams.get('status') as GameStatus
+
+    console.log('ResultsPage', { myPlayerStatus })
 
     useEffect(() => {
         if (!socket) return
@@ -59,7 +61,7 @@ export default function ResultsPage({ params }: Props) {
         restartGame(settings)
     }
 
-    if (isLoading) {
+    if (myPlayerStatus === DuoGamePlayerSessionStatus.Syncing) {
         return (
             <PageLayout className="justify-center">
                 <LoadingIcon />
@@ -88,8 +90,8 @@ export default function ResultsPage({ params }: Props) {
                 </div>
             </section>
             <Footer
-                onBack={handleBack}
-                onContinue={handleContinue}
+                onBack={handlers[SocketEvent.RequestBackToLobby]}
+                onContinue={() => handlers[SocketEvent.RequestStartGame](settings)}
                 isContinueDisabled={false}
                 continueLabel={<Repeat size='28' strokeWidth='2.5' />}
             />

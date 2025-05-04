@@ -67,7 +67,7 @@ export default function ClueGiverPage({ params }: Props) {
             </header>
             <section className="flex flex-col items-center gap-4 w-full h-full">
                 <GameInstructions role={DuoGameRole.ClueGiver} />
-                <div className="h-full pt-10 text-6xl mx-6 break-auto text-center">
+                <div className="h-full pt-10 text-6xl mx-6 break-auto text-center text-fil-deepBlue">
                     {guessWord}
                 </div>
             </section>

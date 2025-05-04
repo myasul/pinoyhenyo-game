@@ -34,4 +34,6 @@ export enum DuoGamePlayerSessionStatus {
     Rejoining = 'REJOINING',
     Rejoined = 'REJOINED',
     Left = 'LEFT',
+    Syncing = 'SYNCING',
+    Synced = 'SYNCED',
 }
