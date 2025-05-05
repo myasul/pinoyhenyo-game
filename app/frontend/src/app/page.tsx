@@ -39,7 +39,7 @@ export default function HomePage() {
             textColor='text-fil-yellow'
             className='!rounded-xl'
           >
-            Solo
+            Solo (soon!)
           </WaveButton>
           <WaveButton
             onClick={handleDuoModeClick}

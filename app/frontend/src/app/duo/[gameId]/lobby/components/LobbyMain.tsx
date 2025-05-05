@@ -1,6 +1,5 @@
 import { DuoGameRole, GameSettings, Player, SupportedLanguages } from "shared"
 import { InviteLinkBtn } from "./InviteLink"
-import { DuoGameRoleText } from "../page"
 import { PageLayout } from "@/components/PageLayout"
 import { RadioGroup } from "@/components/RadioGroup"
 import { useState } from "react"
@@ -27,6 +26,12 @@ const SettingsOptions = {
     duration: [30, 60, 90, 120],
     passes: [0, 1, 2, 3, 4, 5],
     languagesUsed: LanguageOptions,
+}
+
+const DuoGameRoleText = {
+    [DuoGameRole.ClueGiver]: 'Clue Giver',
+    [DuoGameRole.Guesser]: 'Guesser',
+    [DuoGameRole.Unknown]: 'Unknown',
 }
 
 export const LobbyMain = ({ players, myPlayer, settings, onExit, onStartGame, onSwitchRole }: Props) => {

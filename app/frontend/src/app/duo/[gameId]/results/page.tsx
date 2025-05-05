@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams } from "next/navigation"
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import { SocketEvent } from "shared"
 import { Repeat } from "react-feather"
 
@@ -28,11 +28,8 @@ export default function ResultsPage({ params }: Props) {
     const searchParams = useSearchParams()
     const { handlers, guessWord, timeRemaining, settings, passedWords, myPlayerStatus } = useDuoGameState(gameId)
     const { socket } = useSocket()
-    const [isLoading, setIsLoading] = useState(false)
 
     const status = searchParams.get('status') as GameStatus
-
-    console.log('ResultsPage', { myPlayerStatus })
 
     useEffect(() => {
         if (!socket) return

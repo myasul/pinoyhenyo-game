@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { DuoGameRole, SocketEvent } from 'shared';
+import { SocketEvent } from 'shared';
 
 import { useDuoGameState } from '@/hooks/useDuoGameState';
 import { useSocket } from '@/hooks/useSocket';
@@ -11,12 +11,6 @@ import { LobbyMain } from './components/LobbyMain';
 import { LoadingIcon } from '@/components/LoadingIcon';
 import { PageLayout } from '@/components/PageLayout';
 import { DuoGamePlayerSessionStatus } from '@/utils/constants';
-
-export const DuoGameRoleText = {
-    [DuoGameRole.ClueGiver]: 'Clue Giver',
-    [DuoGameRole.Guesser]: 'Guesser',
-    [DuoGameRole.Unknown]: 'Unknown',
-}
 
 type Props = {
     params: Promise<{ gameId: string }>

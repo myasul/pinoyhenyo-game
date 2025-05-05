@@ -66,7 +66,7 @@ export const TvStaticPlaceholder = ({ word, width = 300, height = 80, pixelSize 
         }, 300) // duration of glitch effect
 
         return () => clearTimeout(timeout)
-    }, [word])
+    }, [word, cols, rows])
 
     useEffect(() => {
         const canvas = canvasRef.current
@@ -88,7 +88,7 @@ export const TvStaticPlaceholder = ({ word, width = 300, height = 80, pixelSize 
         }
 
         draw()
-    }, [tiles, pixelSize])
+    }, [tiles, pixelSize, cols])
 
     return (
         <div className="inline-block overflow-hidden">
