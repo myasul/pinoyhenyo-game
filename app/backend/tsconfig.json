@@ -8,13 +8,14 @@
         "rootDir": "src",
         "baseUrl": "./",
         "paths": {
-            "@shared/*": [
-                "../../shared/src/*"
+            "shared": [
+                "../../shared/src/index.ts"
             ]
         },
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "composite": true
     },
     "include": [
         "src"

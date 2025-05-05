@@ -24,10 +24,10 @@
       "@/*": [
         "src/*"
       ],
-      "@shared": [
+      "shared": [
         "../../shared/src/index.ts"
       ],
-      "@shared/*": [
+      "shared/*": [
         "../../shared/src/*"
       ]
     },
