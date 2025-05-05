@@ -24,6 +24,9 @@
       "@/*": [
         "src/*"
       ],
+      "@shared": [
+        "../../shared/src/index.ts"
+      ],
       "@shared/*": [
         "../../shared/src/*"
       ]
@@ -40,5 +43,10 @@
   ],
   "exclude": [
     "node_modules"
+  ],
+  "references": [
+    {
+      "path": "../../shared"
+    }
   ]
 }

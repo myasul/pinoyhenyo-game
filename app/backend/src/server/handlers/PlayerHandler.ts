@@ -48,7 +48,7 @@ export class PlayerHandler implements IHandler {
 
         this.io
             .to(game.id)
-            .emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: game.players });
+            .emit(SocketEvent.NotifyPlayersUpdated, game.serialize());
 
         callback({ success: true, data: { joiningPlayer, game: game.serialize() } })
     }
@@ -85,7 +85,7 @@ export class PlayerHandler implements IHandler {
 
         game.addPlayer(rejoiningPlayer)
 
-        this.io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: game.players })
+        this.io.to(gameId).emit(SocketEvent.NotifyPlayersUpdated, game.serialize())
 
         callback({ success: true, data: { rejoiningPlayer, game: game.serialize() } })
     }
@@ -138,7 +138,7 @@ export class PlayerHandler implements IHandler {
 
         this.io
             .to(game.id)
-            .emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: game.players });
+            .emit(SocketEvent.NotifyPlayersUpdated, game.serialize())
 
         if (game.isEmpty()) this.gameManager.remove(game.id)
 
@@ -168,7 +168,7 @@ export class PlayerHandler implements IHandler {
 
             this.io
                 .to(game.id)
-                .emit(SocketEvent.NotifyPlayersUpdated, { updatedPlayers: game.players });
+                .emit(SocketEvent.NotifyPlayersUpdated, game.serialize())
 
             if (game.isEmpty()) this.gameManager.remove(game.id)
 

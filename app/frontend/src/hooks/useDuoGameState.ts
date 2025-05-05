@@ -4,7 +4,7 @@ import { useDuoGameStore } from "@/stores/duoGameStore"
 import { useSocket } from "./useSocket"
 import { useRouter } from "next/navigation"
 import { useCallback } from "react"
-import { DuoGameRole, GameSettings, Player, SerializedGame, SocketEvent } from "shared"
+import { DuoGameRole, GameSettings, SerializedGame, SocketEvent } from "shared"
 import { DuoGamePlayerSessionStatus, GameStatus } from "@/utils/constants"
 
 type Handler<T extends unknown[] = unknown[]> = (...args: T) => void;
@@ -24,7 +24,7 @@ type Handlers = {
     [SocketEvent.NotifyBackToLobby]: Handler<[game: SerializedGame]>;
     [SocketEvent.NotifyGuessWordChanged]: Handler<[game: SerializedGame]>;
     [SocketEvent.NotifyRoleSwitched]: Handler<[game: SerializedGame]>;
-    [SocketEvent.NotifyPlayersUpdated]: Handler<[{ updatedPlayers: Player[] }]>;
+    [SocketEvent.NotifyPlayersUpdated]: Handler<[game: SerializedGame]>;
     [SocketEvent.NotifyWordGuessFailed]: Handler<[{ gameStatus: GameStatus, passedWords: string[] }]>;
     [SocketEvent.NotifyWordGuessSuccessful]: Handler<[{ gameStatus: GameStatus, passedWords: string[] }]>;
 };
@@ -52,6 +52,24 @@ export const useDuoGameState = (gameId: string) => {
             store.setMyPlayerStatus(DuoGamePlayerSessionStatus.Synced)
         }, 500)
     }, [store])
+
+    const updatePlayers = useCallback((game: SerializedGame) => {
+        if (store.myPlayer) {
+            const updatedMyPlayer = game.players[store.myPlayer.id]
+
+            if (!updatedMyPlayer) {
+                console.error('Player not found in updated players')
+
+                router.push('/')
+                return
+            }
+
+            store.setMyPlayer(updatedMyPlayer)
+        }
+
+        store.setPlayers(Object.values(game.players))
+
+    }, [store, router])
 
     const handleRequestStartGame = useCallback((settings: GameSettings) => {
         if (!socket) return
@@ -111,45 +129,19 @@ export const useDuoGameState = (gameId: string) => {
         router.push(`/duo/${gameId}/lobby`)
     }, [syncGameState, router, gameId])
 
-    const handleNotifyPlayersUpdated = useCallback(({ updatedPlayers }: { updatedPlayers: Player[] }) => {
-        if (!socket) return
-
-        const isMyPlayerInUpdatedPlayers = updatedPlayers
-            .find((player: Player) => player.id === store.myPlayer?.id)
-
-        if (store.myPlayer && !isMyPlayerInUpdatedPlayers) {
-            console.error('Player not found in updated players')
-
-            router.push('/')
-            return
-        }
-
-        store.setPlayers(Object.values(updatedPlayers))
-    }, [store, socket, router])
-
     const handleNotifyWordGuess = useCallback((
         { gameStatus, passedWords }: { gameStatus: GameStatus, passedWords: string[] }
     ) => {
-        if (!socket) return
-
         store.setPassedWords(passedWords)
 
         router.push(`/duo/${gameId}/results?status=${gameStatus}`)
-    }, [gameId, router, socket, store])
+    }, [gameId, router, store])
 
 
     const handleNotifyGuessWordChanged = useCallback((game: SerializedGame) => {
-        if (!socket) return
-
         store.setGuessWord(game.guessWord)
         store.setPassesRemaining(game.passesRemaining)
-    }, [socket, store])
-
-    const handleRoleSwitched = useCallback((game: SerializedGame) => {
-        if (!socket) return
-
-        store.setPlayers(Object.values(game.players))
-    }, [socket, store])
+    }, [store])
 
     const handlers: Handlers = {
         [SocketEvent.RequestStartGame]: handleRequestStartGame,
@@ -158,12 +150,12 @@ export const useDuoGameState = (gameId: string) => {
         [SocketEvent.RequestBackToLobby]: handleRequestBackToLobby,
         [SocketEvent.RequestChangeGuessWord]: handleRequestChangeGuessWord,
         [SocketEvent.NotifyGameStarted]: handleNotifyGameStarted,
-        [SocketEvent.NotifyPlayersUpdated]: handleNotifyPlayersUpdated,
+        [SocketEvent.NotifyPlayersUpdated]: updatePlayers,
+        [SocketEvent.NotifyRoleSwitched]: updatePlayers,
         [SocketEvent.NotifyWordGuessFailed]: handleNotifyWordGuess,
         [SocketEvent.NotifyWordGuessSuccessful]: handleNotifyWordGuess,
         [SocketEvent.NotifyBackToLobby]: handleNotifyBackToLobby,
         [SocketEvent.NotifyGuessWordChanged]: handleNotifyGuessWordChanged,
-        [SocketEvent.NotifyRoleSwitched]: handleRoleSwitched,
         [SocketEvent.RequestPauseGame]: handleRequestPauseGame,
         [SocketEvent.RequestResumeGame]: handleRequestResumeGame
     }
