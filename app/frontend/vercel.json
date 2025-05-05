@@ -1,0 +1,18 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "frontend/package.json",
+            "use": "@vercel/node",
+            "config": {
+                "maxLambdaSize": "50mb"
+            }
+        }
+    ],
+    "hooks": {
+        "build": "yarn --cwd shared build && yarn --cwd frontend build"
+    },
+    "env": {
+        "NODE_ENV": "production"
+    }
+}

@@ -8,7 +8,8 @@
     "scripts": {
         "dev:frontend": "yarn workspace frontend dev",
         "dev:backend": "yarn workspace backend dev",
-        "dev": "concurrently \"yarn dev:frontend\" \"yarn dev:backend\""
+        "dev": "concurrently \"yarn dev:frontend\" \"yarn dev:backend\"",
+        "build": "yarn workspace backend build && yarn workspace frontend build"
     },
     "devDependencies": {
         "concurrently": "^8.0.1"

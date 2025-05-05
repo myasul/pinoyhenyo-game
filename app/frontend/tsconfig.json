@@ -33,7 +33,8 @@
     },
     "skipLibCheck": true,
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "composite": true
   },
   "include": [
     "next-env.d.ts",
