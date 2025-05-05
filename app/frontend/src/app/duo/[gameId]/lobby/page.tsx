@@ -43,10 +43,12 @@ export default function LobbyPage({ params }: Props) {
 
         socket.on(SocketEvent.NotifyPlayersUpdated, handlers[SocketEvent.NotifyPlayersUpdated])
         socket.on(SocketEvent.NotifyGameStarted, handlers[SocketEvent.NotifyGameStarted])
+        socket.on(SocketEvent.NotifyRoleSwitched, handlers[SocketEvent.NotifyRoleSwitched])
 
         return (() => {
             socket.off(SocketEvent.NotifyPlayersUpdated)
             socket.off(SocketEvent.NotifyGameStarted)
+            socket.off(SocketEvent.NotifyRoleSwitched)
         })
     }, [socket, myPlayer, handlers])
 
@@ -67,6 +69,7 @@ export default function LobbyPage({ params }: Props) {
                     myPlayer={myPlayer}
                     settings={settings}
                     onStartGame={handlers[SocketEvent.RequestStartGame]}
+                    onSwitchRole={handlers[SocketEvent.RequestSwitchRole]}
                     onExit={leaveGame}
                 />
             )

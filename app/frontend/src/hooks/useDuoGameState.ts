@@ -15,11 +15,13 @@ type Handlers = {
     [SocketEvent.RequestSwitchRole]: Handler<[]>;
     [SocketEvent.RequestBackToLobby]: Handler<[]>;
     [SocketEvent.RequestChangeGuessWord]: Handler<[]>;
+    [SocketEvent.RequestSwitchRole]: Handler<[]>;
     // TODO: Update handlers for notify events to only accept
     // serialized game object
     [SocketEvent.NotifyGameStarted]: Handler<[game: SerializedGame]>;
     [SocketEvent.NotifyBackToLobby]: Handler<[game: SerializedGame]>;
     [SocketEvent.NotifyGuessWordChanged]: Handler<[game: SerializedGame]>;
+    [SocketEvent.NotifyRoleSwitched]: Handler<[game: SerializedGame]>;
     [SocketEvent.NotifyPlayersUpdated]: Handler<[{ updatedPlayers: Player[] }]>;
     [SocketEvent.NotifyWordGuessFailed]: Handler<[{ gameStatus: GameStatus, passedWords: string[] }]>;
     [SocketEvent.NotifyWordGuessSuccessful]: Handler<[{ gameStatus: GameStatus, passedWords: string[] }]>;
@@ -133,6 +135,12 @@ export const useDuoGameState = (gameId: string) => {
         store.setPassesRemaining(game.passesRemaining)
     }, [socket, store])
 
+    const handleRoleSwitched = useCallback((game: SerializedGame) => {
+        if (!socket) return
+
+        store.setPlayers(Object.values(game.players))
+    }, [socket, store])
+
     const handlers: Handlers = {
         [SocketEvent.RequestStartGame]: handleRequestStartGame,
         [SocketEvent.RequestSwitchRole]: handleRequestSwitchRole,
@@ -145,6 +153,7 @@ export const useDuoGameState = (gameId: string) => {
         [SocketEvent.NotifyWordGuessSuccessful]: handleNotifyWordGuess,
         [SocketEvent.NotifyBackToLobby]: handleNotifyBackToLobby,
         [SocketEvent.NotifyGuessWordChanged]: handleNotifyGuessWordChanged,
+        [SocketEvent.NotifyRoleSwitched]: handleRoleSwitched,
     }
 
     return { gameId, handlers, syncGameState, ...store }

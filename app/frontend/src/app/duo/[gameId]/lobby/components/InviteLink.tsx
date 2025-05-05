@@ -24,7 +24,7 @@ export const InviteLinkBtn = () => {
             textColor={copied ? 'text-fil-deepBlue' : 'text-white'}
             onClick={handleCopy}
         >
-            {copied ? "Copied!" : "Copy invite link"}
+            {copied ? "Copied!" : "📝 Copy invite link"}
         </WaveButton>
     )
 }

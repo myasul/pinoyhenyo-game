@@ -38,7 +38,7 @@ export const WaveButton = ({
             {isAnimating && (
                 <span className="absolute inset-0 bg-current animate-wave z-0" />
             )}
-            <span className="relative z-10">{children}</span>
+            <span className="relative z-10 w-full flex items-center justify-center">{children}</span>
         </button>
     );
 };

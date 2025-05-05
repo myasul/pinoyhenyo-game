@@ -6,7 +6,8 @@ import { RadioGroup } from "@/components/RadioGroup"
 import { useState } from "react"
 import { CheckboxGroup } from "@/components/CheckboxGroup"
 import { Footer } from "@/components/Footer"
-import { Play } from "react-feather"
+import { Play, RefreshCw } from "react-feather"
+import { WaveButton } from "@/components/WaveButton"
 
 type Props = {
     players: Player[]
@@ -14,6 +15,7 @@ type Props = {
     settings: GameSettings
     onExit: () => void
     onStartGame: (settings: GameSettings) => void
+    onSwitchRole: () => void
 }
 
 const LanguageOptions = [
@@ -27,7 +29,7 @@ const SettingsOptions = {
     languagesUsed: LanguageOptions,
 }
 
-export const LobbyMain = ({ players, myPlayer, settings, onExit, onStartGame }: Props) => {
+export const LobbyMain = ({ players, myPlayer, settings, onExit, onStartGame, onSwitchRole }: Props) => {
     const [duration, setDuration] = useState(settings.duration)
     const [passes, setPasses] = useState(settings.passes)
     const [languagesUsed, setLanguagesUsed] = useState(settings.languagesUsed)
@@ -69,8 +71,22 @@ export const LobbyMain = ({ players, myPlayer, settings, onExit, onStartGame }: 
                             </li>
                         ))}
                     </ul>
-                    {/* {players.length < 2 && <InviteLinkBtn />} */}
-                    <InviteLinkBtn />
+                    {
+                        players.length < 2
+                            ? <InviteLinkBtn />
+                            : (
+                                <WaveButton
+                                    className="w-3/4 shadow-md font-extrabold border border-fil-blue rounded-xl text-lg h-10 flex flex-row"
+                                    bgColor='bg-fil-deepBlue'
+                                    textColor='text-white'
+                                    onClick={onSwitchRole}
+                                >
+                                    <span className="flex items-center justify-center gap-3">
+                                        <RefreshCw /> Switch Roles
+                                    </span>
+                                </WaveButton>
+                            )
+                    }
                 </section>
 
                 <section className="flex flex-col items-center text-center gap-3">

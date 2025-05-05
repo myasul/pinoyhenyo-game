@@ -15,6 +15,7 @@ export class GameHandler implements IHandler {
         socket.on(SocketEvent.RequestWordGuessSuccessful, (data, callback) => this.onWordGuessSuccessful(data, callback ?? this.defaultCallback))
         socket.on(SocketEvent.RequestChangeGuessWord, (data, callback) => this.onChangeGuessWord(data, callback ?? this.defaultCallback))
         socket.on(SocketEvent.RequestBackToLobby, (data, callback) => this.onBackToLobby(data, callback ?? this.defaultCallback))
+        socket.on(SocketEvent.RequestSwitchRole, (data, callback) => this.onSwitchRoles(data, callback ?? this.defaultCallback))
     }
 
     private defaultCallback(response: SocketResponse) {
@@ -101,6 +102,24 @@ export class GameHandler implements IHandler {
         }
         game.changeGuessWord((game) =>
             this.io.to(gameId).emit(SocketEvent.NotifyGuessWordChanged, game)
+        )
+
+        callback({ success: true, data: null })
+    }
+
+    private onSwitchRoles(
+        { gameId }: { gameId: string },
+        callback: (response: SocketResponse<null>) => void
+    ) {
+        const game = this.gameManager.get(gameId)
+
+        if (!game) {
+            console.error(`ServerGame (ID: ${gameId}) not found.`)
+            callback({ success: false, error: `ServerGame (ID: ${gameId}) not found.` })
+            return
+        }
+        game.switchRoles((game) =>
+            this.io.to(gameId).emit(SocketEvent.NotifyRoleSwitched, game)
         )
 
         callback({ success: true, data: null })

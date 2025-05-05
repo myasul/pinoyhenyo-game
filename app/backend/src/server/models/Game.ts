@@ -131,6 +131,20 @@ export class Game {
         onReset(this.serialize())
     }
 
+    switchRoles(onSwitchRoles: (game: SerializedGame) => void) {
+        const players = this.players
+
+        if (players.length < 2) return onSwitchRoles(this.serialize())
+
+        for (const player of players) {
+            player.role = player.role === DuoGameRole.Guesser
+                ? DuoGameRole.ClueGiver
+                : DuoGameRole.Guesser
+        }
+
+        onSwitchRoles(this.serialize())
+    }
+
     serialize(): SerializedGame {
         const playersObject = Object.fromEntries(this.#players)
 
