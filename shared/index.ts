@@ -10,6 +10,8 @@ export enum SocketEvent {
     RequestBackToLobby = 'request:backToLobby',
     RequestChangeGuessWord = 'request:changeGuessWord',
     RequestEnterGame = 'request:enterGame',
+    RequestPauseGame = 'request:pauseGame',
+    RequestResumeGame = 'request:resumeGame',
 
     // Server initiated
     NotifyPlayersUpdated = 'notify:playersUpdated',
@@ -20,6 +22,8 @@ export enum SocketEvent {
     NotifyRoleSwitched = 'notify:roleSwitched',
     NotifyBackToLobby = 'notify:backToLobby',
     NotifyGuessWordChanged = 'notify:guessWordChanged',
+    NotifyGamePaused = 'request:gamePaused',
+    NotifyGameResumed = 'request:gameResumed',
 
     // Default Socket Events
     Disconnect = 'disconnect',

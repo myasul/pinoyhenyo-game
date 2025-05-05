@@ -43,6 +43,9 @@ export default function GuesserPage({ params }: Props) {
         socket.on(SocketEvent.NotifyGuessWordChanged, handlers[SocketEvent.NotifyGuessWordChanged])
         socket.on(SocketEvent.NotifyBackToLobby, handlers[SocketEvent.NotifyBackToLobby])
 
+        socket.on(SocketEvent.NotifyGamePaused, () => { setIsPaused(true) })
+        socket.on(SocketEvent.NotifyGameResumed, () => { setIsPaused(false) })
+
         socket.on(SocketEvent.NotifyWordGuessFailed, ({ passedWords }: { passedWords: string[] }) => {
             const handler = handlers[SocketEvent.NotifyWordGuessFailed]
 
@@ -61,8 +64,20 @@ export default function GuesserPage({ params }: Props) {
             socket.off(SocketEvent.NotifyWordGuessSuccessful)
             socket.off(SocketEvent.NotifyGuessWordChanged)
             socket.off(SocketEvent.NotifyBackToLobby)
+            socket.off(SocketEvent.NotifyGamePaused)
+            socket.off(SocketEvent.NotifyGameResumed)
         }
     }, [socket, handlers, setTimeRemaining])
+
+    const handlePauseGame = () => {
+        setIsPaused(true)
+        handlers[SocketEvent.RequestPauseGame]()
+    }
+
+    const handleResumeGame = () => {
+        setIsPaused(false)
+        handlers[SocketEvent.RequestResumeGame]()
+    }
 
     if (!myPlayer) return null
 
@@ -80,7 +95,7 @@ export default function GuesserPage({ params }: Props) {
             </section>
             <Footer
                 onContinue={handlers[SocketEvent.RequestChangeGuessWord]}
-                onBack={() => setIsPaused(true)}
+                onBack={handlePauseGame}
                 isContinueDisabled={passesRemaining <= 0}
                 continueLabel={<FastForward size='28' strokeWidth='2.5' />}
                 backLabel={<Pause size='28' strokeWidth='2.5' />}
@@ -88,7 +103,7 @@ export default function GuesserPage({ params }: Props) {
             {
                 isPaused && (
                     <PauseOverlay
-                        onResume={() => setIsPaused(false)}
+                        onResume={handleResumeGame}
                         onExit={handlers[SocketEvent.RequestBackToLobby]}
                     />
                 )

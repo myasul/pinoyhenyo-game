@@ -16,6 +16,8 @@ export class GameHandler implements IHandler {
         socket.on(SocketEvent.RequestChangeGuessWord, (data, callback) => this.onChangeGuessWord(data, callback ?? this.defaultCallback))
         socket.on(SocketEvent.RequestBackToLobby, (data, callback) => this.onBackToLobby(data, callback ?? this.defaultCallback))
         socket.on(SocketEvent.RequestSwitchRole, (data, callback) => this.onSwitchRoles(data, callback ?? this.defaultCallback))
+        socket.on(SocketEvent.RequestResumeGame, (data, callback) => this.onResumeGame(data, callback ?? this.defaultCallback))
+        socket.on(SocketEvent.RequestPauseGame, (data, callback) => this.onPauseGame(data, callback ?? this.defaultCallback))
     }
 
     private defaultCallback(response: SocketResponse) {
@@ -37,17 +39,10 @@ export class GameHandler implements IHandler {
         }
 
         game.start({
-            tickDelaySeconds: 1,
             settings,
-            onTick: (game) => {
-                this.io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, game.timeRemaining)
-            },
-            onGameOver: (game) => {
-                this.io.to(gameId).emit(SocketEvent.NotifyWordGuessFailed, { passedWords: game.passedWords })
-            },
-            onGameStarted: (game) => {
-                this.io.to(gameId).emit(SocketEvent.NotifyGameStarted, game)
-            }
+            onTick: (game) => this.io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, game.timeRemaining),
+            onGameOver: (game) => this.io.to(gameId).emit(SocketEvent.NotifyWordGuessFailed, { passedWords: game.passedWords }),
+            onGameStarted: (game) => this.io.to(gameId).emit(SocketEvent.NotifyGameStarted, game)
         })
 
         callback({ success: true, data: null })
@@ -118,9 +113,45 @@ export class GameHandler implements IHandler {
             callback({ success: false, error: `ServerGame (ID: ${gameId}) not found.` })
             return
         }
-        game.switchRoles((game) =>
-            this.io.to(gameId).emit(SocketEvent.NotifyRoleSwitched, game)
-        )
+        game.switchRoles((game) => this.io.to(gameId).emit(SocketEvent.NotifyRoleSwitched, game))
+
+        callback({ success: true, data: null })
+    }
+
+    private onPauseGame(
+        { gameId }: { gameId: string },
+        callback: (response: SocketResponse<null>) => void
+    ) {
+        const game = this.gameManager.get(gameId)
+
+        if (!game) {
+            console.error(`ServerGame (ID: ${gameId}) not found.`)
+            callback({ success: false, error: `ServerGame (ID: ${gameId}) not found.` })
+            return
+        }
+
+        game.pause((game) => this.io.to(gameId).emit(SocketEvent.NotifyGamePaused, game))
+
+        callback({ success: true, data: null })
+    }
+
+    private onResumeGame(
+        { gameId }: { gameId: string },
+        callback: (response: SocketResponse<null>) => void
+    ) {
+        const game = this.gameManager.get(gameId)
+
+        if (!game) {
+            console.error(`ServerGame (ID: ${gameId}) not found.`)
+            callback({ success: false, error: `ServerGame (ID: ${gameId}) not found.` })
+            return
+        }
+
+        game.resume({
+            onTick: (game) => this.io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, game.timeRemaining),
+            onGameOver: (game) => this.io.to(gameId).emit(SocketEvent.NotifyWordGuessFailed, { passedWords: game.passedWords }),
+            onResume: (game) => this.io.to(gameId).emit(SocketEvent.NotifyGameResumed, game)
+        })
 
         callback({ success: true, data: null })
     }

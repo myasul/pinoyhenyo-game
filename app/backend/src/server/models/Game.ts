@@ -66,25 +66,24 @@ export class Game {
 
     // TODO: Settings should be passed in the start method
     async start(opts: {
-        tickDelaySeconds: number,
         settings: Partial<GameSettings>,
         onTick: (game: SerializedGame) => void,
         onGameStarted: (game: SerializedGame) => void,
         onGameOver: (game: SerializedGame) => void
     }) {
-        const { tickDelaySeconds, settings, onTick, onGameOver, onGameStarted } = opts
+        const { settings, onTick, onGameOver, onGameStarted } = opts
 
         if (this.#timeIntervaldId) clearInterval(this.#timeIntervaldId)
 
         const timeIntervaldId = setInterval(() => {
-            this.#timeRemaining -= tickDelaySeconds
+            this.#timeRemaining -= 1
             onTick(this.serialize())
 
             if (this.#timeRemaining === 0) {
                 clearInterval(this.#timeIntervaldId)
                 onGameOver(this.serialize())
             }
-        }, tickDelaySeconds * 1000)
+        }, 1000)
 
         this.#settings = { ...this.#settings, ...settings }
         this.#timeIntervaldId = timeIntervaldId
@@ -143,6 +142,36 @@ export class Game {
         }
 
         onSwitchRoles(this.serialize())
+    }
+
+    pause(onPause: (game: SerializedGame) => void) {
+        if (this.#timeIntervaldId) clearInterval(this.#timeIntervaldId)
+        this.#timeIntervaldId = undefined
+
+        onPause(this.serialize())
+    }
+
+    resume(opts: {
+        onTick: (game: SerializedGame) => void,
+        onResume: (game: SerializedGame) => void,
+        onGameOver: (game: SerializedGame) => void
+    }) {
+        const { onTick, onResume, onGameOver } = opts
+
+        if (this.#timeIntervaldId) clearInterval(this.#timeIntervaldId)
+
+        const tickDelaySeconds = 1
+        this.#timeIntervaldId = setInterval(() => {
+            this.#timeRemaining -= tickDelaySeconds
+            onTick(this.serialize())
+
+            if (this.#timeRemaining === 0) {
+                clearInterval(this.#timeIntervaldId)
+                onGameOver(this.serialize())
+            }
+
+            onResume(this.serialize())
+        }, tickDelaySeconds * 1000)
     }
 
     serialize(): SerializedGame {

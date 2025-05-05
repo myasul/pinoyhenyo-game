@@ -16,6 +16,8 @@ type Handlers = {
     [SocketEvent.RequestBackToLobby]: Handler<[]>;
     [SocketEvent.RequestChangeGuessWord]: Handler<[]>;
     [SocketEvent.RequestSwitchRole]: Handler<[]>;
+    [SocketEvent.RequestPauseGame]: Handler<[]>;
+    [SocketEvent.RequestResumeGame]: Handler<[]>;
     // TODO: Update handlers for notify events to only accept
     // serialized game object
     [SocketEvent.NotifyGameStarted]: Handler<[game: SerializedGame]>;
@@ -80,6 +82,18 @@ export const useDuoGameState = (gameId: string) => {
         if (!socket) return
 
         socket.emit(SocketEvent.RequestChangeGuessWord, { gameId })
+    }, [socket, gameId])
+
+    const handleRequestPauseGame = useCallback(() => {
+        if (!socket) return
+
+        socket.emit(SocketEvent.RequestPauseGame, { gameId })
+    }, [socket, gameId])
+
+    const handleRequestResumeGame = useCallback(() => {
+        if (!socket) return
+
+        socket.emit(SocketEvent.RequestResumeGame, { gameId })
     }, [socket, gameId])
 
     const handleNotifyGameStarted = useCallback((game: SerializedGame) => {
@@ -154,6 +168,8 @@ export const useDuoGameState = (gameId: string) => {
         [SocketEvent.NotifyBackToLobby]: handleNotifyBackToLobby,
         [SocketEvent.NotifyGuessWordChanged]: handleNotifyGuessWordChanged,
         [SocketEvent.NotifyRoleSwitched]: handleRoleSwitched,
+        [SocketEvent.RequestPauseGame]: handleRequestPauseGame,
+        [SocketEvent.RequestResumeGame]: handleRequestResumeGame
     }
 
     return { gameId, handlers, syncGameState, ...store }
