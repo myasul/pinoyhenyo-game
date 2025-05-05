@@ -32,15 +32,28 @@ export const TvStaticPlaceholder = ({ word, width = 300, height = 80, pixelSize 
         const ctx = canvas.getContext('2d')
         if (!ctx) return
 
+        // PH flag colors
+        // See tailwind.config.ts for the colors
+        const palette = [
+            [252, 209, 22],   // deepYellow
+            [255, 244, 184],  // yellow
+            [0, 56, 168],     // deepBlue
+            [184, 216, 255],  // blue
+            [206, 17, 38],    // deepRed
+            [255, 184, 184],  // red
+            [253, 253, 253],  // white
+        ]
+    
         const newTiles: ImageData[] = []
-
+    
         for (let y = 0; y < rows; y++) {
             for (let x = 0; x < cols; x++) {
-                const gray = Math.floor(Math.random() * 255 * Math.min(word.length / 2, 1.5))
+                const [r, g, b] = palette[Math.floor(Math.random() * palette.length)]
+    
                 const tile = ctx.createImageData(1, 1)
-                tile.data[0] = gray
-                tile.data[1] = gray
-                tile.data[2] = gray
+                tile.data[0] = r
+                tile.data[1] = g
+                tile.data[2] = b
                 tile.data[3] = 255
                 newTiles.push(tile)
             }

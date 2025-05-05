@@ -22,7 +22,7 @@ export const Footer = ({
         <footer className="flex w-full gap-2">
             <WaveButton
                 bgColor='bg-fil-deepBlue'
-                textColor='text-white'
+                textColor='text-fil-deepYellow'
                 className='w-1/4 border border-fil-blue'
                 disabled={isBackDisabled}
                 onClick={onBack}

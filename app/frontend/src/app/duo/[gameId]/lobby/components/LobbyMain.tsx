@@ -82,7 +82,7 @@ export const LobbyMain = ({ players, myPlayer, settings, onExit, onStartGame, on
                                     onClick={onSwitchRole}
                                 >
                                     <span className="flex items-center justify-center gap-3">
-                                        <RefreshCw /> Switch Roles
+                                        <RefreshCw className="text-fil-deepYellow" /> Switch Roles
                                     </span>
                                 </WaveButton>
                             )
