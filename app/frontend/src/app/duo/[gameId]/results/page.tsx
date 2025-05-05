@@ -21,6 +21,7 @@ type Props = {
     params: Promise<{ gameId: string }>
 }
 
+// TODO: Wrap the results information in a card that looks like a notebook
 export default function ResultsPage({ params }: Props) {
     const { gameId } = React.use(params)
 
@@ -44,22 +45,6 @@ export default function ResultsPage({ params }: Props) {
             socket.off(SocketEvent.NotifyBackToLobby)
         })
     }, [socket, handlers])
-
-    const handleBack = () => {
-        setIsLoading(true)
-
-        const backToLobby = handlers[SocketEvent.RequestBackToLobby]
-
-        backToLobby()
-    }
-
-    const handleContinue = () => {
-        setIsLoading(true)
-
-        const restartGame = handlers[SocketEvent.RequestStartGame]
-
-        restartGame(settings)
-    }
 
     if (myPlayerStatus === DuoGamePlayerSessionStatus.Syncing) {
         return (

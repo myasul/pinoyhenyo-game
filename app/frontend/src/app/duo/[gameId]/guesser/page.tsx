@@ -1,7 +1,7 @@
 'use client'
 
 import { FastForward, Pause } from "react-feather"
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { DuoGameRole, SocketEvent } from "shared"
 
 import { useDuoGameState } from "@/hooks/useDuoGameState"
@@ -13,6 +13,7 @@ import { GameInstructions } from "@/components/GameInstructions"
 import { useDuoGameSession } from "@/hooks/useDuoGameSession"
 import { PageLayout } from "@/components/PageLayout"
 import { Footer } from "@/components/Footer"
+import { PauseOverlay } from "@/components/PauseOverlay"
 
 type Props = {
     params: Promise<{ gameId: string }>
@@ -20,6 +21,7 @@ type Props = {
 
 export default function GuesserPage({ params }: Props) {
     const { gameId } = React.use(params)
+    const [isPaused, setIsPaused] = useState(false)
 
     const {
         setTimeRemaining,
@@ -39,6 +41,7 @@ export default function GuesserPage({ params }: Props) {
 
         socket.on(SocketEvent.NotifyRemainingTimeUpdated, setTimeRemaining)
         socket.on(SocketEvent.NotifyGuessWordChanged, handlers[SocketEvent.NotifyGuessWordChanged])
+        socket.on(SocketEvent.NotifyBackToLobby, handlers[SocketEvent.NotifyBackToLobby])
 
         socket.on(SocketEvent.NotifyWordGuessFailed, ({ passedWords }: { passedWords: string[] }) => {
             const handler = handlers[SocketEvent.NotifyWordGuessFailed]
@@ -57,6 +60,7 @@ export default function GuesserPage({ params }: Props) {
             socket.off(SocketEvent.NotifyWordGuessFailed)
             socket.off(SocketEvent.NotifyWordGuessSuccessful)
             socket.off(SocketEvent.NotifyGuessWordChanged)
+            socket.off(SocketEvent.NotifyBackToLobby)
         }
     }, [socket, handlers, setTimeRemaining])
 
@@ -76,11 +80,19 @@ export default function GuesserPage({ params }: Props) {
             </section>
             <Footer
                 onContinue={handlers[SocketEvent.RequestChangeGuessWord]}
-                isBackDisabled={false}
+                onBack={() => setIsPaused(true)}
                 isContinueDisabled={passesRemaining <= 0}
                 continueLabel={<FastForward size='28' strokeWidth='2.5' />}
-                cancelLabel={<Pause size='28' strokeWidth='2.5' />}
+                backLabel={<Pause size='28' strokeWidth='2.5' />}
             />
+            {
+                isPaused && (
+                    <PauseOverlay
+                        onResume={() => setIsPaused(false)}
+                        onExit={handlers[SocketEvent.RequestBackToLobby]}
+                    />
+                )
+            }
         </PageLayout>
     )
 }

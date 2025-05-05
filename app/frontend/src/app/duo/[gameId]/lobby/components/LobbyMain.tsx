@@ -6,6 +6,7 @@ import { RadioGroup } from "@/components/RadioGroup"
 import { useState } from "react"
 import { CheckboxGroup } from "@/components/CheckboxGroup"
 import { Footer } from "@/components/Footer"
+import { Play } from "react-feather"
 
 type Props = {
     players: Player[]
@@ -110,7 +111,7 @@ export const LobbyMain = ({ players, myPlayer, settings, onExit, onStartGame }: 
                 onBack={onExit}
                 onContinue={handleStartGame}
                 isContinueDisabled={players.length !== 2}
-                continueLabel="Start"
+                continueLabel={<Play size='28' strokeWidth='2.5' />}
             />
         </PageLayout>
     )

@@ -7,7 +7,7 @@ type Props = {
     isBackDisabled?: boolean
     isContinueDisabled?: boolean
     continueLabel?: React.ReactNode
-    cancelLabel?: React.ReactNode
+    backLabel?: React.ReactNode
 }
 
 export const Footer = ({
@@ -16,7 +16,7 @@ export const Footer = ({
     isBackDisabled = false,
     isContinueDisabled = false,
     continueLabel = <Check size='28' strokeWidth='2.5' />,
-    cancelLabel = <X size='28' strokeWidth='2.5' />
+    backLabel = <X size='28' strokeWidth='2.5' />
 }: Props) => {
     return (
         <footer className="flex w-full gap-2">
@@ -27,7 +27,7 @@ export const Footer = ({
                 disabled={isBackDisabled}
                 onClick={onBack}
             >
-                {cancelLabel}
+                {backLabel}
             </WaveButton>
             <WaveButton
                 onClick={onContinue}

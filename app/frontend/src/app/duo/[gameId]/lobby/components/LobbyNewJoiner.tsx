@@ -1,6 +1,7 @@
 import { Footer } from '@/components/Footer';
 import { PageLayout } from '@/components/PageLayout';
 import { useState } from 'react';
+import { LogIn } from 'react-feather';
 
 type Props = {
     onJoin: (playerName: string) => void;
@@ -29,7 +30,7 @@ export default function LobbyNewJoiner({ onJoin, onExit }: Props) {
                 onBack={onExit}
                 onContinue={() => onJoin(name.trim())}
                 isContinueDisabled={!name.trim()}
-                continueLabel="Join"
+                continueLabel={<LogIn size='28' strokeWidth='2.5' />}
             />
         </PageLayout>
     );
