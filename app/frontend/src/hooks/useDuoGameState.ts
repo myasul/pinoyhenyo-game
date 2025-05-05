@@ -112,8 +112,6 @@ export const useDuoGameState = (gameId: string) => {
     }, [syncGameState, router, gameId])
 
     const handleNotifyPlayersUpdated = useCallback(({ updatedPlayers }: { updatedPlayers: Player[] }) => {
-        console.log('[handleNotifyPlayersUpdated] updatedPlayers: ', updatedPlayers)
-
         if (!socket) return
 
         const isMyPlayerInUpdatedPlayers = updatedPlayers
@@ -121,8 +119,6 @@ export const useDuoGameState = (gameId: string) => {
 
         if (store.myPlayer && !isMyPlayerInUpdatedPlayers) {
             console.error('Player not found in updated players')
-
-            console.log('[Lobby page] Player not found in updated players. Redirecting to home page...')
 
             router.push('/')
             return

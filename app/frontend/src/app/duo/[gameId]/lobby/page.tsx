@@ -23,8 +23,6 @@ export default function LobbyPage({ params }: Props) {
     const { joinGame, leaveGame } = useDuoGameSession(gameId)
     const { socket } = useSocket()
 
-    console.log('LobbyPage', { players, handlers, settings, myPlayer, myPlayerStatus })
-
     const isLobbyReady = [
         DuoGamePlayerSessionStatus.NewJoiner,
         DuoGamePlayerSessionStatus.Joined,

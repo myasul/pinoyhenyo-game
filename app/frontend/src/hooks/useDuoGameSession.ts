@@ -91,8 +91,6 @@ export const useDuoGameSession = (gameId: string) => {
         setMyPlayer(null)
         disconnectSocket()
 
-        console.log('[Lobby page] Player left the game. Redirecting to home page...')
-
         // Redirect to the home page
         router.push('/')
     }, [socket, gameId, playerLocalStorageKey, setMyPlayer, disconnectSocket, router, setMyPlayerStatus])
