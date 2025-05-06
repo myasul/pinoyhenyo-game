@@ -12,13 +12,19 @@ WORKDIR /app
 # Set production environment
 ENV NODE_ENV="production"
 
-
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 
 # Install packages needed to build node modules
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3
+
+# Copy backend, shared, and tsconfig.base.json into Docker
+COPY app/backend ./app/backend
+COPY shared ./shared
+COPY tsconfig.base.json ./
+
+WORKDIR /app/app/backend
 
 # Install node modules
 COPY package.json ./
