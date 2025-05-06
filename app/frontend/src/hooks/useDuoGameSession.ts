@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react"
 import { useSocket } from "./useSocket"
-import { SocketEvent, Player, GameType, SerializedGame, SocketResponse } from "shared"
+import { SocketEvent, Player, GameType, SerializedGame, SocketResponse } from "@henyo/shared"
 import { usePathname, useRouter } from "next/navigation"
 import { useDuoGameStore } from "@/stores/duoGameStore"
 import { DuoGamePage, DuoGamePlayerSessionStatus } from "@/utils/constants"

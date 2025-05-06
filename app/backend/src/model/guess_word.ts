@@ -1,4 +1,4 @@
-import { SupportedLanguages } from "shared"
+import { SupportedLanguages } from "@henyo/shared"
 import { supabase } from "../lib/supabase"
 
 enum Category {

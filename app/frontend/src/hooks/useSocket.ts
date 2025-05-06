@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { SocketEvent } from "shared"
+import { SocketEvent } from "@henyo/shared"
 import io, { Socket } from "socket.io-client"
 
 let socketInstance: typeof io.Socket | null = null

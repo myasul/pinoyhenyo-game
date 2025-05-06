@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { SocketEvent } from 'shared';
+import { SocketEvent } from "@henyo/shared";
 
 import { useDuoGameState } from '@/hooks/useDuoGameState';
 import { useSocket } from '@/hooks/useSocket';

@@ -1,4 +1,4 @@
-import { DuoGameRole } from "shared"
+import { DuoGameRole } from "@henyo/shared"
 
 const GameInstructionsMap = {
     [DuoGameRole.Guesser]: "Ask a yes-or-no questions to figure out the word. Start by narrowing down the category (person, place, object, nature, food, action). Then keep guessing!!",

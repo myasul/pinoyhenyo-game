@@ -2,7 +2,7 @@
 
 import { FastForward, Pause } from "react-feather"
 import React, { useEffect, useState } from "react"
-import { DuoGameRole, SocketEvent } from "shared"
+import { DuoGameRole, SocketEvent } from "@henyo/shared"
 
 import { useDuoGameState } from "@/hooks/useDuoGameState"
 import { GameStatus } from "@/utils/constants"

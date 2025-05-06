@@ -1,51 +1,49 @@
-# syntax = docker/dockerfile:1
+# syntax=docker/dockerfile:1
 
-# Adjust NODE_VERSION as desired
 ARG NODE_VERSION=20.18.1
 FROM node:${NODE_VERSION}-slim AS base
 
 LABEL fly_launch_runtime="Node.js"
+ENV NODE_ENV=production
 
-# Node.js app lives here
-WORKDIR /app
-
-# Set production environment
-ENV NODE_ENV="production"
-
-# Throw-away build stage to reduce size of final image
+# ========= Build Stage ==========
 FROM base AS build
 
-# Install packages needed to build node modules
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3
+# 👇 Override the inherited production NODE_ENV so devDependencies get installed
+ENV NODE_ENV=development
 
-# Copy backend, shared, and tsconfig.base.json into Docker
-COPY app/backend ./app/backend
-COPY shared ./shared
-COPY tsconfig.base.json ./
+# Install build deps
+# RUN apt-get update -qq && \
+#     apt-get install --no-install-recommends -y --fix-missing build-essential node-gyp pkg-config python-is-python3
 
-WORKDIR /app/app/backend
+# Set monorepo root in container as /app
+WORKDIR /app
 
-# Install node modules
-COPY package.json ./
-RUN npm install --include=dev
-
-# Copy application code
+# Copy everything so workspaces can be resolved
 COPY . .
 
-# Build application
-RUN npm run build
+# Install dependencies using Yarn Workspaces
+RUN yarn install --frozen-lockfile
 
-# Remove development dependencies
-RUN npm prune --omit=dev
+# Build only the backend
+RUN yarn workspace backend build
 
-
-# Final stage for app image
+# ========= Final Stage ==========
 FROM base
 
-# Copy built application
-COPY --from=build /app /app
+WORKDIR /app
 
-# Start the server by default, this can be overwritten at runtime
-EXPOSE 3000
-CMD [ "npm", "run", "start" ]
+# Copy only production deps (optional)
+COPY --from=build /app/node_modules ./app/node_modules
+
+# Copy only built output and runtime files
+COPY --from=build /app/app/backend ./app/backend
+COPY --from=build /app/shared ./shared
+COPY --from=build /app/yarn.lock ./yarn.lock
+
+# Set working dir to backend
+WORKDIR /app/app/backend
+
+ENV NODE_ENV=production
+EXPOSE 3001
+CMD ["node", "dist/index.js"]

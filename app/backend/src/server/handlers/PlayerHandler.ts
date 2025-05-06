@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { GameType, Player, SerializedGame, SocketEvent, SocketResponse } from "shared";
+import { GameType, Player, SerializedGame, SocketEvent, SocketResponse } from "@henyo/shared";
 import { v4 as uuid } from 'uuid'
 
 import { GameSocket } from "../types";

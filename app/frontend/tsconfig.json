@@ -24,10 +24,10 @@
       "@/*": [
         "src/*"
       ],
-      "shared": [
+      "@henyo/shared": [
         "../../shared/src/index.ts"
       ],
-      "shared/*": [
+      "@henyo/shared/*": [
         "../../shared/src/*"
       ]
     },

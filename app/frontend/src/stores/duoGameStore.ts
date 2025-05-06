@@ -1,5 +1,5 @@
 import { DefaultGameSettings, DuoGamePlayerSessionStatus } from '@/utils/constants'
-import { DuoGameRole, GameSettings, Player } from 'shared'
+import { DuoGameRole, GameSettings, Player } from "@henyo/shared"
 import { create } from 'zustand'
 
 export interface DuoGameState {

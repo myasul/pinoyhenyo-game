@@ -1,4 +1,4 @@
-import { DuoGameRole, GameSettings, Player, SupportedLanguages } from "shared"
+import { DuoGameRole, GameSettings, Player, SupportedLanguages } from "@henyo/shared"
 import { InviteLinkBtn } from "./InviteLink"
 import { PageLayout } from "@/components/PageLayout"
 import { RadioGroup } from "@/components/RadioGroup"

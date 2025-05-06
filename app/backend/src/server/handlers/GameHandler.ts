@@ -1,7 +1,7 @@
 import { Server } from "socket.io"
 import { GameManager } from "../services/GameManager"
 import { GameSocket } from "../types"
-import { GameSettings, SocketEvent, SocketResponse } from "shared"
+import { GameSettings, SocketEvent, SocketResponse } from "@henyo/shared"
 import { IHandler } from "./IHandler"
 
 export class GameHandler implements IHandler {

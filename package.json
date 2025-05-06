@@ -1,10 +1,15 @@
 {
     "private": "true",
-    "workspaces": [
-        "app/frontend",
-        "app/backend",
-        "shared"
-    ],
+    "workspaces": {
+        "packages": [
+            "app/frontend",
+            "app/backend",
+            "shared"
+        ],
+        "nohoist": [
+            "**/@henyo/shared"
+        ]
+    },
     "scripts": {
         "dev:frontend": "yarn workspace frontend dev",
         "dev:backend": "yarn workspace backend dev",
@@ -12,6 +17,7 @@
         "build": "yarn workspace backend build && yarn workspace frontend build"
     },
     "devDependencies": {
-        "concurrently": "^8.0.1"
+        "concurrently": "^8.0.1",
+        "typescript": "^5.7.3"
     }
 }

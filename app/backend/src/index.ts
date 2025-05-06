@@ -6,7 +6,7 @@ import cors from 'cors';
 import { Server } from 'socket.io';
 import { setupSocketHandlers } from './server';
 
-const serverPort = process.env.PORT || 3001;
+const serverPort = Number(process.env.PORT) || 3001;
 
 const app = express();
 const server = http.createServer(app);
@@ -17,6 +17,8 @@ app.use(cors());
 
 setupSocketHandlers(io);
 
-server.listen(serverPort, () => {
+app.get('/healthz', (args) => { args.res?.send('OK') });
+
+server.listen(serverPort, '0.0.0.0', () => {
     console.log(`Server is running on port ${serverPort}`);
 })

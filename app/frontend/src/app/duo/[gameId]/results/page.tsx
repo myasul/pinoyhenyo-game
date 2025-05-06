@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation"
 import React, { useEffect } from "react"
-import { SocketEvent } from "shared"
+import { SocketEvent } from "@henyo/shared"
 import { Repeat } from "react-feather"
 
 import { useDuoGameState } from "@/hooks/useDuoGameState"

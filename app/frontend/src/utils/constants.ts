@@ -1,4 +1,4 @@
-import { GameSettings, SupportedLanguages } from "shared";
+import { GameSettings, SupportedLanguages } from "@henyo/shared";
 
 export enum GameStatus {
     Started = 'STARTED',

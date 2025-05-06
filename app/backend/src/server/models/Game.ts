@@ -1,4 +1,4 @@
-import { DuoGameRole, GameSettings, GameType, Player, SerializedGame, SupportedLanguages } from "shared";
+import { DuoGameRole, GameSettings, GameType, Player, SerializedGame, SupportedLanguages } from "@henyo/shared";
 import { getRandomGuessWord } from "../../model/guess_word";
 
 const DEFAULT_SETTINGS: GameSettings = {

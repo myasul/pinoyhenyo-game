@@ -15,7 +15,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-feather": "^2.0.10",
-    "shared": "*",
+    "@henyo/shared": "*",
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^3.2.0",
     "unique-names-generator": "^4.7.1",

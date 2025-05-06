@@ -1,0 +1,17 @@
+# Git & config
+.git
+.gitignore
+*.env
+fly.toml
+Dockerfile
+.dockerignore
+tsconfig.tsbuildinfo
+
+# Node dependencies (we'll reinstall anyway)
+**/node_modules
+
+# Ignore unnecessary app parts
+app/frontend
+.vscode
+coverage
+dist

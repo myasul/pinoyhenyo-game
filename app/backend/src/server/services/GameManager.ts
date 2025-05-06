@@ -1,7 +1,7 @@
 import { Game } from "../models/Game";
 import { GameSocket } from "../types";
 import { Session } from "./Session";
-import { GameType } from "shared";
+import { GameType } from "@henyo/shared";
 
 export class GameManager {
     private games: Map<string, Game> = new Map();

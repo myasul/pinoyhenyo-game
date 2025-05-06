@@ -4,7 +4,7 @@ import { useDuoGameStore } from "@/stores/duoGameStore"
 import { useSocket } from "./useSocket"
 import { useRouter } from "next/navigation"
 import { useCallback } from "react"
-import { DuoGameRole, GameSettings, SerializedGame, SocketEvent } from "shared"
+import { DuoGameRole, GameSettings, SerializedGame, SocketEvent } from "@henyo/shared"
 import { DuoGamePlayerSessionStatus, GameStatus } from "@/utils/constants"
 
 type Handler<T extends unknown[] = unknown[]> = (...args: T) => void;
