@@ -11,7 +11,7 @@ export const getSocket = () => {
 
     if (!socketInstance) {
         socketInstance = io(socketUrl, {
-            transports: ['websocket', 'polling'],
+            transports: ['websocket'],
             upgrade: true,
             reconnection: true,
             forceNew: true,
