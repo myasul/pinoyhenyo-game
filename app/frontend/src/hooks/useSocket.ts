@@ -7,12 +7,19 @@ let socketInstance: typeof io.Socket | null = null
 export const getSocket = () => {
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001'
 
+    console.log('Connecting to socket:', socketUrl)
+
     if (!socketInstance) {
         socketInstance = io(socketUrl, {
-            transports: ['websocket'],
+            transports: ['websocket', 'polling'],
+            upgrade: true,
+            reconnection: true,
+            forceNew: true,
             reconnectionAttempts: 10,
             reconnectionDelay: 1000,
             reconnectionDelayMax: 5000,
+            // TODO: Can be fixed by buying a domain
+            rejectUnauthorized: false
         })
     }
 
