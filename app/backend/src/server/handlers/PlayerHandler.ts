@@ -109,7 +109,7 @@ export class PlayerHandler implements IHandler {
             const game = this.gameManager.leave(data, socket)
 
             this.io
-                .to()
+                .to(game.id)
                 .emit(SocketEvent.NotifyPlayersUpdated, game.serialize())
 
             callback({ success: true, data: null })
@@ -126,7 +126,10 @@ export class PlayerHandler implements IHandler {
 
         const session = this.gameManager.getSession(socket)
 
-        if (!session.gameId || !session.playerId) return
+        const gameId = session.gameId
+        const playerId = session.playerId
+
+        if (!(gameId && playerId)) return
 
         const handlePlayerDisconnection = () => {
             const isStillConnected = session.isStillConnected(this.io.sockets.sockets)
@@ -134,19 +137,16 @@ export class PlayerHandler implements IHandler {
             // Successfully reconnected
             if (isStillConnected) return
 
-            const game = this.gameManager.get(session.gameId!)
+            console.log(
+                `[${SocketEvent.Disconnect}] Player permanently disconnected: `,
+                JSON.stringify({ gameId: session.gameId, playerId: session.playerId }, null, 2)
+            )
 
-            if (!game) return
-
-            game.removePlayer(session.playerId!)
+            const game = this.gameManager.leave({ gameId, playerId }, socket)
 
             this.io
                 .to(game.id)
                 .emit(SocketEvent.NotifyPlayersUpdated, game.serialize())
-
-            if (game.isEmpty()) this.gameManager.removeGame(game.id)
-
-            session.clear()
         }
 
         setTimeout(handlePlayerDisconnection, DISCONNECTION_GRACE_PERIOD)
