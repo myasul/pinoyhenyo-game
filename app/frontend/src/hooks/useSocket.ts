@@ -17,9 +17,7 @@ export const getSocket = () => {
             forceNew: true,
             reconnectionAttempts: 10,
             reconnectionDelay: 1000,
-            reconnectionDelayMax: 5000,
-            // TODO: Can be fixed by buying a domain
-            rejectUnauthorized: false
+            reconnectionDelayMax: 5000
         })
     }
 
