@@ -83,5 +83,6 @@ jobs:
           docker pull ${{ secrets.ECR_URI }}/${{ vars.BACKEND_REPOSITORY_NAME }}:latest
           docker stop ${{ vars.BACKEND_REPOSITORY_NAME }} || true
           docker rm ${{ vars.BACKEND_REPOSITORY_NAME }} || true
+          docker container prune -f
           docker run -d --name ${{ vars.BACKEND_REPOSITORY_NAME }} -p 3001:3001 ${{ secrets.ECR_URI }}/${{ vars.BACKEND_REPOSITORY_NAME }}:latest
 
