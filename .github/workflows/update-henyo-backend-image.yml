@@ -29,11 +29,47 @@ jobs:
       run: |
         aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR_URI }}
 
-    - name: Build and push Docker image
+    - name: Build Docker image
       run: |
-        docker build --platform linux/amd64 -t henyo-backend -f app/backend/Dockerfile .
-        docker tag henyo-backend:latest ${{ secrets.ECR_URI }}/henyo-backend:latest
-        docker push ${{ secrets.ECR_URI }}/henyo-backend:latest
+        docker build --platform linux/amd64 --no-cache -t ${{ vars.BACKEND_REPOSITORY_NAME }}:latest -f app/backend/Dockerfile .
+
+    - name: Tag Docker image
+      run: |
+        docker tag ${{ vars.BACKEND_REPOSITORY_NAME }}:latest ${{ secrets.ECR_URI }}/${{ vars.BACKEND_REPOSITORY_NAME }}:latest
+
+    - name: Delete old images
+      run: |
+        OLD_IMAGES=$(aws ecr list-images \
+          --repository-name ${{ vars.BACKEND_REPOSITORY_NAME }} \
+          --query 'imageIds' \
+          --output json 2>&1)  # Capture both stdout and stderr
+
+        # Error handling
+        if [[ "$OLD_IMAGES" == *"Error"* ]] || [[ "$OLD_IMAGES" == *"botocore.awsrequest.AWSRequest"* ]]; then
+            echo "Error retrieving images:"
+            echo "$OLD_IMAGES"
+            exit 1
+        fi
+
+        if [ "$OLD_IMAGES" != "[]" ]; then
+            echo "Deleting old images..."
+            echo "$OLD_IMAGES" | jq -c '.[]' | while read -r IMAGE; do
+                IMAGE_DIGEST=$(echo "$IMAGE" | jq -r '.imageDigest')
+                echo "Deleting image with digest: $IMAGE_DIGEST"
+                DELETE_OUTPUT=$(aws ecr batch-delete-image --repository-name ${{ vars.BACKEND_REPOSITORY_NAME }} --image-ids imageDigest="$IMAGE_DIGEST" 2>&1)
+                if [ $? -ne 0 ]; then
+                    echo "Error deleting image with digest $IMAGE_DIGEST: $DELETE_OUTPUT"
+                else
+                    echo "Deleted image with digest: $IMAGE_DIGEST"
+                fi
+            done
+        else
+            echo "No old images to delete."
+        fi
+
+    - name: Push Docker image
+      run: |
+        docker push ${{ secrets.ECR_URI }}/${{ vars.BACKEND_REPOSITORY_NAME }}:latest
 
     - name: SSH into EC2 and update container
       uses: appleboy/ssh-action@v0.1.5
@@ -42,8 +78,8 @@ jobs:
         username: ec2-user
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          docker pull ${{ secrets.ECR_URI }}/henyo-backend:latest
-          docker stop henyo-backend || true
-          docker rm henyo-backend || true
-          docker run -d --name henyo-backend -p 3001:3001 ${{ secrets.ECR_URI }}/henyo-backend:latest
+          docker pull ${{ secrets.ECR_URI }}/${{ vars.BACKEND_REPOSITORY_NAME }}:latest
+          docker stop ${{ vars.BACKEND_REPOSITORY_NAME }} || true
+          docker rm ${{ vars.BACKEND_REPOSITORY_NAME }} || true
+          docker run -d --name ${{ vars.BACKEND_REPOSITORY_NAME }} -p 3001:3001 ${{ secrets.ECR_URI }}/${{ vars.BACKEND_REPOSITORY_NAME }}:latest
 
