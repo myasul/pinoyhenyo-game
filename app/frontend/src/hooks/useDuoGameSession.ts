@@ -16,6 +16,7 @@ export const useDuoGameSession = (gameId: string) => {
 
     const playerLocalStorageKey = `henyo-duo-player-${gameId}`
 
+    // TODO: Use `syncGameState` in useDuoGameState instead
     const setupGame = useCallback((joiningPlayer: Player, game: SerializedGame) => {
         store.setMyPlayer(joiningPlayer)
         store.setGuessWord(game.guessWord ?? null)
@@ -81,9 +82,9 @@ export const useDuoGameSession = (gameId: string) => {
     })
 
     const leaveGame = useCallback(() => {
-        if (!socket) return
+        if (!(socket && myPlayer)) return
 
-        socket.emit(SocketEvent.RequestLeaveGame, { gameId })
+        socket.emit(SocketEvent.RequestLeaveGame, { gameId, playerId: myPlayer.id })
 
         // Remove player from the game
         setMyPlayerStatus(DuoGamePlayerSessionStatus.Left)
@@ -93,7 +94,7 @@ export const useDuoGameSession = (gameId: string) => {
 
         // Redirect to the home page
         router.push('/')
-    }, [socket, gameId, playerLocalStorageKey, setMyPlayer, disconnectSocket, router, setMyPlayerStatus])
+    }, [socket, gameId, playerLocalStorageKey, setMyPlayer, disconnectSocket, router, setMyPlayerStatus, myPlayer])
 
     // Determines if the player can join the game (as a new player or rejoining)
     const handlePlayerEnteringTheGame = useEvent((

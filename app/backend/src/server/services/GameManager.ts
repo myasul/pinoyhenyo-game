@@ -1,25 +1,86 @@
+import { v4 as uuid } from 'uuid'
+
 import { Game } from "../models/Game";
 import { GameSocket } from "../types";
 import { Session } from "./Session";
-import { GameType } from "@henyo/shared";
+import { DuoGameRole, GameType, Player } from "@henyo/shared";
+
+type JoinGameData = {
+    gameId: string
+    playerName: string
+    gameType: GameType
+}
+
+type LeaveGameData = {
+    gameId: string
+    playerId: string
+}
 
 export class GameManager {
     private games: Map<string, Game> = new Map();
 
+    // TODO: Throw error if game is not found
     get(gameId: string): Game | undefined {
         return this.games.get(gameId)
     }
 
-    create (gameId: string, gameType: GameType): Game {
-        const game = new Game(gameId, gameType)
+    join(gameData: JoinGameData, socket: GameSocket): Game {
+        const { gameId, playerName, gameType } = gameData
 
-        this.games.set(gameId, game)
+        const playerId = uuid()
+
+        const session = this.getSession(socket)
+        session.bind(gameId, playerId)
+
+        let game = this.get(gameId);
+        let joiningPlayer: Player | undefined
+
+        if (!game) {
+            joiningPlayer = {
+                id: playerId,
+                name: playerName,
+                role: DuoGameRole.Guesser,
+            }
+
+            game = new Game(gameId, joiningPlayer, gameType)
+
+            this.games.set(gameId, game)
+        } else {
+            joiningPlayer = {
+                id: playerId,
+                name: playerName,
+                role: game.getNextRole(),
+            }
+
+            game.addPlayer(joiningPlayer)
+        }
 
         return game
     }
 
-    remove(gameId: string) {
-        this.games.delete(gameId)
+    leave(gameData: LeaveGameData, socket: GameSocket) {
+        const session = this.getSession(socket)
+        const { gameId, playerId } = gameData
+
+        if (!session.gameId || !session.playerId) {
+            throw new Error("Game ID or Player ID not available")
+        }
+
+        if (!(session.gameId === gameId && session.playerId === playerId)) {
+            throw new Error("Game/Player ID mismatch")
+        }
+
+        const game = this.get(gameId)
+
+        if (!game) throw new Error("Game not found")
+
+        game.removePlayer(playerId)
+
+        if (game.isEmpty()) this.games.delete(gameId)
+
+        session.clear()
+
+        return game
     }
 
     getSession(socket: GameSocket) {

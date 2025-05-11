@@ -67,6 +67,7 @@ export type ServerGame = {
 }
 
 export type SerializedGame = {
+    hostId: string
     players: Record<string, Player>
     type: GameType
     settings: GameSettings

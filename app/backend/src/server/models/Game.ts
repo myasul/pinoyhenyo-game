@@ -8,6 +8,7 @@ const DEFAULT_SETTINGS: GameSettings = {
 }
 
 export class Game {
+    #hostId: string
     #players: Map<string, Player> = new Map()
     #guessWord: string | null = null
     #timeRemaining = 0
@@ -23,10 +24,14 @@ export class Game {
 
     constructor(
         public readonly id: string,
+        public readonly hostPlayer: Player,
         public readonly type = GameType.Duo,
         settings: Partial<GameSettings> = {},
         getRandomGuessWordFunc = getRandomGuessWord,
     ) {
+        this.#hostId = hostPlayer.id
+        this.addPlayer(hostPlayer)
+
         this.#getRandomGuessWord = getRandomGuessWordFunc
         this.#settings = { ...DEFAULT_SETTINGS, ...settings }
     }
@@ -178,6 +183,7 @@ export class Game {
         const playersObject = Object.fromEntries(this.#players)
 
         return {
+            hostId: this.#hostId,
             guessWord: this.#guessWord,
             timeRemaining: this.#timeRemaining,
             passesRemaining: this.#passesRemaining,

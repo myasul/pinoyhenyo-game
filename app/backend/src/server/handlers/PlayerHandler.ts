@@ -1,6 +1,5 @@
 import { Server } from "socket.io";
 import { GameType, Player, SerializedGame, SocketEvent, SocketResponse } from "@henyo/shared";
-import { v4 as uuid } from 'uuid'
 
 import { GameSocket } from "../types";
 import { DISCONNECTION_GRACE_PERIOD } from "../constants";
@@ -27,24 +26,19 @@ export class PlayerHandler implements IHandler {
 
     private onJoin(
         socket: GameSocket,
-        { gameId, gameType, playerName }: { gameId: string, gameType: GameType, playerName: string },
+        gameData: { gameId: string, gameType: GameType, playerName: string },
         callback: (response: SocketResponse<{ joiningPlayer: Player, game: SerializedGame }>) => void
     ) {
-        const playerId = uuid()
 
-        const session = this.gameManager.getSession(socket)
+        const game = this.gameManager.join(gameData, socket)
 
-        session.bind(gameId, playerId)
+        const joiningPlayer = game.players.find(player => player.name === gameData.playerName)
 
-        const game = this.gameManager.get(gameId) ?? this.gameManager.create(gameId, gameType)
-
-        const joiningPlayer: Player = {
-            id: playerId,
-            name: playerName,
-            role: game.getNextRole(),
+        if (!joiningPlayer) {
+            console.error(`Joining player (ID: ${gameData.playerName}) not found in game (ID: ${game.id}).`)
+            callback({ success: false, error: `Joining player (ID: ${gameData.playerName}) not found in game (ID: ${game.id}).` })
+            return
         }
-
-        game.addPlayer(joiningPlayer)
 
         this.io
             .to(game.id)
@@ -53,6 +47,7 @@ export class PlayerHandler implements IHandler {
         callback({ success: true, data: { joiningPlayer, game: game.serialize() } })
     }
 
+    // TODO: Encapsulate rejoin logic in GameManager class
     private onRejoin(
         socket: GameSocket,
         { gameId, rejoiningPlayer }: { gameId: string, rejoiningPlayer: Player },
@@ -105,51 +100,30 @@ export class PlayerHandler implements IHandler {
         callback({ success: true, data: { game: game.serialize() } })
     }
 
+    // TODO: Encapsulate rejoin logic in GameManager class
     private onLeave(
-        socket: GameSocket, data: { gameId: string },
+        socket: GameSocket, data: { gameId: string, playerId: string },
         callback: (response: SocketResponse<null>) => void
     ) {
-        const session = this.gameManager.getSession(socket)
+        try {
+            const game = this.gameManager.leave(data, socket)
 
-        if (!session.gameId || !session.playerId) {
-            console.error("Game ID or Player ID not available")
-            callback({ success: false, error: "Game ID or Player ID not available" })
+            this.io
+                .to()
+                .emit(SocketEvent.NotifyPlayersUpdated, game.serialize())
 
-            return
+            callback({ success: true, data: null })
+        } catch (err) {
+            const error = err as Error
+
+            console.error(`Error leaving game: ${error.message}`)
+            callback({ success: false, error: `Error leaving game: ${error.message}` })
         }
-
-        if (session.gameId !== data.gameId) {
-            console.error("Game ID mismatch")
-            callback({ success: false, error: "Game ID mismatch" })
-
-            return
-        }
-
-        const game = this.gameManager.get(session.gameId)
-
-        if (!game) {
-            console.error("Game not found")
-            callback({ success: false, error: "Game not found" })
-
-            return
-        }
-
-        game.removePlayer(session.playerId)
-
-        this.io
-            .to(game.id)
-            .emit(SocketEvent.NotifyPlayersUpdated, game.serialize())
-
-        if (game.isEmpty()) this.gameManager.remove(game.id)
-
-        session.clear()
-
-        callback({ success: true, data: null })
     }
 
     private onDisconnect(socket: GameSocket) {
         console.log(`[${SocketEvent.Disconnect}] Player disconnected: `, socket.id)
-        
+
         const session = this.gameManager.getSession(socket)
 
         if (!session.gameId || !session.playerId) return
@@ -170,7 +144,7 @@ export class PlayerHandler implements IHandler {
                 .to(game.id)
                 .emit(SocketEvent.NotifyPlayersUpdated, game.serialize())
 
-            if (game.isEmpty()) this.gameManager.remove(game.id)
+            if (game.isEmpty()) this.gameManager.removeGame(game.id)
 
             session.clear()
         }
