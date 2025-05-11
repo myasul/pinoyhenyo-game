@@ -72,6 +72,13 @@ jobs:
       run: |
         docker push ${{ secrets.ECR_URI }}/${{ vars.BACKEND_REPOSITORY_NAME }}:latest
 
+    # Add the SSH Agent to unlock the private key
+    - name: Start SSH Agent
+      uses: webfactory/ssh-agent@v0.5.4
+      with:
+        ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+        passphrase: ${{ secrets.EC2_SSH_PASSPHRASE }}
+
     - name: SSH into EC2 and update container
       uses: appleboy/ssh-action@v0.1.5
       with:
