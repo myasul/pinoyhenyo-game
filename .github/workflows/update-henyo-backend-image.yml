@@ -76,7 +76,7 @@ jobs:
     - name: Start SSH Agent
       uses: webfactory/ssh-agent@v0.5.4
       with:
-        ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
         passphrase: ${{ secrets.EC2_SSH_PASSPHRASE }}
 
     - name: SSH into EC2 and update container
