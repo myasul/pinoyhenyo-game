@@ -151,6 +151,8 @@ export const useDuoGameState = (gameId: string) => {
     const handlers: Handlers = {
         [SocketEvent.RequestStartGame]: handleRequestStartGame,
         [SocketEvent.RequestSwitchRole]: handleRequestSwitchRole,
+        [SocketEvent.RequestPauseGame]: handleRequestPauseGame,
+        [SocketEvent.RequestResumeGame]: handleRequestResumeGame,
         [SocketEvent.RequestWordGuessSuccessful]: handleRequestWordGuessSuccessful,
         [SocketEvent.RequestBackToLobby]: handleRequestBackToLobby,
         [SocketEvent.RequestChangeGuessWord]: handleRequestChangeGuessWord,
@@ -161,8 +163,6 @@ export const useDuoGameState = (gameId: string) => {
         [SocketEvent.NotifyWordGuessSuccessful]: handleNotifyWordGuess,
         [SocketEvent.NotifyBackToLobby]: handleNotifyBackToLobby,
         [SocketEvent.NotifyGuessWordChanged]: handleNotifyGuessWordChanged,
-        [SocketEvent.RequestPauseGame]: handleRequestPauseGame,
-        [SocketEvent.RequestResumeGame]: handleRequestResumeGame
     }
 
     return { gameId, handlers, syncGameState, ...store }

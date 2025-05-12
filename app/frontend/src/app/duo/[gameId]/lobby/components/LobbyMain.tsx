@@ -1,12 +1,11 @@
-import { DuoGameRole, GameSettings, Player, SupportedLanguages } from "@henyo/shared"
+import { DuoGameRole, GameSettings, Player } from "@henyo/shared"
 import { InviteLinkBtn } from "./InviteLink"
 import { PageLayout } from "@/components/PageLayout"
-import { RadioGroup } from "@/components/RadioGroup"
 import { useState } from "react"
-import { CheckboxGroup } from "@/components/CheckboxGroup"
 import { Footer } from "@/components/Footer"
 import { Play, RefreshCw } from "react-feather"
 import { WaveButton } from "@/components/WaveButton"
+import { SettingsSection } from "./SettingsSection"
 
 type Props = {
     isHost: boolean
@@ -16,17 +15,6 @@ type Props = {
     onExit: () => void
     onStartGame: (settings: GameSettings) => void
     onSwitchRole: () => void
-}
-
-const LanguageOptions = [
-    { label: 'English', value: SupportedLanguages.English },
-    { label: 'Tagalog', value: SupportedLanguages.Tagalog },
-]
-
-const SettingsOptions = {
-    duration: [30, 60, 90, 120],
-    passes: [0, 1, 2, 3, 4, 5],
-    languagesUsed: LanguageOptions,
 }
 
 const DuoGameRoleText = {
@@ -39,6 +27,8 @@ export const LobbyMain = ({ isHost, players, myPlayer, settings, onExit, onStart
     const [duration, setDuration] = useState(settings.duration)
     const [passes, setPasses] = useState(settings.passes)
     const [languagesUsed, setLanguagesUsed] = useState(settings.languagesUsed)
+
+    const isGameFull = players.length >= 2
 
     const handleStartGame = () => {
         const settings: GameSettings = {
@@ -78,59 +68,35 @@ export const LobbyMain = ({ isHost, players, myPlayer, settings, onExit, onStart
                         ))}
                     </ul>
                     {
-                        players.length < 2
-                            ? <InviteLinkBtn />
-                            : (
-                                <WaveButton
-                                    className="w-3/4 shadow-md font-extrabold border border-fil-blue rounded-xl text-lg h-10 flex flex-row"
-                                    bgColor='bg-fil-deepBlue'
-                                    textColor='text-white'
-                                    onClick={onSwitchRole}
-                                >
-                                    <span className="flex items-center justify-center gap-3">
-                                        <RefreshCw className="text-fil-deepYellow" /> Switch Roles
-                                    </span>
-                                </WaveButton>
-                            )
+                        isHost
+                            ? (
+                                isGameFull
+                                    ? (
+                                        <WaveButton
+                                            className="w-3/4 shadow-md font-extrabold border border-fil-blue rounded-xl text-lg h-10 flex flex-row"
+                                            bgColor='bg-fil-deepBlue'
+                                            textColor='text-white'
+                                            onClick={onSwitchRole}
+                                        >
+                                            <span className="flex items-center justify-center gap-3">
+                                                <RefreshCw className="text-fil-deepYellow" /> Switch Roles
+                                            </span>
+                                        </WaveButton>
+                                    )
+                                    : <InviteLinkBtn />
+                            ) : null
                     }
                 </section>
-
-                <section className="flex flex-col items-center text-center gap-3">
-                    <h1 className="text-3xl font-extrabold text-fil-deepBlue">Settings</h1>
-                    <div className="flex flex-col gap-2">
-                        <label className="font-extrabold">Duration (seconds)</label>
-                        <RadioGroup
-                            options={SettingsOptions.duration.map((value) => ({
-                                label: value.toString(),
-                                value,
-                            }))}
-                            selected={duration}
-                            onSelect={(value) => setDuration(value)}
-                            isDisabled={!isHost}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <label className="font-extrabold">Passes</label>
-                        <RadioGroup
-                            options={SettingsOptions.passes.map((value) => ({
-                                label: value.toString(),
-                                value,
-                            }))}
-                            selected={passes}
-                            onSelect={(value) => setPasses(value)}
-                            isDisabled={!isHost}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <label className="font-extrabold">Languages Used</label>
-                        <CheckboxGroup
-                            options={SettingsOptions.languagesUsed}
-                            selected={languagesUsed}
-                            onSelect={(value) => setLanguagesUsed(value)}
-                            isDisabled={!isHost}
-                        />
-                    </div>
-                </section>
+                {isHost &&
+                    <SettingsSection
+                        duration={duration}
+                        passes={passes}
+                        languagesUsed={languagesUsed}
+                        onChangeDuration={setDuration}
+                        onChangePasses={setPasses}
+                        onChangeLanguagesUsed={setLanguagesUsed}
+                    />
+                }
             </div>
             <Footer
                 onBack={onExit}
