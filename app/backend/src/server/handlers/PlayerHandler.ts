@@ -29,7 +29,6 @@ export class PlayerHandler implements IHandler {
         gameData: { gameId: string, gameType: GameType, playerName: string },
         callback: (response: SocketResponse<{ joiningPlayer: Player, game: SerializedGame }>) => void
     ) {
-
         const game = this.gameManager.join(gameData, socket)
 
         const joiningPlayer = game.players.find(player => player.name === gameData.playerName)
@@ -45,6 +44,27 @@ export class PlayerHandler implements IHandler {
             .emit(SocketEvent.NotifyPlayersUpdated, game.serialize());
 
         callback({ success: true, data: { joiningPlayer, game: game.serialize() } })
+    }
+
+    // TODO: Encapsulate rejoin logic in GameManager class
+    private onLeave(
+        socket: GameSocket, data: { gameId: string, playerId: string },
+        callback: (response: SocketResponse<null>) => void
+    ) {
+        try {
+            const game = this.gameManager.leave(data, socket)
+
+            this.io
+                .to(game.id)
+                .emit(SocketEvent.NotifyPlayersUpdated, game.serialize())
+
+            callback({ success: true, data: null })
+        } catch (err) {
+            const error = err as Error
+
+            console.error(`Error leaving game: ${error.message}`)
+            callback({ success: false, error: `Error leaving game: ${error.message}` })
+        }
     }
 
     // TODO: Encapsulate rejoin logic in GameManager class
@@ -100,27 +120,6 @@ export class PlayerHandler implements IHandler {
         callback({ success: true, data: { game: game.serialize() } })
     }
 
-    // TODO: Encapsulate rejoin logic in GameManager class
-    private onLeave(
-        socket: GameSocket, data: { gameId: string, playerId: string },
-        callback: (response: SocketResponse<null>) => void
-    ) {
-        try {
-            const game = this.gameManager.leave(data, socket)
-
-            this.io
-                .to(game.id)
-                .emit(SocketEvent.NotifyPlayersUpdated, game.serialize())
-
-            callback({ success: true, data: null })
-        } catch (err) {
-            const error = err as Error
-
-            console.error(`Error leaving game: ${error.message}`)
-            callback({ success: false, error: `Error leaving game: ${error.message}` })
-        }
-    }
-
     private onDisconnect(socket: GameSocket) {
         console.log(`[${SocketEvent.Disconnect}] Player disconnected: `, socket.id)
 
@@ -137,16 +136,22 @@ export class PlayerHandler implements IHandler {
             // Successfully reconnected
             if (isStillConnected) return
 
-            console.log(
-                `[${SocketEvent.Disconnect}] Player permanently disconnected: `,
-                JSON.stringify({ gameId: session.gameId, playerId: session.playerId }, null, 2)
-            )
+            try {
+                console.log(
+                    `[${SocketEvent.Disconnect}] Player permanently disconnected: `,
+                    JSON.stringify({ gameId: session.gameId, playerId: session.playerId }, null, 2)
+                )
 
-            const game = this.gameManager.leave({ gameId, playerId }, socket)
+                const game = this.gameManager.leave({ gameId, playerId }, socket)
 
-            this.io
-                .to(game.id)
-                .emit(SocketEvent.NotifyPlayersUpdated, game.serialize())
+                this.io
+                    .to(game.id)
+                    .emit(SocketEvent.NotifyPlayersUpdated, game.serialize())
+            } catch (err) {
+                const error = err as Error
+
+                console.error(`Error disconnecting game: ${error.message}`)
+            }
         }
 
         setTimeout(handlePlayerDisconnection, DISCONNECTION_GRACE_PERIOD)

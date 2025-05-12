@@ -19,10 +19,14 @@ export const useDuoGameSession = (gameId: string) => {
     // TODO: Use `syncGameState` in useDuoGameState instead
     const setupGame = useCallback((joiningPlayer: Player, game: SerializedGame) => {
         store.setMyPlayer(joiningPlayer)
+
+        store.setHostId(game.hostId)
+        store.setSettings(game.settings)
         store.setGuessWord(game.guessWord ?? null)
         store.setPlayers(Object.values(game.players))
         store.setTimeRemaining(game.timeRemaining)
         store.setPassesRemaining(game.passesRemaining)
+        store.setPassedWords(game.passedWords)
     }, [store])
 
     const joinGame = useCallback((playerName: string) => {
@@ -82,9 +86,9 @@ export const useDuoGameSession = (gameId: string) => {
     })
 
     const leaveGame = useCallback(() => {
-        if (!(socket && myPlayer)) return
+        if (!socket) return
 
-        socket.emit(SocketEvent.RequestLeaveGame, { gameId, playerId: myPlayer.id })
+        if (myPlayer) socket.emit(SocketEvent.RequestLeaveGame, { gameId, playerId: myPlayer.id })
 
         // Remove player from the game
         setMyPlayerStatus(DuoGamePlayerSessionStatus.Left)
@@ -137,6 +141,8 @@ export const useDuoGameSession = (gameId: string) => {
 
     // Rejoining logic
     useEffect(() => {
+        console.log('[useDuoGameSession.useEffect] socket: ', socket)
+
         if (!socket) return
 
         socket.emit(SocketEvent.RequestEnterGame, { gameId }, handlePlayerEnteringTheGame)

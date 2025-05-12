@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from "react"
 import { SocketEvent } from "@henyo/shared"
-import io, { Socket } from "socket.io-client"
+import io from "socket.io-client"
 
 let socketInstance: typeof io.Socket | null = null
 
 export const getSocket = () => {
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001'
-
-    console.log('Connecting to socket:', socketUrl)
 
     if (!socketInstance) {
         socketInstance = io(socketUrl, {
@@ -15,9 +13,7 @@ export const getSocket = () => {
             upgrade: true,
             reconnection: true,
             forceNew: true,
-            reconnectionAttempts: 10,
-            reconnectionDelay: 1000,
-            reconnectionDelayMax: 5000
+            reconnectionAttempts: 10
         })
     }
 
@@ -25,35 +21,34 @@ export const getSocket = () => {
 }
 
 export const useSocket = () => {
-    const [connectedSocket, setConnectedSocket] = useState<typeof Socket | null>(null)
+    const [isConnected, setIsConnected] = useState(false)
     const isExplicityDisconnected = useRef(false)
 
     useEffect(() => {
         const socket = getSocket()
 
-        if (socket.id && socket.connected) {
-            setConnectedSocket(socket)
-        }
+        if (socket.connected) setIsConnected(true)
 
-        socket.addEventListener('connect', () => {
-            setConnectedSocket(socket)
-        })
+        socket.on('connect', () => setIsConnected(true))
+        socket.on('disconnect', () => setIsConnected(false))
 
         return () => {
+            socket.off(SocketEvent.Connect)
+            socket.off(SocketEvent.Disconnect)
+
             if (!isExplicityDisconnected.current) return
 
-            socket.removeListener(SocketEvent.Connect)
-            connectedSocket?.disconnect()
+            socket.disconnect()
+            socketInstance = null
         }
-    }, [connectedSocket])
+    }, [])
 
     const disconnectSocket = () => {
         isExplicityDisconnected.current = true
-
         socketInstance?.disconnect()
-        setConnectedSocket(null)
         socketInstance = null
+        setIsConnected(false)
     }
 
-    return { disconnectSocket, socket: connectedSocket }
+    return { disconnectSocket, socket: isConnected ? socketInstance : null }
 }

@@ -39,7 +39,12 @@ export const useDuoGameState = (gameId: string) => {
     const syncGameState = useCallback((game: SerializedGame) => {
         store.setMyPlayerStatus(DuoGamePlayerSessionStatus.Syncing)
 
+        const updatedMyPlayer = game.players[store.myPlayer?.id ?? '']
+
+        if (updatedMyPlayer) store.setMyPlayer(updatedMyPlayer)
+
         // add new player status (syncing)
+        store.setHostId(game.hostId)
         store.setSettings(game.settings)
         store.setTimeRemaining(game.timeRemaining)
         store.setPassesRemaining(game.passesRemaining)
@@ -68,7 +73,7 @@ export const useDuoGameState = (gameId: string) => {
         }
 
         store.setPlayers(Object.values(game.players))
-
+        store.setHostId(game.hostId)
     }, [store, router])
 
     const handleRequestStartGame = useCallback((settings: GameSettings) => {

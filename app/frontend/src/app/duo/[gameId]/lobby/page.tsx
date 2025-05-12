@@ -19,7 +19,7 @@ type Props = {
 export default function LobbyPage({ params }: Props) {
     const { gameId } = React.use(params)
 
-    const { players, handlers, settings, myPlayer, myPlayerStatus } = useDuoGameState(gameId)
+    const { players, handlers, settings, myPlayer, myPlayerStatus, hostId } = useDuoGameState(gameId)
     const { joinGame, leaveGame } = useDuoGameSession(gameId)
     const { socket } = useSocket()
 
@@ -63,6 +63,7 @@ export default function LobbyPage({ params }: Props) {
                     onStartGame={handlers[SocketEvent.RequestStartGame]}
                     onSwitchRole={handlers[SocketEvent.RequestSwitchRole]}
                     onExit={leaveGame}
+                    isHost={myPlayer.id === hostId}
                 />
             )
     );

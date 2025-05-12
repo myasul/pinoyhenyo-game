@@ -20,8 +20,16 @@ export class GameManager {
     private games: Map<string, Game> = new Map();
 
     // TODO: Throw error if game is not found
-    get(gameId: string): Game | undefined {
-        return this.games.get(gameId)
+    get(gameId: string, opts?: { shouldThrowIfNotFound: boolean }): Game | undefined {
+        const { shouldThrowIfNotFound = false } = opts || {}
+
+        const game = this.games.get(gameId)
+
+        if (!game && shouldThrowIfNotFound) {
+            throw new Error(`Game (ID: ${gameId}) not found.`)
+        }
+
+        return game
     }
 
     join(gameData: JoinGameData, socket: GameSocket): Game {
@@ -76,7 +84,14 @@ export class GameManager {
 
         game.removePlayer(playerId)
 
-        if (game.isEmpty()) this.games.delete(gameId)
+        const nextHost = game.getFirstPlayer()
+
+        if (nextHost) {
+            game.setHost(nextHost)
+        } else {
+            // If there are no players left in the game, remove it from the manager
+            this.games.delete(gameId)
+        }
 
         session.clear()
 

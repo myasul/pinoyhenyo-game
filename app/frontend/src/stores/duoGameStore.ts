@@ -1,9 +1,10 @@
 import { DefaultGameSettings, DuoGamePlayerSessionStatus } from '@/utils/constants'
-import { DuoGameRole, GameSettings, Player } from "@henyo/shared"
+import { GameSettings, Player } from "@henyo/shared"
 import { create } from 'zustand'
+import { devtools } from 'zustand/middleware'
 
 export interface DuoGameState {
-    role: DuoGameRole | null
+    hostId: string
     guessWord: string | null
     myPlayer: Player | null
     players: Player[]
@@ -12,8 +13,8 @@ export interface DuoGameState {
     passesRemaining: number
     passedWords: string[]
     myPlayerStatus: DuoGamePlayerSessionStatus
+    setHostId: (hostId: string) => void
     setMyPlayerStatus: (myPlayerStatus: DuoGamePlayerSessionStatus) => void
-    setRole: (role: DuoGameRole) => void
     setGuessWord: (guessWord: string | null) => void
     setPlayers: (players: Player[]) => void
     setSettings: (settings: GameSettings) => void
@@ -23,8 +24,8 @@ export interface DuoGameState {
     setPassedWords: (passedWords: string[]) => void
 }
 
-export const useDuoGameStore = create<DuoGameState>((set) => ({
-    role: null,
+export const useDuoGameStore = create<DuoGameState>()(devtools((set) => ({
+    hostId: '',
     guessWord: null,
     players: [],
     timeRemaining: 0,
@@ -34,13 +35,13 @@ export const useDuoGameStore = create<DuoGameState>((set) => ({
     settings: DefaultGameSettings,
     myPlayerStatus: DuoGamePlayerSessionStatus.Idle,
     passedWords: [],
+    setHostId: (hostId: string) => set({ hostId }),
     setMyPlayerStatus: (myPlayerStatus) => set({ myPlayerStatus }),
     setSettings: (settings) => set({ settings }),
     setTimeRemaining: (timeRemaining) => set({ timeRemaining }),
     setPassesRemaining: (passesRemaining) => set({ passesRemaining }),
-    setRole: (role) => set({ role }),
     setGuessWord: (guessWord) => set({ guessWord }),
     setPlayers: (players) => set({ players }),
     setMyPlayer: (player) => set({ myPlayer: player }),
     setPassedWords: (passedWords) => set({ passedWords }),
-}))
+})))

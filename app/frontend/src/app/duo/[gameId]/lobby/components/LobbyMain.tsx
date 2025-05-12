@@ -9,6 +9,7 @@ import { Play, RefreshCw } from "react-feather"
 import { WaveButton } from "@/components/WaveButton"
 
 type Props = {
+    isHost: boolean
     players: Player[]
     myPlayer: Player
     settings: GameSettings
@@ -34,7 +35,7 @@ const DuoGameRoleText = {
     [DuoGameRole.Unknown]: 'Unknown',
 }
 
-export const LobbyMain = ({ players, myPlayer, settings, onExit, onStartGame, onSwitchRole }: Props) => {
+export const LobbyMain = ({ isHost, players, myPlayer, settings, onExit, onStartGame, onSwitchRole }: Props) => {
     const [duration, setDuration] = useState(settings.duration)
     const [passes, setPasses] = useState(settings.passes)
     const [languagesUsed, setLanguagesUsed] = useState(settings.languagesUsed)
@@ -105,6 +106,7 @@ export const LobbyMain = ({ players, myPlayer, settings, onExit, onStartGame, on
                             }))}
                             selected={duration}
                             onSelect={(value) => setDuration(value)}
+                            isDisabled={!isHost}
                         />
                     </div>
                     <div className="flex flex-col gap-2">
@@ -116,6 +118,7 @@ export const LobbyMain = ({ players, myPlayer, settings, onExit, onStartGame, on
                             }))}
                             selected={passes}
                             onSelect={(value) => setPasses(value)}
+                            isDisabled={!isHost}
                         />
                     </div>
                     <div className="flex flex-col gap-2">
@@ -124,6 +127,7 @@ export const LobbyMain = ({ players, myPlayer, settings, onExit, onStartGame, on
                             options={SettingsOptions.languagesUsed}
                             selected={languagesUsed}
                             onSelect={(value) => setLanguagesUsed(value)}
+                            isDisabled={!isHost}
                         />
                     </div>
                 </section>
@@ -133,6 +137,7 @@ export const LobbyMain = ({ players, myPlayer, settings, onExit, onStartGame, on
                 onContinue={handleStartGame}
                 isContinueDisabled={players.length !== 2}
                 continueLabel={<Play size='28' strokeWidth='2.5' />}
+                isContinueHidden={!isHost}
             />
         </PageLayout>
     )

@@ -8,6 +8,8 @@ type Props = {
     isContinueDisabled?: boolean
     continueLabel?: React.ReactNode
     backLabel?: React.ReactNode
+    isBackHidden?: boolean
+    isContinueHidden?: boolean
 }
 
 export const Footer = ({
@@ -15,27 +17,29 @@ export const Footer = ({
     onContinue,
     isBackDisabled = false,
     isContinueDisabled = false,
+    isBackHidden = false,
+    isContinueHidden = false,
     continueLabel = <Check size='28' strokeWidth='2.5' />,
     backLabel = <X size='28' strokeWidth='2.5' />
 }: Props) => {
     return (
         <footer className="flex w-full gap-2">
-            <WaveButton
+            {!isBackHidden && <WaveButton
                 bgColor='bg-fil-deepBlue'
                 textColor='text-fil-deepYellow'
-                className='w-1/4 border border-fil-blue'
+                className={`border border-fil-blue ${isContinueHidden ? 'w-full' : 'w-1/4'}`}
                 disabled={isBackDisabled}
                 onClick={onBack}
             >
                 {backLabel}
-            </WaveButton>
-            <WaveButton
+            </WaveButton>}
+            {!isContinueHidden && <WaveButton
                 onClick={onContinue}
                 disabled={isContinueDisabled}
                 className="w-full border border-fil-yellow"
             >
                 {continueLabel}
-            </WaveButton>
+            </WaveButton>}
         </footer>
     )
 }

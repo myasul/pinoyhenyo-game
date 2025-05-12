@@ -52,9 +52,24 @@ export class Game {
         this.#players.set(player.id, player)
     }
 
+    setHost(host: Player) {
+        const player = this.#players.get(host.id)
+
+        if (!player) {
+            throw new Error(`Player (ID: ${host.id}) not found in game (ID: ${this.id}).`)
+        }
+
+        this.#hostId = host.id
+    }
+
+    getFirstPlayer(): Player | undefined {
+        // Get the first player in the map
+        return this.#players.values().next().value
+    }
+
     getNextRole(): DuoGameRole {
         // Get the first player in the map
-        const player = this.#players.values().next().value
+        const player = this.getFirstPlayer()
 
         if (player) {
             return player.role === DuoGameRole.Guesser
