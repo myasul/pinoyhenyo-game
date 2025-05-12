@@ -12,8 +12,9 @@ export const getSocket = () => {
             transports: ['websocket'],
             upgrade: true,
             reconnection: true,
-            forceNew: true,
-            reconnectionAttempts: 10
+            forceNew: false,
+            reconnectionAttempts: 10,
+            reconnectionDelay: 1000,  // Wait 1 second between reconnection attempts
         })
     }
 

@@ -103,6 +103,7 @@ export const useDuoGameSession = (gameId: string) => {
     // Determines if the player can join the game (as a new player or rejoining)
     const handlePlayerEnteringTheGame = useEvent((
         socketResponse: SocketResponse<{ game: SerializedGame | null, error: string }>) => {
+
         if (!socketResponse.success) {
             console.error('Failed to enter the game. Error: ', socketResponse.error)
             router.push('/')
@@ -139,14 +140,34 @@ export const useDuoGameSession = (gameId: string) => {
         setMyPlayerStatus(DuoGamePlayerSessionStatus.NewJoiner)
     })
 
-    // Rejoining logic
-    useEffect(() => {
-        console.log('[useDuoGameSession.useEffect] socket: ', socket)
+    const handleVisibilityChange = useEvent(() => {
+        if (document.visibilityState === 'visible') {
+            const rejoiningPlayerData = localStorage.getItem(playerLocalStorageKey)
+            const rejoiningPlayer = rejoiningPlayerData ? JSON.parse(rejoiningPlayerData) : null
 
+            if (rejoiningPlayer) {
+                rejoinGame(rejoiningPlayer)
+            }
+        }
+    })
+
+    // Rejoining logic when the user refreshes the page
+    useEffect(() => {
         if (!socket) return
 
         socket.emit(SocketEvent.RequestEnterGame, { gameId }, handlePlayerEnteringTheGame)
     }, [socket, handlePlayerEnteringTheGame, gameId])
+
+
+    // Rejoining logic when the user comes back to the game from having it in the background
+    useEffect(() => {
+        window.addEventListener('visibilitychange', () => handleVisibilityChange())
+
+        return () => {
+            window.removeEventListener('visibilitychange', () => handleVisibilityChange())
+        }
+    }, [handleVisibilityChange, gameId])
+
 
     useEffect(() => {
         const isInADuoPage = pathname.includes('duo')

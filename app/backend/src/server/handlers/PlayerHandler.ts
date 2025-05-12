@@ -139,7 +139,7 @@ export class PlayerHandler implements IHandler {
             try {
                 console.log(
                     `[${SocketEvent.Disconnect}] Player permanently disconnected: `,
-                    JSON.stringify({ gameId: session.gameId, playerId: session.playerId }, null, 2)
+                    JSON.stringify({ gameId: session.gameId, playerId: session.playerId, socketId: socket.id }, null, 2)
                 )
 
                 const game = this.gameManager.leave({ gameId, playerId }, socket)
