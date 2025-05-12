@@ -11,6 +11,7 @@ import { useSocket } from "@/hooks/useSocket"
 import { PageLayout } from "@/components/PageLayout"
 import { Footer } from "@/components/Footer"
 import { LoadingIcon } from "@/components/LoadingIcon"
+import { ResultsNotebook } from "./components/ResultsNotebook"
 
 const GameResultText: Partial<Record<GameStatus, string>> = {
     [GameStatus.Lose]: 'YOU GUYS LOST 😔',
@@ -53,24 +54,13 @@ export default function ResultsPage({ params }: Props) {
 
     return (
         <PageLayout>
-            <header className="text-4xl font-bold break-normal text-center text-fil-deepBlue">
-                {GameResultText[status as GameStatus]}
-            </header>
-            <section className="flex flex-col items-center gap-4 w-full h-full">
-                <div className="text-4xl">&quot;{guessWord}&quot;</div>
-                <div>
-                    {status === GameStatus.Lose ? "⏰ Time ran out!" : `⏰ Guessed in ${settings.duration - timeRemaining} seconds!`}
-                </div>
-                <div>
-                    {
-                        passedWords.map((word, index) => (
-                            <div key={index} className="text-2xl">
-                                ❌ {word}
-                            </div>
-                        ))
-                    }
-                </div>
-            </section>
+            <ResultsNotebook
+                title={GameResultText[status as GameStatus] ?? ''}
+                mainWord={guessWord ?? ''}
+                resultMessage={status === GameStatus.Lose ? "⏰ Time ran out!" : `⏰ Guessed in ${settings.duration - timeRemaining} seconds!`}
+                passedWords={passedWords}
+                subtext={status === GameStatus.Win ? "🎉 Congratulations!" : "😅 Better luck next time!"}
+            />
             <Footer
                 onBack={handlers[SocketEvent.RequestBackToLobby]}
                 onContinue={() => handlers[SocketEvent.RequestStartGame](settings)}
