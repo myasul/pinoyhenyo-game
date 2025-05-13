@@ -5,7 +5,7 @@ import { SocketEvent } from "@henyo/shared";
 
 import { useDuoGameState } from '@/hooks/useDuoGameState';
 import { useSocket } from '@/hooks/useSocket';
-import { useDuoGameSession } from '@/hooks/useDuoGameSession';
+import { useDuoGamePlayerSession } from '@/hooks/useDuoGamePlayerSession';
 import LobbyNewJoiner from './components/LobbyNewJoiner';
 import { LobbyMain } from './components/LobbyMain';
 import { LoadingIcon } from '@/components/LoadingIcon';
@@ -20,7 +20,7 @@ export default function LobbyPage({ params }: Props) {
     const { gameId } = React.use(params)
 
     const { players, handlers, settings, myPlayer, myPlayerStatus, hostId } = useDuoGameState(gameId)
-    const { joinGame, leaveGame } = useDuoGameSession(gameId)
+    const { joinGame, leaveGame } = useDuoGamePlayerSession(gameId)
     const { socket } = useSocket()
 
     const isLobbyReady = [

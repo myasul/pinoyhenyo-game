@@ -59,8 +59,13 @@ export const useDuoGameState = (gameId: string) => {
     }, [store])
 
     const updatePlayers = useCallback((game: SerializedGame) => {
-        if (store.myPlayer) {
-            const updatedMyPlayer = game.players[store.myPlayer.id]
+        const currentMyPlayer = store.myPlayer
+
+        if (currentMyPlayer) {
+            // Find the updated player in the new game state
+            const updatedMyPlayer = game.players[currentMyPlayer.id] ||
+                // A disconnected player will have a different id
+                Object.values(game.players).find((player) => player.name === currentMyPlayer.name)
 
             if (!updatedMyPlayer) {
                 console.error('Player not found in updated players')

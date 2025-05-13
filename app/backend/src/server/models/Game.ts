@@ -52,6 +52,10 @@ export class Game {
         this.#players.set(player.id, player)
     }
 
+    getPlayer(playerId: string): Player | undefined {
+        return this.#players.get(playerId)
+    }
+
     setHost(host: Player) {
         const player = this.#players.get(host.id)
 

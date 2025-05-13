@@ -22,8 +22,8 @@ export enum SocketEvent {
     NotifyRoleSwitched = 'notify:roleSwitched',
     NotifyBackToLobby = 'notify:backToLobby',
     NotifyGuessWordChanged = 'notify:guessWordChanged',
-    NotifyGamePaused = 'request:gamePaused',
-    NotifyGameResumed = 'request:gameResumed',
+    NotifyGamePaused = 'notify:gamePaused',
+    NotifyGameResumed = 'notify:gameResumed'
 
     // Default Socket Events
     Disconnect = 'disconnect',

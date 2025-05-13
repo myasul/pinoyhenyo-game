@@ -73,6 +73,11 @@ export class PlayerHandler implements IHandler {
         { gameId, rejoiningPlayer }: { gameId: string, rejoiningPlayer: Player },
         callback: (response: SocketResponse<{ rejoiningPlayer: Player, game: SerializedGame }>) => void
     ) {
+        console.log(
+            `[${SocketEvent.RequestRejoinGame}] Player rejoining game: `,
+            JSON.stringify({ gameId, rejoiningPlayer }, null, 2)
+        )
+
         const game = this.gameManager.get(gameId)
 
         if (!game) {
@@ -92,11 +97,6 @@ export class PlayerHandler implements IHandler {
 
         const session = this.gameManager.getSession(socket)
         session.bind(gameId, rejoiningPlayer.id)
-
-        console.log(
-            `[${SocketEvent.RequestRejoinGame}] Player rejoined game: `,
-            JSON.stringify({ gameId, rejoiningPlayer }, null, 2)
-        )
 
         game.addPlayer(rejoiningPlayer)
 

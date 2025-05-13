@@ -10,9 +10,6 @@ export const getSocket = () => {
     if (!socketInstance) {
         socketInstance = io(socketUrl, {
             transports: ['websocket'],
-            upgrade: true,
-            reconnection: true,
-            forceNew: false,
             reconnectionAttempts: 10,
             reconnectionDelay: 1000,  // Wait 1 second between reconnection attempts
         })
@@ -22,34 +19,45 @@ export const getSocket = () => {
 }
 
 export const useSocket = () => {
-    const [isConnected, setIsConnected] = useState(false)
-    const isExplicityDisconnected = useRef(false)
+    // const isExplicityDisconnected = useRef(false)
 
-    useEffect(() => {
-        const socket = getSocket()
 
-        if (socket.connected) setIsConnected(true)
+    // const socket = getSocket()
 
-        socket.on('connect', () => setIsConnected(true))
-        socket.on('disconnect', () => setIsConnected(false))
+    // useEffect(() => {
+    //     const socket = getSocket()
 
-        return () => {
-            socket.off(SocketEvent.Connect)
-            socket.off(SocketEvent.Disconnect)
+    //     // if (socket.connected) setIsConnected(true)
 
-            if (!isExplicityDisconnected.current) return
+    //     // socket.on(SocketEvent.Connect, () => {
+    //     //     console.log('Connected to socket server! Socket ID:', socket.id)
 
-            socket.disconnect()
-            socketInstance = null
-        }
-    }, [])
+    //     //     setIsConnected(true)
+    //     // })
+    //     // socket.on(SocketEvent.Disconnect, () => {
+    //     //     console.log('Disconnected from socket server! Socket ID:', socket.id)
+
+    //     //     setIsConnected(false)
+    //     //     socket.connect()
+    //     // })
+
+    //     return () => {
+    //         socket.off(SocketEvent.Connect)
+    //         socket.off(SocketEvent.Disconnect)
+
+    //         if (!isExplicityDisconnected.current) return
+
+    //         console.log('Explicitly disconnected. Cleaning up socket connection...')
+
+    //         socket.disconnect()
+    //         socketInstance = null
+    //     }
+    // }, [])
 
     const disconnectSocket = () => {
-        isExplicityDisconnected.current = true
         socketInstance?.disconnect()
         socketInstance = null
-        setIsConnected(false)
     }
 
-    return { disconnectSocket, socket: isConnected ? socketInstance : null }
+    return { disconnectSocket, socket: getSocket() }
 }

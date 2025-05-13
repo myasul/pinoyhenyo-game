@@ -10,7 +10,7 @@ import { useSocket } from "@/hooks/useSocket"
 import { CountdownCircle } from "@/components/CountdownCircle"
 import { TvStaticPlaceholder } from "@/components/TvStaticPlaceholder"
 import { GameInstructions } from "@/components/GameInstructions"
-import { useDuoGameSession } from "@/hooks/useDuoGameSession"
+import { useDuoGamePlayerSession } from "@/hooks/useDuoGamePlayerSession"
 import { PageLayout } from "@/components/PageLayout"
 import { Footer } from "@/components/Footer"
 import { PauseOverlay } from "@/components/PauseOverlay"
@@ -32,7 +32,7 @@ export default function GuesserPage({ params }: Props) {
         passesRemaining,
         settings: { duration }
     } = useDuoGameState(gameId)
-    useDuoGameSession(gameId)
+    useDuoGamePlayerSession(gameId)
 
     const { socket } = useSocket()
 
