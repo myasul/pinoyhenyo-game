@@ -23,7 +23,7 @@ export enum SocketEvent {
     NotifyBackToLobby = 'notify:backToLobby',
     NotifyGuessWordChanged = 'notify:guessWordChanged',
     NotifyGamePaused = 'notify:gamePaused',
-    NotifyGameResumed = 'notify:gameResumed'
+    NotifyGameResumed = 'notify:gameResumed',
 
     // Default Socket Events
     Disconnect = 'disconnect',
