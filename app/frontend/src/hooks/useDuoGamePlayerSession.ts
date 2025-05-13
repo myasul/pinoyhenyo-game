@@ -110,7 +110,7 @@ export const useDuoGamePlayerSession = (gameId: string) => {
 
     // Determines if the player can join the game (as a new player or rejoining)
     const handlePlayerEnteringTheGame = useEvent((
-        socketResponse: SocketResponse<{ game: SerializedGame | null, error: string }>, socket: SocketIOClient.Socket
+        socketResponse: SocketResponse<{ game: SerializedGame | null, error: string }>
     ) => {
         if (!socketResponse.success) {
             console.error('Failed to enter the game. Error: ', socketResponse.error)
@@ -170,7 +170,7 @@ export const useDuoGamePlayerSession = (gameId: string) => {
         socket.emit(
             SocketEvent.RequestEnterGame,
             { gameId },
-            (response: SocketResponse<{ game: SerializedGame | null, error: string }>) => handlePlayerEnteringTheGame(response, socket)
+            handlePlayerEnteringTheGame
         )
     }, [socket, handlePlayerEnteringTheGame, gameId])
 
