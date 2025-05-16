@@ -130,7 +130,7 @@ yarn workspace backend build
 ## How to Play
 
 1. Open http://localhost:3000 in your browser
-2. Click "Duo" to start a new game
+2. Click "New Game"
 3. Share the game link with a friend
 4. Configure game settings (duration, passes, languages)
 5. Start the game
