@@ -4,8 +4,8 @@ const csv = require('csv-parser');
 require('dotenv').config({ path: '../app/backend/.env' });
 
 // Initialize Supabase client
-const supabaseUrl = 'https://tepyndeyjnhmalsldnsf.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlcHluZGV5am5obWFsc2xkbnNmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MzgwMTIyMSwiZXhwIjoyMDU5Mzc3MjIxfQ.3hgw2bC1z1wLNrMdQAPWnOt4ev53K0OO4rc82S8PWi4'
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 console.log('Supabase URL:', supabaseUrl);
 console.log('Supabase Key:', supabaseKey);
