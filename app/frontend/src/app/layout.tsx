@@ -9,8 +9,31 @@ const unkempt = Unkempt({
 });
 
 export const metadata: Metadata = {
-  title: "Pinoy Henyo 💡🧠",
-  description: "Play Pinoy Henyo online for free!",
+  title: "Pinoy Henyo",
+  description: "Play the classic Filipino word-guessing game online!",
+  openGraph: {
+    title: "Pinoy Henyo",
+    description: "Play the classic Filipino word-guessing game online!",
+    url: "https://henyo.app",
+    siteName: "Pinoy Henyo",
+    images: [
+      {
+        url: "/images/henyo-logo.png",
+        width: 800,
+        height: 600,
+        alt: "Pinoy Henyo Logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@pinoyhenyo",
+    title: "Pinoy Henyo",
+    description: "Play the classic Filipino word-guessing game online!",
+    images: ["/images/henyo-logo.png"],
+  },
 };
 
 export default function RootLayout({
