@@ -11,29 +11,7 @@ const unkempt = Unkempt({
 
 export const metadata: Metadata = {
   title: "Pinoy Henyo 🇵🇭🧠💡",
-  description: "Play the classic Filipino word-guessing game online!",
-  openGraph: {
-    title: "Pinoy Henyo 🇵🇭🧠💡",
-    description: "Play the classic Filipino word-guessing game online!",
-    siteName: "Pinoy Henyo",
-    images: [
-      {
-        url: "https://henyo.app/images/henyo-logo.svg",
-        width: 800,
-        height: 600,
-        alt: "Pinoy Henyo Logo",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    site: "@pinoyhenyo",
-    title: "Pinoy Henyo 🇵🇭🧠💡",
-    description: "Play the classic Filipino word-guessing game online!",
-    images: ["https://henyo.app/images/henyo-logo.svg"],
-  },
+  description: "Play the classic Filipino word-guessing game online!"
 };
 
 export default function RootLayout({
