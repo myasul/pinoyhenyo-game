@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "Pinoy Henyo 🇵🇭🧠💡",
   description: "Play the classic Filipino word-guessing game online!",
   openGraph: {
-    title: "Pinoy Henyo",
+    title: "Pinoy Henyo 🇵🇭🧠💡",
     description: "Play the classic Filipino word-guessing game online!",
     url: "https://henyo.app",
     siteName: "Pinoy Henyo",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     site: "@pinoyhenyo",
-    title: "Pinoy Henyo",
+    title: "Pinoy Henyo 🇵🇭🧠💡",
     description: "Play the classic Filipino word-guessing game online!",
     images: ["https://henyo.app/images/henyo-logo.svg"],
   },
