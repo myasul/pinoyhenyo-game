@@ -9,13 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@henyo/shared": "*",
+    "@vercel/analytics": "^1.5.0",
     "axios": "^1.7.9",
     "nanoid": "^5.0.9",
     "next": "^15.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-feather": "^2.0.10",
-    "@henyo/shared": "*",
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^3.2.0",
     "unique-names-generator": "^4.7.1",

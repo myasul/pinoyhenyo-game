@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Unkempt } from "next/font/google";
+import { Analytics } from '@vercel/analytics/next';
 import "../styles/globals.css";
 
 const unkempt = Unkempt({
@@ -47,6 +48,7 @@ export default function RootLayout({
         className={`${unkempt.className} antialiased h-dvh`}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );
