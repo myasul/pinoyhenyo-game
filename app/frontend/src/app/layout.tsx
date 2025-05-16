@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     siteName: "Pinoy Henyo",
     images: [
       {
-        url: "https://henyo.app/images/henyo-logo.png",
+        url: "https://henyo.app/images/henyo-logo.svg",
         width: 800,
         height: 600,
         alt: "Pinoy Henyo Logo",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     site: "@pinoyhenyo",
     title: "Pinoy Henyo",
     description: "Play the classic Filipino word-guessing game online!",
-    images: ["https://henyo.app/images/henyo-logo.png"],
+    images: ["https://henyo.app/images/henyo-logo.svg"],
   },
 };
 
