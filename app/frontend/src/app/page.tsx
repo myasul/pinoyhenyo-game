@@ -33,19 +33,10 @@ export default function HomePage() {
         <p className="mb-6 text-fil-deepBlue text-lg">Choose a game mode:</p>
         <div className="grid gap-4">
           <WaveButton
-            disabled
-            onClick={handleDuoModeClick}
-            bgColor='bg-fil-deepRed'
-            textColor='text-fil-yellow'
-            className='!rounded-xl'
-          >
-            Solo (soon!)
-          </WaveButton>
-          <WaveButton
             onClick={handleDuoModeClick}
             className='!rounded-xl'
           >
-            Duo
+            New Game
           </WaveButton>
         </div>
       </div>

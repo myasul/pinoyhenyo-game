@@ -9,7 +9,7 @@ const unkempt = Unkempt({
 });
 
 export const metadata: Metadata = {
-  title: "Pinoy Henyo",
+  title: "Pinoy Henyo 🇵🇭🧠💡",
   description: "Play the classic Filipino word-guessing game online!",
   openGraph: {
     title: "Pinoy Henyo",
