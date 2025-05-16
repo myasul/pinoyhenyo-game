@@ -15,7 +15,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Pinoy Henyo 🇵🇭🧠💡",
     description: "Play the classic Filipino word-guessing game online!",
-    url: "https://henyo.app",
     siteName: "Pinoy Henyo",
     images: [
       {
