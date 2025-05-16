@@ -21,7 +21,7 @@ export enum Environment {
 }
 
 export const DefaultGameSettings: GameSettings = {
-    duration: 60,
+    duration: 120,
     passes: 3,
     languagesUsed: [SupportedLanguages.English, SupportedLanguages.Tagalog]
 }

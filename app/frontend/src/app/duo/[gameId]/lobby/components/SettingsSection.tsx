@@ -17,7 +17,7 @@ const LanguageOptions = [
 ]
 
 const SettingsOptions = {
-    duration: [30, 60, 90, 120],
+    duration: [60, 120, 180],
     passes: [0, 1, 2, 3, 4, 5],
     languagesUsed: LanguageOptions,
 }
