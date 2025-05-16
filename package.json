@@ -14,10 +14,12 @@
         "dev:frontend": "yarn workspace frontend dev",
         "dev:backend": "yarn workspace backend dev",
         "dev": "concurrently \"yarn dev:frontend\" \"yarn dev:backend\"",
-        "build": "yarn workspace backend build && yarn workspace frontend build"
+        "build": "yarn workspace backend build && yarn workspace frontend build",
+        "import-words": "node scripts/import-words.js"
     },
     "devDependencies": {
         "concurrently": "^8.0.1",
+        "csv-parser": "^3.2.0",
         "typescript": "^5.7.3"
     }
 }
