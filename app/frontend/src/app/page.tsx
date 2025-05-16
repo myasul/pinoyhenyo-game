@@ -2,6 +2,7 @@
 import { PageLayout } from '@/components/PageLayout';
 import { WaveButton } from '@/components/WaveButton';
 import axios from 'axios';
+import Image from 'next/image';
 
 import { useRouter } from 'next/navigation';
 
@@ -20,32 +21,44 @@ export default function HomePage() {
   }
 
   return (
-    <PageLayout>
-      <h1 className="mb-4 text-8xl font-extrabold drop-shadow-md flex space-x-2">
-        <span className="text-[#0038A8]">H</span>
-        <span className="text-[#CE1126]">E</span>
-        <span className="text-[#FCD116]">N</span>
+    <PageLayout className='h-full'>
+      <header className="mb-4 text-8xl font-extrabold drop-shadow-md flex space-x-2">
+        <span className="text-fil-deepBlue">H</span>
+        <span className="text-fil-deepRed">E</span>
+        <span className="text-fil-deepYellow">N</span>
         <span className="text-white">Y</span>
-        <span className="text-[#0038A8]">O</span>
-      </h1>
+        <span className="text-fil-deepBlue">O</span>
+      </header>
 
-      <div>
-        <p className="mb-6 text-fil-deepBlue text-lg">Choose a game mode:</p>
-        <div className="grid gap-4">
-          <WaveButton
-            onClick={handleDuoModeClick}
-            className='!rounded-xl'
-          >
-            New Game
-          </WaveButton>
+      <section className="flex flex-col items-center gap-10 h-3/4">
+        <Image
+          src='/images/henyo-icon.png'
+          width={62.5} height={62.5}
+          alt='Henyo icon'
+        />
+        <WaveButton
+          onClick={handleDuoModeClick}
+          className='!rounded-xl'
+        >
+          New Game
+        </WaveButton>
+        <div>
+          <p className="text-fil-darkText max-w-md text-justify">
+            It&apos;s time to put your deduction skills to the test! 🤔
+          </p>
+          <p className="text-fil-darkText max-w-md text-justify">
+            This beloved Filipino guessing game challenges one player to give clever clues while the other races to guess the word. Can you guess before time runs out?
+          </p>
         </div>
-      </div>
+      </section>
 
-      <div className="mt-6 text-center text-fil-darkText max-w-md h-3/4">
+      <footer className="text-center text-fil-darkText max-w-md">
         <p>
-          Henyo is a classic Filipino guessing game where one player gives clues and the other guesses the word!
+          Free,&nbsp;
+          <a href="https://github.com/myasul/pinoyhenyo-game" target="_blank" className="underline text-fil-deepBlue">open source</a>,
+          and made with ❤️ 🇵🇭
         </p>
-      </div>
-    </PageLayout>
+      </footer>
+    </PageLayout >
   );
 }
