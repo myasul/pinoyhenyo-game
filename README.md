@@ -1,34 +1,34 @@
-# Pinoy Henyo
+# Pinoy Henyo 🧠💡
 
 A digital version of the classic Filipino word-guessing game. Play online with friends and family!
 
-## About the Game
+## 🎮 About the Game
 
 Pinoy Henyo is a popular Filipino party game where one player has to guess a word/phrase on their forehead based on yes/no/maybe questions they ask their partner.
 
-## Features
+## ✨ Features
 
-- Duo Mode: Play with a friend - one as the Clue Giver and one as the Guesser
-- Customizable Settings: Adjust game duration, number of passes, and languages used
-- Real-time Communication: Instant feedback between players using WebSockets
-- Mobile-Friendly: Responsive design works on both desktop and mobile devices
+- 👥 Duo Mode: Play with a friend - one as the Clue Giver and one as the Guesser
+- ⚙️ Customizable Settings: Adjust game duration, number of passes, and languages used
+- 🔄 Real-time Communication: Instant feedback between players using WebSockets
+- 📱 Mobile-Friendly: Responsive design works on both desktop and mobile devices
 
-## Project Structure
+## 📂 Project Structure
 This project uses a monorepo structure:
 
 - `app/frontend` - Next.js frontend application
 - `app/backend` - Node.js backend server (Socket.IO)
 - `shared` - Shared TypeScript types and constants
 
-## Getting Started
+## 🚀 Getting Started
 
-### Prerequisites
+### 📋 Prerequisites
 
 - Node.js (v20.18.1 or later recommended)
 - Yarn (for package management)
 - Supabase account (for backend database)
 
-### Setting up the Frontend
+### 🛠️ Setting up the Frontend
 
 1. Navigate to the root directory and install dependencies:
    ```
@@ -47,7 +47,7 @@ This project uses a monorepo structure:
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the app.
 
-### Setting up the Backend
+### ⚙️ Setting up the Backend
 
 1. Create a `.env` file in the backend directory:
    ```
@@ -61,7 +61,7 @@ This project uses a monorepo structure:
    yarn workspace backend dev
    ```
 
-### Setting up Supabase
+### 🗃️ Setting up Supabase
 
 1. Create a new Supabase project at [https://supabase.com](https://supabase.com)
 
