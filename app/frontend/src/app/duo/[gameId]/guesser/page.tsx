@@ -1,11 +1,10 @@
 'use client'
 
 import { FastForward, Pause } from "react-feather"
-import React, { useEffect } from "react"
-import { DuoGameRole, GameStatus, SocketEvent } from "@henyo/shared"
+import React from "react"
+import { DuoGameRole, GameStatus } from "@henyo/shared"
 
 import { useDuoGameState } from "@/hooks/useDuoGameState"
-import { useSocket } from "@/hooks/useSocket"
 import { CountdownCircle } from "@/components/CountdownCircle"
 import { TvStaticPlaceholder } from "@/components/TvStaticPlaceholder"
 import { GameInstructions } from "@/components/GameInstructions"
@@ -22,7 +21,6 @@ export default function GuesserPage({ params }: Props) {
     const { gameId } = React.use(params)
 
     const {
-        setTimeRemaining,
         myPlayer,
         guessWord,
         timeRemaining,
@@ -32,17 +30,6 @@ export default function GuesserPage({ params }: Props) {
         status
     } = useDuoGameState(gameId)
     useDuoGamePlayerSession(gameId)
-
-    const { socket } = useSocket()
-
-    useEffect(() => {
-        // TODO: Move to DuoGameClient
-        socket.on(SocketEvent.NotifyRemainingTimeUpdated, setTimeRemaining)
-
-        return () => {
-            socket.off(SocketEvent.NotifyRemainingTimeUpdated)
-        }
-    }, [socket, setTimeRemaining])
 
     if (!myPlayer) return null
 

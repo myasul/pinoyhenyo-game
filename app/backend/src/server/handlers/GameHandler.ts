@@ -40,7 +40,7 @@ export class GameHandler implements IHandler {
 
         game.start({
             settings,
-            onTick: (game) => this.io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, game.timeRemaining),
+            onTick: (game) => this.io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, game),
             onGameOver: (game) => this.io.to(gameId).emit(SocketEvent.NotifyWordGuessFailed, game),
             onGameStarted: (game) => this.io.to(gameId).emit(SocketEvent.NotifyGameStarted, game)
         })

@@ -19,11 +19,10 @@ export const useDuoGameState = (gameId: string) => {
     useEffect(() => {
         gameClient.addNotificationEventListeners()
 
-        return () => {
-            gameClient.removeNotificationEventHandlers()
-        }
+        return () => { gameClient.removeNotificationEventHandlers() }
     }, [gameClient])
 
-
+    // TODO: Only expose the necessary state (create a state property).
+    // Do not expose modifying the state directly.
     return { gameClient, ...store }
 }

@@ -11,7 +11,8 @@ type NotificationSocketEvent = SocketEvent.NotifyGameStarted |
     SocketEvent.NotifyWordGuessFailed |
     SocketEvent.NotifyWordGuessSuccessful |
     SocketEvent.NotifyGamePaused |
-    SocketEvent.NotifyGameResumed;
+    SocketEvent.NotifyGameResumed |
+    SocketEvent.NotifyRemainingTimeUpdated;
 
 export class DuoGameClient {
     private notificationHandlers: Record<NotificationSocketEvent, (game: SerializedGame) => void> = {
@@ -24,6 +25,7 @@ export class DuoGameClient {
         [SocketEvent.NotifyWordGuessFailed]: this.handleNotifyWordGuessFailed,
         [SocketEvent.NotifyGamePaused]: this.handleNotifyGamePaused,
         [SocketEvent.NotifyGameResumed]: this.handleNotifyGameResumed,
+        [SocketEvent.NotifyRemainingTimeUpdated]: this.handleNotifyRemainingTimeUpdated,
     }
 
     constructor(
@@ -161,6 +163,10 @@ export class DuoGameClient {
     }
 
     private handleNotifyGameResumed(game: SerializedGame) {
+        this.syncStore(game)
+    }
+
+    private handleNotifyRemainingTimeUpdated(game: SerializedGame) {
         this.syncStore(game)
     }
 

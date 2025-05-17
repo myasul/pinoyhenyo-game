@@ -1,8 +1,7 @@
 'use client'
 
-import { useSocket } from "@/hooks/useSocket"
-import React, { useEffect } from "react"
-import { DuoGameRole, GameStatus, SocketEvent } from "@henyo/shared"
+import React from "react"
+import { DuoGameRole, GameStatus } from "@henyo/shared"
 import { useDuoGameState } from "@/hooks/useDuoGameState"
 import { Check, Pause } from "react-feather"
 import { CountdownCircle } from "@/components/CountdownCircle"
@@ -22,7 +21,6 @@ export default function ClueGiverPage({ params }: Props) {
     const {
         gameClient,
         myPlayer,
-        setTimeRemaining,
         timeRemaining,
         guessWord,
         passesRemaining,
@@ -30,18 +28,6 @@ export default function ClueGiverPage({ params }: Props) {
         status
     } = useDuoGameState(gameId)
     useDuoGamePlayerSession(gameId)
-
-    const { socket } = useSocket()
-
-    useEffect(() => {
-        if (!socket) return
-
-        socket.on(SocketEvent.NotifyRemainingTimeUpdated, setTimeRemaining)
-
-        return () => {
-            socket.off(SocketEvent.NotifyRemainingTimeUpdated)
-        }
-    }, [socket, setTimeRemaining])
 
     if (!myPlayer) return null
 
