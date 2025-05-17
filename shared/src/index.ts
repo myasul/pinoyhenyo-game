@@ -43,6 +43,15 @@ export enum GameType {
     Unknown = 'UNKNOWN'
 }
 
+export enum GameStatus {
+    Ongoing = 'ONGOING',
+    Win = 'WIN',
+    Lose = 'LOSE',
+    Paused = 'PAUSED',
+    Pending = 'PENDING',
+    Unknown = 'UNKNOWN'
+}
+
 export type Player = {
     id: string
     name: string
@@ -75,6 +84,7 @@ export type SerializedGame = {
     timeRemaining: number
     passesRemaining: number
     passedWords: string[]
+    status: GameStatus
 }
 
 export enum SupportedLanguages {

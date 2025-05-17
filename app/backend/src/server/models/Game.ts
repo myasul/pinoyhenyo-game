@@ -1,4 +1,4 @@
-import { DuoGameRole, GameSettings, GameType, Player, SerializedGame, SupportedLanguages } from "@henyo/shared";
+import { DuoGameRole, GameSettings, GameStatus, GameType, Player, SerializedGame, SupportedLanguages } from "@henyo/shared";
 import { getRandomGuessWord } from "../../model/guess_word";
 
 const DEFAULT_SETTINGS: GameSettings = {
@@ -10,6 +10,7 @@ const DEFAULT_SETTINGS: GameSettings = {
 export class Game {
     #hostId: string
     #players: Map<string, Player> = new Map()
+    #status: GameStatus = GameStatus.Unknown
     #guessWord: string | null = null
     #timeRemaining = 0
     #passesRemaining = 0
@@ -31,6 +32,7 @@ export class Game {
     ) {
         this.#hostId = hostPlayer.id
         this.addPlayer(hostPlayer)
+        this.#status = GameStatus.Pending
 
         this.#getRandomGuessWord = getRandomGuessWordFunc
         this.#settings = { ...DEFAULT_SETTINGS, ...settings }
@@ -105,6 +107,8 @@ export class Game {
 
             if (this.#timeRemaining === 0) {
                 clearInterval(this.#timeIntervaldId)
+                this.#status = GameStatus.Lose
+
                 onGameOver(this.serialize())
             }
         }, 1000)
@@ -115,16 +119,18 @@ export class Game {
         this.#passesRemaining = this.#settings.passes
         this.#guessWord = await this.#getRandomGuessWord(this.#settings.languagesUsed)
         this.#passedWords = []
+        this.#status = GameStatus.Ongoing
 
         onGameStarted(this.serialize())
     }
 
-    end(onGameOver: (game: SerializedGame) => void) {
+    win(onGameWin: (game: SerializedGame) => void) {
         if (this.#timeIntervaldId) clearInterval(this.#timeIntervaldId)
         this.#timeIntervaldId = undefined
         this.#timeRemaining = 0
+        this.#status = GameStatus.Win
 
-        onGameOver(this.serialize())
+        onGameWin(this.serialize())
     }
 
     async changeGuessWord(onChangeGuessWord: (game: SerializedGame) => void) {
@@ -150,6 +156,7 @@ export class Game {
         this.#passesRemaining = 0
         this.#guessWord = null
         this.#passedWords = []
+        this.#status = GameStatus.Pending
 
         onReset(this.serialize())
     }
@@ -171,6 +178,7 @@ export class Game {
     pause(onPause: (game: SerializedGame) => void) {
         if (this.#timeIntervaldId) clearInterval(this.#timeIntervaldId)
         this.#timeIntervaldId = undefined
+        this.#status = GameStatus.Paused
 
         onPause(this.serialize())
     }
@@ -184,6 +192,8 @@ export class Game {
 
         if (this.#timeIntervaldId) clearInterval(this.#timeIntervaldId)
 
+        this.#status = GameStatus.Ongoing
+
         const tickDelaySeconds = 1
         this.#timeIntervaldId = setInterval(() => {
             this.#timeRemaining -= tickDelaySeconds
@@ -191,6 +201,9 @@ export class Game {
 
             if (this.#timeRemaining === 0) {
                 clearInterval(this.#timeIntervaldId)
+                this.#timeIntervaldId = undefined
+                this.#status = GameStatus.Lose
+
                 onGameOver(this.serialize())
             }
 
@@ -209,7 +222,8 @@ export class Game {
             passedWords: this.#passedWords,
             settings: this.#settings,
             type: this.type,
-            players: playersObject
+            players: playersObject,
+            status: this.#status,
         }
     }
 

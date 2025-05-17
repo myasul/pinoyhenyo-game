@@ -1,15 +1,15 @@
 'use client'
 
-import { useSearchParams } from "next/navigation"
 import React from "react"
 import { Repeat } from "react-feather"
 
 import { useDuoGameState } from "@/hooks/useDuoGameState"
-import { DuoGamePlayerSessionStatus, GameStatus } from "@/utils/constants"
+import { DuoGamePlayerSessionStatus } from "@/utils/constants"
 import { PageLayout } from "@/components/PageLayout"
 import { Footer } from "@/components/Footer"
 import { LoadingIcon } from "@/components/LoadingIcon"
 import { ResultsNotebook } from "./components/ResultsNotebook"
+import { GameStatus } from "@henyo/shared"
 
 const GameResultText: Partial<Record<GameStatus, string>> = {
     [GameStatus.Lose]: 'YOU GUYS LOST 😔',
@@ -22,11 +22,15 @@ type Props = {
 
 export default function ResultsPage({ params }: Props) {
     const { gameId } = React.use(params)
-
-    const searchParams = useSearchParams()
-    const { gameClient, guessWord, timeRemaining, settings, passedWords, myPlayerStatus } = useDuoGameState(gameId)
-
-    const status = searchParams.get('status') as GameStatus
+    const {
+        gameClient,
+        guessWord,
+        timeRemaining,
+        settings,
+        passedWords,
+        myPlayerStatus,
+        status
+    } = useDuoGameState(gameId)
 
     if (myPlayerStatus === DuoGamePlayerSessionStatus.Syncing) {
         return (

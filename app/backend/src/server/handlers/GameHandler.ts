@@ -77,7 +77,7 @@ export class GameHandler implements IHandler {
             return
         }
 
-        game.end((game) =>
+        game.win((game) =>
             this.io.to(gameId).emit(SocketEvent.NotifyWordGuessSuccessful, game)
         )
 

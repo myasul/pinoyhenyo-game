@@ -1,6 +1,6 @@
 import { DuoGameState } from "@/stores/duoGameStore";
-import { DuoGamePlayerSessionStatus, GameStatus } from "@/utils/constants";
-import { DuoGameRole, GameSettings, SerializedGame, SocketEvent } from "@henyo/shared";
+import { DuoGamePlayerSessionStatus } from "@/utils/constants";
+import { DuoGameRole, GameSettings, GameStatus, SerializedGame, SocketEvent, SocketResponse } from "@henyo/shared";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 type NotificationSocketEvent = SocketEvent.NotifyGameStarted |
@@ -9,7 +9,9 @@ type NotificationSocketEvent = SocketEvent.NotifyGameStarted |
     SocketEvent.NotifyRoleSwitched |
     SocketEvent.NotifyPlayersUpdated |
     SocketEvent.NotifyWordGuessFailed |
-    SocketEvent.NotifyWordGuessSuccessful;
+    SocketEvent.NotifyWordGuessSuccessful |
+    SocketEvent.NotifyGamePaused |
+    SocketEvent.NotifyGameResumed;
 
 export class DuoGameClient {
     private notificationHandlers: Record<NotificationSocketEvent, (game: SerializedGame) => void> = {
@@ -20,6 +22,8 @@ export class DuoGameClient {
         [SocketEvent.NotifyPlayersUpdated]: this.handlePlayersUpdated,
         [SocketEvent.NotifyWordGuessSuccessful]: this.handleNotifyWordGuessSuccessful,
         [SocketEvent.NotifyWordGuessFailed]: this.handleNotifyWordGuessFailed,
+        [SocketEvent.NotifyGamePaused]: this.handleNotifyGamePaused,
+        [SocketEvent.NotifyGameResumed]: this.handleNotifyGameResumed,
     }
 
     constructor(
@@ -58,12 +62,23 @@ export class DuoGameClient {
     }
 
     requestPauseGame() {
-        this.socket.emit(SocketEvent.RequestPauseGame, { gameId: this.gameId })
+        this.socket.emit(SocketEvent.RequestPauseGame, { gameId: this.gameId },)
         return this
     }
 
     requestResumeGame() {
-        this.socket.emit(SocketEvent.RequestResumeGame, { gameId: this.gameId })
+        this.socket.emit(
+            SocketEvent.RequestResumeGame,
+            { gameId: this.gameId },
+            (serverResponse: SocketResponse) => {
+                if (!serverResponse.success) {
+                    console.error('Failed to resume game. Error: ', serverResponse.error)
+                    return
+                }
+
+                this.store.setStatus(GameStatus.Ongoing)
+            })
+
         return this
     }
 
@@ -84,6 +99,7 @@ export class DuoGameClient {
         this.store.setGuessWord(game.guessWord)
         this.store.setPlayers(Object.values(game.players))
         this.store.setPassedWords(game.passedWords)
+        this.store.setStatus(game.status)
 
         // Add artificial delay to simulate syncing
         setTimeout(() => {
@@ -128,15 +144,23 @@ export class DuoGameClient {
 
     private handleNotifyWordGuessSuccessful(game: SerializedGame) {
         this.syncStore(game)
-        this.router.push(`/duo/${this.gameId}/results?status=${GameStatus.Win}`)
+        this.router.push(`/duo/${this.gameId}/results`)
     }
 
     private handleNotifyWordGuessFailed(game: SerializedGame) {
         this.syncStore(game)
-        this.router.push(`/duo/${this.gameId}/results?status=${GameStatus.Lose}`)
+        this.router.push(`/duo/${this.gameId}/results`)
     }
 
     private handleNotifyGuessWordChanged(game: SerializedGame) {
+        this.syncStore(game)
+    }
+
+    private handleNotifyGamePaused(game: SerializedGame) {
+        this.syncStore(game)
+    }
+
+    private handleNotifyGameResumed(game: SerializedGame) {
         this.syncStore(game)
     }
 

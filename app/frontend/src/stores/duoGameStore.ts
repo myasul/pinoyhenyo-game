@@ -1,5 +1,5 @@
 import { DefaultGameSettings, DuoGamePlayerSessionStatus } from '@/utils/constants'
-import { GameSettings, Player } from "@henyo/shared"
+import { GameSettings, GameStatus, Player } from "@henyo/shared"
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 
@@ -13,7 +13,9 @@ export interface DuoGameState {
     passesRemaining: number
     passedWords: string[]
     myPlayerStatus: DuoGamePlayerSessionStatus
-    setHostId: (hostId: string) => void
+    status: GameStatus
+    setHostId: (hostId: string) => void,
+    setStatus: (status: GameStatus) => void,
     setMyPlayerStatus: (myPlayerStatus: DuoGamePlayerSessionStatus) => void
     setGuessWord: (guessWord: string | null) => void
     setPlayers: (players: Player[]) => void
@@ -34,7 +36,9 @@ export const useDuoGameStore = create<DuoGameState>()(devtools((set) => ({
     myPlayer: null,
     settings: DefaultGameSettings,
     myPlayerStatus: DuoGamePlayerSessionStatus.Idle,
+    status: GameStatus.Unknown,
     passedWords: [],
+    setStatus: (status: GameStatus) => set({ status }),
     setHostId: (hostId: string) => set({ hostId }),
     setMyPlayerStatus: (myPlayerStatus) => set({ myPlayerStatus }),
     setSettings: (settings) => set({ settings }),

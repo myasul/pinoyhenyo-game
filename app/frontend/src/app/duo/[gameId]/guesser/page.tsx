@@ -1,8 +1,8 @@
 'use client'
 
 import { FastForward, Pause } from "react-feather"
-import React, { useEffect, useState } from "react"
-import { DuoGameRole, SocketEvent } from "@henyo/shared"
+import React, { useEffect } from "react"
+import { DuoGameRole, GameStatus, SocketEvent } from "@henyo/shared"
 
 import { useDuoGameState } from "@/hooks/useDuoGameState"
 import { useSocket } from "@/hooks/useSocket"
@@ -20,7 +20,6 @@ type Props = {
 
 export default function GuesserPage({ params }: Props) {
     const { gameId } = React.use(params)
-    const [isPaused, setIsPaused] = useState(false)
 
     const {
         setTimeRemaining,
@@ -29,37 +28,21 @@ export default function GuesserPage({ params }: Props) {
         timeRemaining,
         passesRemaining,
         settings: { duration },
-        gameClient
+        gameClient,
+        status
     } = useDuoGameState(gameId)
     useDuoGamePlayerSession(gameId)
 
     const { socket } = useSocket()
 
     useEffect(() => {
-        if (!socket) return
-
         // TODO: Move to DuoGameClient
         socket.on(SocketEvent.NotifyRemainingTimeUpdated, setTimeRemaining)
-        // Pausing the game should be handled in the duoGameStore
-        socket.on(SocketEvent.NotifyGamePaused, () => { setIsPaused(true) })
-        socket.on(SocketEvent.NotifyGameResumed, () => { setIsPaused(false) })
 
         return () => {
             socket.off(SocketEvent.NotifyRemainingTimeUpdated)
-            socket.off(SocketEvent.NotifyGamePaused)
-            socket.off(SocketEvent.NotifyGameResumed)
         }
     }, [socket, setTimeRemaining])
-
-    const handlePauseGame = () => {
-        setIsPaused(true)
-        gameClient.requestPauseGame()
-    }
-
-    const handleResumeGame = () => {
-        setIsPaused(false)
-        gameClient.requestResumeGame()
-    }
 
     if (!myPlayer) return null
 
@@ -77,15 +60,15 @@ export default function GuesserPage({ params }: Props) {
             </section>
             <Footer
                 onContinue={() => gameClient.requestChangeGuessWord()}
-                onBack={handlePauseGame}
+                onBack={() => gameClient.requestPauseGame()}
                 isContinueDisabled={passesRemaining <= 0}
                 continueLabel={<FastForward size='28' strokeWidth='2.5' />}
                 backLabel={<Pause size='28' strokeWidth='2.5' />}
             />
             {
-                isPaused && (
+                status === GameStatus.Paused && (
                     <PauseOverlay
-                        onResume={handleResumeGame}
+                        onResume={() => gameClient.requestResumeGame()}
                         onExit={() => gameClient.requestBackToLobby()}
                     />
                 )
