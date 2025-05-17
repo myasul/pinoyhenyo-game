@@ -1,13 +1,11 @@
 'use client'
 
 import { useSearchParams } from "next/navigation"
-import React, { useEffect } from "react"
-import { SocketEvent } from "@henyo/shared"
+import React from "react"
 import { Repeat } from "react-feather"
 
 import { useDuoGameState } from "@/hooks/useDuoGameState"
 import { DuoGamePlayerSessionStatus, GameStatus } from "@/utils/constants"
-import { useSocket } from "@/hooks/useSocket"
 import { PageLayout } from "@/components/PageLayout"
 import { Footer } from "@/components/Footer"
 import { LoadingIcon } from "@/components/LoadingIcon"
@@ -22,27 +20,13 @@ type Props = {
     params: Promise<{ gameId: string }>
 }
 
-// TODO: Wrap the results information in a card that looks like a notebook
 export default function ResultsPage({ params }: Props) {
     const { gameId } = React.use(params)
 
     const searchParams = useSearchParams()
-    const { handlers, guessWord, timeRemaining, settings, passedWords, myPlayerStatus } = useDuoGameState(gameId)
-    const { socket } = useSocket()
+    const { gameClient, guessWord, timeRemaining, settings, passedWords, myPlayerStatus } = useDuoGameState(gameId)
 
     const status = searchParams.get('status') as GameStatus
-
-    useEffect(() => {
-        if (!socket) return
-
-        socket.on(SocketEvent.NotifyGameStarted, handlers[SocketEvent.NotifyGameStarted])
-        socket.on(SocketEvent.NotifyBackToLobby, handlers[SocketEvent.NotifyBackToLobby])
-
-        return (() => {
-            socket.off(SocketEvent.NotifyGameStarted)
-            socket.off(SocketEvent.NotifyBackToLobby)
-        })
-    }, [socket, handlers])
 
     if (myPlayerStatus === DuoGamePlayerSessionStatus.Syncing) {
         return (
@@ -62,8 +46,8 @@ export default function ResultsPage({ params }: Props) {
                 subtext={status === GameStatus.Win ? "🎉 Congratulations!" : "😅 Better luck next time!"}
             />
             <Footer
-                onBack={handlers[SocketEvent.RequestBackToLobby]}
-                onContinue={() => handlers[SocketEvent.RequestStartGame](settings)}
+                onBack={() => gameClient.requestBackToLobby()}
+                onContinue={() => gameClient.requestStartGame(settings)}
                 isContinueDisabled={false}
                 continueLabel={<Repeat size='28' strokeWidth='2.5' />}
             />

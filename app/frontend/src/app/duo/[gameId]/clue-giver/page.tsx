@@ -1,6 +1,5 @@
 'use client'
 
-import { GameStatus } from "@/utils/constants"
 import { useSocket } from "@/hooks/useSocket"
 import React, { useEffect, useState } from "react"
 import { DuoGameRole, SocketEvent } from "@henyo/shared"
@@ -22,11 +21,11 @@ export default function ClueGiverPage({ params }: Props) {
     const [isPaused, setIsPaused] = useState(false)
 
     const {
+        gameClient,
         myPlayer,
         setTimeRemaining,
         timeRemaining,
         guessWord,
-        handlers,
         passesRemaining,
         settings: { duration }
     } = useDuoGameState(gameId)
@@ -37,44 +36,25 @@ export default function ClueGiverPage({ params }: Props) {
     useEffect(() => {
         if (!socket) return
 
-        socket.on(SocketEvent.NotifyGuessWordChanged, handlers[SocketEvent.NotifyGuessWordChanged])
         socket.on(SocketEvent.NotifyRemainingTimeUpdated, setTimeRemaining)
-        socket.on(SocketEvent.NotifyBackToLobby, handlers[SocketEvent.NotifyBackToLobby])
-
         socket.on(SocketEvent.NotifyGamePaused, () => { setIsPaused(true) })
         socket.on(SocketEvent.NotifyGameResumed, () => { setIsPaused(false) })
 
-        socket.on(SocketEvent.NotifyWordGuessFailed, ({ passedWords }: { passedWords: string[] }) => {
-            const handler = handlers[SocketEvent.NotifyWordGuessFailed]
-
-            handler({ gameStatus: GameStatus.Lose, passedWords })
-        })
-
-        socket.on(SocketEvent.NotifyWordGuessSuccessful, ({ passedWords }: { passedWords: string[] }) => {
-            const handler = handlers[SocketEvent.NotifyWordGuessSuccessful]
-
-            handler({ gameStatus: GameStatus.Win, passedWords })
-        })
-
         return () => {
             socket.off(SocketEvent.NotifyRemainingTimeUpdated)
-            socket.off(SocketEvent.NotifyWordGuessFailed)
-            socket.off(SocketEvent.NotifyGuessWordChanged)
-            socket.off(SocketEvent.NotifyWordGuessSuccessful)
-            socket.off(SocketEvent.NotifyBackToLobby)
             socket.off(SocketEvent.NotifyGamePaused)
             socket.off(SocketEvent.NotifyGameResumed)
         }
-    }, [socket, handlers, setTimeRemaining])
+    }, [socket, setTimeRemaining])
 
     const handlePauseGame = () => {
         setIsPaused(true)
-        handlers[SocketEvent.RequestPauseGame]()
+        gameClient.requestPauseGame()
     }
 
     const handleResumeGame = () => {
         setIsPaused(false)
-        handlers[SocketEvent.RequestResumeGame]()
+        gameClient.requestResumeGame()
     }
 
     if (!myPlayer) return null
@@ -92,7 +72,7 @@ export default function ClueGiverPage({ params }: Props) {
                 </div>
             </section>
             <Footer
-                onContinue={handlers[SocketEvent.RequestWordGuessSuccessful]}
+                onContinue={() => gameClient.requestWordGuessSuccessful()}
                 onBack={handlePauseGame}
                 continueLabel={<Check size='28' strokeWidth='2.5' />}
                 backLabel={<Pause size='28' strokeWidth='2.5' />}
@@ -101,7 +81,7 @@ export default function ClueGiverPage({ params }: Props) {
                 isPaused && (
                     <PauseOverlay
                         onResume={handleResumeGame}
-                        onExit={handlers[SocketEvent.RequestBackToLobby]}
+                        onExit={() => gameClient.requestBackToLobby()}
                     />
                 )
             }

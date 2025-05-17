@@ -6,6 +6,8 @@ import { useDuoGameStore } from "@/stores/duoGameStore"
 import { DuoGamePage, DuoGamePlayerSessionStatus } from "@/utils/constants"
 import { useEvent } from "./useEvent"
 
+
+// TODO: Move inside useDuoGameState
 export const useDuoGamePlayerSession = (gameId: string) => {
     const router = useRouter()
     const pathname = usePathname()

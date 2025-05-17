@@ -1,5 +1,6 @@
 import { GameSettings, SupportedLanguages } from "@henyo/shared";
 
+// Add PAUSED status
 export enum GameStatus {
     Started = 'STARTED',
     Win = 'WIN',

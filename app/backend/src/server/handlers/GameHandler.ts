@@ -41,7 +41,7 @@ export class GameHandler implements IHandler {
         game.start({
             settings,
             onTick: (game) => this.io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, game.timeRemaining),
-            onGameOver: (game) => this.io.to(gameId).emit(SocketEvent.NotifyWordGuessFailed, { passedWords: game.passedWords }),
+            onGameOver: (game) => this.io.to(gameId).emit(SocketEvent.NotifyWordGuessFailed, game),
             onGameStarted: (game) => this.io.to(gameId).emit(SocketEvent.NotifyGameStarted, game)
         })
 
@@ -78,7 +78,7 @@ export class GameHandler implements IHandler {
         }
 
         game.end((game) =>
-            this.io.to(gameId).emit(SocketEvent.NotifyWordGuessSuccessful, { passedWords: game.passedWords })
+            this.io.to(gameId).emit(SocketEvent.NotifyWordGuessSuccessful, game)
         )
 
         callback({ success: true, data: null })

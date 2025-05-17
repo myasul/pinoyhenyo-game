@@ -5,7 +5,6 @@ import React, { useEffect, useState } from "react"
 import { DuoGameRole, SocketEvent } from "@henyo/shared"
 
 import { useDuoGameState } from "@/hooks/useDuoGameState"
-import { GameStatus } from "@/utils/constants"
 import { useSocket } from "@/hooks/useSocket"
 import { CountdownCircle } from "@/components/CountdownCircle"
 import { TvStaticPlaceholder } from "@/components/TvStaticPlaceholder"
@@ -28,9 +27,9 @@ export default function GuesserPage({ params }: Props) {
         myPlayer,
         guessWord,
         timeRemaining,
-        handlers,
         passesRemaining,
-        settings: { duration }
+        settings: { duration },
+        gameClient
     } = useDuoGameState(gameId)
     useDuoGamePlayerSession(gameId)
 
@@ -39,44 +38,27 @@ export default function GuesserPage({ params }: Props) {
     useEffect(() => {
         if (!socket) return
 
+        // TODO: Move to DuoGameClient
         socket.on(SocketEvent.NotifyRemainingTimeUpdated, setTimeRemaining)
-        socket.on(SocketEvent.NotifyGuessWordChanged, handlers[SocketEvent.NotifyGuessWordChanged])
-        socket.on(SocketEvent.NotifyBackToLobby, handlers[SocketEvent.NotifyBackToLobby])
-
+        // Pausing the game should be handled in the duoGameStore
         socket.on(SocketEvent.NotifyGamePaused, () => { setIsPaused(true) })
         socket.on(SocketEvent.NotifyGameResumed, () => { setIsPaused(false) })
 
-        socket.on(SocketEvent.NotifyWordGuessFailed, ({ passedWords }: { passedWords: string[] }) => {
-            const handler = handlers[SocketEvent.NotifyWordGuessFailed]
-
-            handler({ gameStatus: GameStatus.Lose, passedWords })
-        })
-
-        socket.on(SocketEvent.NotifyWordGuessSuccessful, ({ passedWords }: { passedWords: string[] }) => {
-            const handler = handlers[SocketEvent.NotifyWordGuessFailed]
-
-            handler({ gameStatus: GameStatus.Win, passedWords })
-        })
-
         return () => {
             socket.off(SocketEvent.NotifyRemainingTimeUpdated)
-            socket.off(SocketEvent.NotifyWordGuessFailed)
-            socket.off(SocketEvent.NotifyWordGuessSuccessful)
-            socket.off(SocketEvent.NotifyGuessWordChanged)
-            socket.off(SocketEvent.NotifyBackToLobby)
             socket.off(SocketEvent.NotifyGamePaused)
             socket.off(SocketEvent.NotifyGameResumed)
         }
-    }, [socket, handlers, setTimeRemaining])
+    }, [socket, setTimeRemaining])
 
     const handlePauseGame = () => {
         setIsPaused(true)
-        handlers[SocketEvent.RequestPauseGame]()
+        gameClient.requestPauseGame()
     }
 
     const handleResumeGame = () => {
         setIsPaused(false)
-        handlers[SocketEvent.RequestResumeGame]()
+        gameClient.requestResumeGame()
     }
 
     if (!myPlayer) return null
@@ -94,7 +76,7 @@ export default function GuesserPage({ params }: Props) {
                 </div>
             </section>
             <Footer
-                onContinue={handlers[SocketEvent.RequestChangeGuessWord]}
+                onContinue={() => gameClient.requestChangeGuessWord()}
                 onBack={handlePauseGame}
                 isContinueDisabled={passesRemaining <= 0}
                 continueLabel={<FastForward size='28' strokeWidth='2.5' />}
@@ -104,7 +86,7 @@ export default function GuesserPage({ params }: Props) {
                 isPaused && (
                     <PauseOverlay
                         onResume={handleResumeGame}
-                        onExit={handlers[SocketEvent.RequestBackToLobby]}
+                        onExit={() => gameClient.requestBackToLobby()}
                     />
                 )
             }

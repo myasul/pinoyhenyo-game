@@ -1,10 +1,8 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { SocketEvent } from "@henyo/shared";
+import React from 'react';
 
 import { useDuoGameState } from '@/hooks/useDuoGameState';
-import { useSocket } from '@/hooks/useSocket';
 import { useDuoGamePlayerSession } from '@/hooks/useDuoGamePlayerSession';
 import LobbyNewJoiner from './components/LobbyNewJoiner';
 import { LobbyMain } from './components/LobbyMain';
@@ -18,10 +16,8 @@ type Props = {
 
 export default function LobbyPage({ params }: Props) {
     const { gameId } = React.use(params)
-
-    const { players, handlers, settings, myPlayer, myPlayerStatus, hostId } = useDuoGameState(gameId)
+    const { players, settings, myPlayer, myPlayerStatus, hostId, gameClient } = useDuoGameState(gameId)
     const { joinGame, leaveGame } = useDuoGamePlayerSession(gameId)
-    const { socket } = useSocket()
 
     const isLobbyReady = [
         DuoGamePlayerSessionStatus.NewJoiner,
@@ -29,20 +25,6 @@ export default function LobbyPage({ params }: Props) {
         DuoGamePlayerSessionStatus.Rejoined,
         DuoGamePlayerSessionStatus.Synced
     ].includes(myPlayerStatus)
-
-    useEffect(() => {
-        if (!socket) return
-
-        socket.on(SocketEvent.NotifyPlayersUpdated, handlers[SocketEvent.NotifyPlayersUpdated])
-        socket.on(SocketEvent.NotifyGameStarted, handlers[SocketEvent.NotifyGameStarted])
-        socket.on(SocketEvent.NotifyRoleSwitched, handlers[SocketEvent.NotifyRoleSwitched])
-
-        return (() => {
-            socket.off(SocketEvent.NotifyPlayersUpdated)
-            socket.off(SocketEvent.NotifyGameStarted)
-            socket.off(SocketEvent.NotifyRoleSwitched)
-        })
-    }, [socket, myPlayer, handlers])
 
     if (!isLobbyReady) {
         return (
@@ -60,8 +42,8 @@ export default function LobbyPage({ params }: Props) {
                     players={players}
                     myPlayer={myPlayer}
                     settings={settings}
-                    onStartGame={handlers[SocketEvent.RequestStartGame]}
-                    onSwitchRole={handlers[SocketEvent.RequestSwitchRole]}
+                    onStartGame={(updatedSettings) => gameClient.requestStartGame(updatedSettings)}
+                    onSwitchRole={() => gameClient.requestSwitchRole()}
                     onExit={leaveGame}
                     isHost={myPlayer.id === hostId}
                 />
