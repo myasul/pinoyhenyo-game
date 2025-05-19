@@ -127,7 +127,6 @@ export class Game {
     win(onGameWin: (game: SerializedGame) => void) {
         if (this.#timeIntervaldId) clearInterval(this.#timeIntervaldId)
         this.#timeIntervaldId = undefined
-        this.#timeRemaining = 0
         this.#status = GameStatus.Win
 
         onGameWin(this.serialize())

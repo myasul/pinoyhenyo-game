@@ -148,8 +148,8 @@ export class GameHandler implements IHandler {
         }
 
         game.resume({
-            onTick: (game) => this.io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, game.timeRemaining),
-            onGameOver: (game) => this.io.to(gameId).emit(SocketEvent.NotifyWordGuessFailed, { passedWords: game.passedWords }),
+            onTick: (game) => this.io.to(gameId).emit(SocketEvent.NotifyRemainingTimeUpdated, game),
+            onGameOver: (game) => this.io.to(gameId).emit(SocketEvent.NotifyWordGuessFailed, game),
             onResume: (game) => this.io.to(gameId).emit(SocketEvent.NotifyGameResumed, game)
         })
 
