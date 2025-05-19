@@ -8,7 +8,7 @@ import { DuoGameManager } from "@/services/DuoGameManager"
 import { useEvent } from "./useEvent"
 import { GameSettings, Player } from "@henyo/shared"
 
-export const useDuoGameState = (gameId: string) => {
+export const useDuoGame = (gameId: string) => {
     const router = useRouter()
     const pathname = usePathname()
     const store = useDuoGameStore()

@@ -4,7 +4,7 @@ import { FastForward, Pause } from "react-feather"
 import React from "react"
 import { DuoGameRole, GameStatus } from "@henyo/shared"
 
-import { useDuoGameState } from "@/hooks/useDuoGameState"
+import { useDuoGame } from "@/hooks/useDuoGame"
 import { CountdownCircle } from "@/components/CountdownCircle"
 import { TvStaticPlaceholder } from "@/components/TvStaticPlaceholder"
 import { GameInstructions } from "@/components/GameInstructions"
@@ -30,7 +30,7 @@ export default function GuesserPage({ params }: Props) {
         pauseGame,
         resumeGame,
         backToLobby,
-    } = useDuoGameState(gameId)
+    } = useDuoGame(gameId)
 
     if (!myPlayer) return null
 

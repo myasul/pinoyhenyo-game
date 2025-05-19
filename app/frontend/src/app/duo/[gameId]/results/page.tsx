@@ -3,7 +3,7 @@
 import React from "react"
 import { Repeat } from "react-feather"
 
-import { useDuoGameState } from "@/hooks/useDuoGameState"
+import { useDuoGame } from "@/hooks/useDuoGame"
 import { DuoGamePlayerSessionStatus } from "@/utils/constants"
 import { PageLayout } from "@/components/PageLayout"
 import { Footer } from "@/components/Footer"
@@ -31,7 +31,7 @@ export default function ResultsPage({ params }: Props) {
         status,
         backToLobby,
         startGame,
-    } = useDuoGameState(gameId)
+    } = useDuoGame(gameId)
 
     if (myPlayerStatus === DuoGamePlayerSessionStatus.Syncing) {
         return (

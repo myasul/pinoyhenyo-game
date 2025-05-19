@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { useDuoGameState } from '@/hooks/useDuoGameState';
+import { useDuoGame } from '@/hooks/useDuoGame';
 import LobbyNewJoiner from './components/LobbyNewJoiner';
 import { LobbyMain } from './components/LobbyMain';
 import { LoadingIcon } from '@/components/LoadingIcon';
@@ -25,7 +25,7 @@ export default function LobbyPage({ params }: Props) {
         leaveGame,
         startGame,
         switchRole
-    } = useDuoGameState(gameId)
+    } = useDuoGame(gameId)
 
     const isLobbyReady = [
         DuoGamePlayerSessionStatus.NewJoiner,

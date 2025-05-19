@@ -2,7 +2,7 @@
 
 import React from "react"
 import { DuoGameRole, GameStatus } from "@henyo/shared"
-import { useDuoGameState } from "@/hooks/useDuoGameState"
+import { useDuoGame } from "@/hooks/useDuoGame"
 import { Check, Pause } from "react-feather"
 import { CountdownCircle } from "@/components/CountdownCircle"
 import { GameInstructions } from "@/components/GameInstructions"
@@ -28,7 +28,7 @@ export default function ClueGiverPage({ params }: Props) {
         passesRemaining,
         settings: { duration },
         status
-    } = useDuoGameState(gameId)
+    } = useDuoGame(gameId)
 
     if (!myPlayer) return null
 
