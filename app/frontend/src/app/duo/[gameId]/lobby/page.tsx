@@ -3,7 +3,6 @@
 import React from 'react';
 
 import { useDuoGameState } from '@/hooks/useDuoGameState';
-import { useDuoGamePlayerSession } from '@/hooks/useDuoGamePlayerSession';
 import LobbyNewJoiner from './components/LobbyNewJoiner';
 import { LobbyMain } from './components/LobbyMain';
 import { LoadingIcon } from '@/components/LoadingIcon';
@@ -16,8 +15,17 @@ type Props = {
 
 export default function LobbyPage({ params }: Props) {
     const { gameId } = React.use(params)
-    const { players, settings, myPlayer, myPlayerStatus, hostId, gameClient } = useDuoGameState(gameId)
-    const { joinGame, leaveGame } = useDuoGamePlayerSession(gameId)
+    const {
+        players,
+        settings,
+        myPlayer,
+        myPlayerStatus,
+        hostId,
+        joinGame,
+        leaveGame,
+        startGame,
+        switchRole
+    } = useDuoGameState(gameId)
 
     const isLobbyReady = [
         DuoGamePlayerSessionStatus.NewJoiner,
@@ -42,8 +50,8 @@ export default function LobbyPage({ params }: Props) {
                     players={players}
                     myPlayer={myPlayer}
                     settings={settings}
-                    onStartGame={(updatedSettings) => gameClient.requestStartGame(updatedSettings)}
-                    onSwitchRole={() => gameClient.requestSwitchRole()}
+                    onStartGame={(updatedSettings) => startGame(updatedSettings)}
+                    onSwitchRole={switchRole}
                     onExit={leaveGame}
                     isHost={myPlayer.id === hostId}
                 />

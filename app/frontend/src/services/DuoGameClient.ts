@@ -1,7 +1,8 @@
 import { DuoGameState } from "@/stores/duoGameStore";
-import { DuoGamePlayerSessionStatus } from "@/utils/constants";
 import { DuoGameRole, GameSettings, GameStatus, SerializedGame, SocketEvent, SocketResponse } from "@henyo/shared";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { DuoBaseClient } from "./DuoBaseClient";
+import { SocketManager } from "./SocketManager";
 
 type NotificationSocketEvent = SocketEvent.NotifyGameStarted |
     SocketEvent.NotifyBackToLobby |
@@ -14,64 +15,46 @@ type NotificationSocketEvent = SocketEvent.NotifyGameStarted |
     SocketEvent.NotifyGameResumed |
     SocketEvent.NotifyRemainingTimeUpdated;
 
-export class DuoGameClient {
-    private notificationHandlers: Record<NotificationSocketEvent, (game: SerializedGame) => void> = {
-        [SocketEvent.NotifyGameStarted]: this.handleNotifyGameStarted,
-        [SocketEvent.NotifyBackToLobby]: this.handleNotifyBackToLobby,
-        [SocketEvent.NotifyGuessWordChanged]: this.handleNotifyGuessWordChanged,
-        [SocketEvent.NotifyRoleSwitched]: this.handlePlayersUpdated,
-        [SocketEvent.NotifyPlayersUpdated]: this.handlePlayersUpdated,
-        [SocketEvent.NotifyWordGuessSuccessful]: this.handleNotifyWordGuessSuccessful,
-        [SocketEvent.NotifyWordGuessFailed]: this.handleNotifyWordGuessFailed,
-        [SocketEvent.NotifyGamePaused]: this.handleNotifyGamePaused,
-        [SocketEvent.NotifyGameResumed]: this.handleNotifyGameResumed,
-        [SocketEvent.NotifyRemainingTimeUpdated]: this.handleNotifyRemainingTimeUpdated,
+export class DuoGameClient extends DuoBaseClient {
+    constructor(
+        gameId: string,
+        socket: SocketManager,
+        router: AppRouterInstance,
+        getStore: () => DuoGameState // Store accessor function
+    ) {
+        super(gameId, socket, router, getStore)
     }
 
-    constructor(
-        private readonly gameId: string,
-        private readonly socket: SocketIOClient.Socket,
-        private readonly store: DuoGameState,
-        private readonly router: AppRouterInstance
-    ) { }
-
     // Request methods (Outgoing)
-
     requestStartGame(settings: GameSettings) {
-        this.socket.emit(SocketEvent.RequestStartGame, { gameId: this.gameId, settings })
-        return this
+        return this.createSocketRequest(SocketEvent.RequestStartGame, { settings })
     }
 
     requestWordGuessSuccessful() {
-        this.socket.emit(SocketEvent.RequestWordGuessSuccessful, { gameId: this.gameId })
-        return this
+        return this.createSocketRequest(SocketEvent.RequestWordGuessSuccessful)
     }
 
     requestSwitchRole() {
-        this.socket.emit(SocketEvent.RequestSwitchRole, { gameId: this.gameId })
-        return this
+        return this.createSocketRequest(SocketEvent.RequestSwitchRole)
     }
 
     requestBackToLobby() {
-        this.socket.emit(SocketEvent.RequestBackToLobby, { gameId: this.gameId })
-        return this
+        return this.createSocketRequest(SocketEvent.RequestBackToLobby)
     }
 
 
     requestChangeGuessWord() {
-        this.socket.emit(SocketEvent.RequestChangeGuessWord, { gameId: this.gameId })
-        return this
+        return this.createSocketRequest(SocketEvent.RequestChangeGuessWord)
     }
 
     requestPauseGame() {
-        this.socket.emit(SocketEvent.RequestPauseGame, { gameId: this.gameId },)
-        return this
+        return this.createSocketRequest(SocketEvent.RequestPauseGame)
     }
 
     requestResumeGame() {
-        this.socket.emit(
+        return this.createSocketRequest(
             SocketEvent.RequestResumeGame,
-            { gameId: this.gameId },
+            {},
             (serverResponse: SocketResponse) => {
                 if (!serverResponse.success) {
                     console.error('Failed to resume game. Error: ', serverResponse.error)
@@ -79,36 +62,13 @@ export class DuoGameClient {
                 }
 
                 this.store.setStatus(GameStatus.Ongoing)
-            })
-
-        return this
+            }
+        )
     }
 
     // Notification handlers (Incoming)
 
-    private syncStore(game: SerializedGame) {
-        this.store.setMyPlayerStatus(DuoGamePlayerSessionStatus.Syncing)
-
-        const updatedMyPlayer = this.store.myPlayer ? game.players[this.store.myPlayer.id] : undefined
-
-        if (updatedMyPlayer) this.store.setMyPlayer(updatedMyPlayer)
-
-        // add new player status (syncing)
-        this.store.setHostId(game.hostId)
-        this.store.setSettings(game.settings)
-        this.store.setTimeRemaining(game.timeRemaining)
-        this.store.setPassesRemaining(game.passesRemaining)
-        this.store.setGuessWord(game.guessWord)
-        this.store.setPlayers(Object.values(game.players))
-        this.store.setPassedWords(game.passedWords)
-        this.store.setStatus(game.status)
-
-        // Add artificial delay to simulate syncing
-        setTimeout(() => {
-            this.store.setMyPlayerStatus(DuoGamePlayerSessionStatus.Synced)
-        }, 500)
-    }
-
+    // TODO: Refactor this to use the same pattern as the other handlers.
     private handlePlayersUpdated(game: SerializedGame) {
         const currentMyPlayer = this.store.myPlayer
 
@@ -132,53 +92,44 @@ export class DuoGameClient {
         this.store.setHostId(game.hostId)
     }
 
-    private handleNotifyGameStarted(game: SerializedGame) {
+    // TODO: Refactor this to use the same pattern as the other handlers.
+    // The store sync should be done before the redirect.
+    private handleGameStarted(game: SerializedGame) {
         this.syncStore(game)
 
-        if (this.store.myPlayer?.role === DuoGameRole.ClueGiver) this.router.push(`/duo/${this.gameId}/clue-giver`)
-        if (this.store.myPlayer?.role === DuoGameRole.Guesser) this.router.push(`/duo/${this.gameId}/guesser`)
+        const path = this.store.myPlayer?.role === DuoGameRole.ClueGiver
+            ? `/duo/${this.gameId}/clue-giver`
+            : `/duo/${this.gameId}/guesser`
+
+        this.router.push(path)
     }
 
-    private handleNotifyBackToLobby(game: SerializedGame) {
-        this.syncStore(game)
-        this.router.push(`/duo/${this.gameId}/lobby`)
-    }
-
-    private handleNotifyWordGuessSuccessful(game: SerializedGame) {
-        this.syncStore(game)
-        this.router.push(`/duo/${this.gameId}/results`)
-    }
-
-    private handleNotifyWordGuessFailed(game: SerializedGame) {
-        this.syncStore(game)
-        this.router.push(`/duo/${this.gameId}/results`)
-    }
-
-    private handleNotifyGuessWordChanged(game: SerializedGame) {
-        this.syncStore(game)
-    }
-
-    private handleNotifyGamePaused(game: SerializedGame) {
-        this.syncStore(game)
-    }
-
-    private handleNotifyGameResumed(game: SerializedGame) {
-        this.syncStore(game)
-    }
-
-    private handleNotifyRemainingTimeUpdated(game: SerializedGame) {
-        this.syncStore(game)
+    private notificationHandlers: Record<NotificationSocketEvent, (game: SerializedGame) => void> = {
+        [SocketEvent.NotifyGameStarted]: this.handleGameStarted,
+        [SocketEvent.NotifyBackToLobby]: this.createSocketNotificationHandler(`/duo/${this.gameId}/lobby`),
+        [SocketEvent.NotifyGuessWordChanged]: this.createSocketNotificationHandler(),
+        [SocketEvent.NotifyWordGuessSuccessful]: this.createSocketNotificationHandler(`/duo/${this.gameId}/results`),
+        [SocketEvent.NotifyWordGuessFailed]: this.createSocketNotificationHandler(`/duo/${this.gameId}/results`),
+        [SocketEvent.NotifyGamePaused]: this.createSocketNotificationHandler(),
+        [SocketEvent.NotifyGameResumed]: this.createSocketNotificationHandler(),
+        [SocketEvent.NotifyRemainingTimeUpdated]: this.createSocketNotificationHandler(),
+        [SocketEvent.NotifyRoleSwitched]: this.handlePlayersUpdated,
+        [SocketEvent.NotifyPlayersUpdated]: this.handlePlayersUpdated,
     }
 
     addNotificationEventListeners() {
+        const socket = this.socketManager.getSocket()
+
         Object.entries(this.notificationHandlers).forEach(([event, handler]) => {
-            this.socket.on(event, (game: SerializedGame) => { handler.call(this, game) })
+            socket.on(event, (game: SerializedGame) => { handler.call(this, game) })
         })
     }
 
-    removeNotificationEventHandlers() {
+    removeNotificationEventListeners() {
+        const socket = this.socketManager.getSocket()
+
         Object.keys(this.notificationHandlers).forEach((event) => {
-            this.socket.off(event)
+            socket.off(event)
         })
     }
 }

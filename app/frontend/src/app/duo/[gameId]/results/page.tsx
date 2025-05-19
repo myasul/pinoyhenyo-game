@@ -23,13 +23,14 @@ type Props = {
 export default function ResultsPage({ params }: Props) {
     const { gameId } = React.use(params)
     const {
-        gameClient,
         guessWord,
         timeRemaining,
         settings,
         passedWords,
         myPlayerStatus,
-        status
+        status,
+        backToLobby,
+        startGame,
     } = useDuoGameState(gameId)
 
     if (myPlayerStatus === DuoGamePlayerSessionStatus.Syncing) {
@@ -50,8 +51,8 @@ export default function ResultsPage({ params }: Props) {
                 subtext={status === GameStatus.Win ? "🎉 Congratulations!" : "😅 Better luck next time!"}
             />
             <Footer
-                onBack={() => gameClient.requestBackToLobby()}
-                onContinue={() => gameClient.requestStartGame(settings)}
+                onBack={backToLobby}
+                onContinue={() => startGame(settings)}
                 isContinueDisabled={false}
                 continueLabel={<Repeat size='28' strokeWidth='2.5' />}
             />

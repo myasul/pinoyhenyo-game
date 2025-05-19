@@ -6,7 +6,6 @@ import { useDuoGameState } from "@/hooks/useDuoGameState"
 import { Check, Pause } from "react-feather"
 import { CountdownCircle } from "@/components/CountdownCircle"
 import { GameInstructions } from "@/components/GameInstructions"
-import { useDuoGamePlayerSession } from "@/hooks/useDuoGamePlayerSession"
 import { PageLayout } from "@/components/PageLayout"
 import { Footer } from "@/components/Footer"
 import { PauseOverlay } from "@/components/PauseOverlay"
@@ -19,7 +18,10 @@ export default function ClueGiverPage({ params }: Props) {
     const { gameId } = React.use(params)
 
     const {
-        gameClient,
+        wordGuessSuccessful,
+        pauseGame,
+        resumeGame,
+        backToLobby,
         myPlayer,
         timeRemaining,
         guessWord,
@@ -27,7 +29,6 @@ export default function ClueGiverPage({ params }: Props) {
         settings: { duration },
         status
     } = useDuoGameState(gameId)
-    useDuoGamePlayerSession(gameId)
 
     if (!myPlayer) return null
 
@@ -44,16 +45,16 @@ export default function ClueGiverPage({ params }: Props) {
                 </div>
             </section>
             <Footer
-                onContinue={() => gameClient.requestWordGuessSuccessful()}
-                onBack={() => gameClient.requestPauseGame()}
+                onContinue={wordGuessSuccessful}
+                onBack={pauseGame}
                 continueLabel={<Check size='28' strokeWidth='2.5' />}
                 backLabel={<Pause size='28' strokeWidth='2.5' />}
             />
             {
                 status === GameStatus.Paused && (
                     <PauseOverlay
-                        onResume={() => gameClient.requestResumeGame()}
-                        onExit={() => gameClient.requestBackToLobby()}
+                        onResume={resumeGame}
+                        onExit={backToLobby}
                     />
                 )
             }
