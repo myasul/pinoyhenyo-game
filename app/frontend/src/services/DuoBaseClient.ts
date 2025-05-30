@@ -42,10 +42,8 @@ export class DuoBaseClient {
         if (myPlayer) {
             this.store.setMyPlayer(myPlayer);
         } else {
-            console.log('[DuoBaseClient] Syncing store with game data:', game);
-            console.log('[DuoBaseClient] this.store.myPlayer:', this.store.myPlayer);
-
             const updatedMyPlayer = game.players[this.store.myPlayer?.id ?? ''];
+
             if (updatedMyPlayer) this.store.setMyPlayer(updatedMyPlayer);
         }
 

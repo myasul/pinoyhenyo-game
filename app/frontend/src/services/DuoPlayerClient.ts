@@ -60,14 +60,10 @@ export class DuoPlayerClient extends DuoBaseClient {
     }
 
     requestEnterGame() {
-        console.log('[requestEnterGame] called')
-
         this.createSocketRequest(SocketEvent.RequestEnterGame, {}, this.handleEnterGameResponse)
     }
 
     private handleEnterGameResponse = (socketResponse: SocketResponse<{ game: SerializedGame }>) => {
-        console.log('[handleEnterGameResponse] socketResponse: ', socketResponse)
-
         if (!socketResponse.success) {
             console.error('Failed to enter the game. Error: ', socketResponse.error)
             this.router.push('/')
@@ -125,8 +121,6 @@ export class DuoPlayerClient extends DuoBaseClient {
         socketResponse: SocketResponse<{ rejoiningPlayer: Player, game: SerializedGame }>,
         rejoiningPlayer: Player
     ) => {
-        console.log('[rejoinGame] socketResponse: ', socketResponse)
-
         if (!socketResponse.success) {
             console.error(`Failed to rejoin game. 'Error: ${socketResponse.error}`)
 
